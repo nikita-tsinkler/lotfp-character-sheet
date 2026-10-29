@@ -497,45 +497,49 @@ html[lang="ru"] h1 { font-weight: 500; }
 
 <script>
 (function () {
+  /* BEGIN GAME DATA */
+  var GAME = {"source":"Generated from data/lotfp.json by tools/build_page.py. Do not edit by hand.","abilityMods":[{"lo":3,"hi":3,"mod":-3},{"lo":4,"hi":5,"mod":-2},{"lo":6,"hi":8,"mod":-1},{"lo":9,"hi":12,"mod":0},{"lo":13,"hi":15,"mod":1},{"lo":16,"hi":17,"mod":2},{"lo":18,"hi":18,"mod":3}],"abilities":{"CHA":{"en":"Charisma","ru":"Харизма"},"CON":{"en":"Constitution","ru":"Телосложение"},"DEX":{"en":"Dexterity","ru":"Ловкость"},"INT":{"en":"Intelligence","ru":"Интеллект"},"STR":{"en":"Strength","ru":"Сила"},"WIS":{"en":"Wisdom","ru":"Мудрость"}},"saves":[{"en":"Paralyzation","ru":"Паралич"},{"en":"Poison","ru":"Яд"},{"en":"Breath Weapon","ru":"Детонация"},{"en":"Magical Device","ru":"Магические устройства"},{"en":"Magic","ru":"Магия"}],"alignments":{"Lawful":"Законопослушный","Neutral":"Нейтральный","Chaotic":"Хаотичный"},"skills":[{"en":"Architecture","ru":"Архитектура","base":1},{"en":"Bushcraft","ru":"Выживание в лесу","base":1},{"en":"Climb","ru":"Лазание","base":1},{"en":"Languages","ru":"Владение языками","base":1},{"en":"Open Doors","ru":"Открытие дверей","base":1},{"en":"Search","ru":"Поиск","base":1},{"en":"Sleight of Hand","ru":"Ловкость рук","base":1},{"en":"Sneak Attack","ru":"Скрытая атака","base":1},{"en":"Stealth","ru":"Скрытность","base":1},{"en":"Tinker","ru":"Механика","base":1}],"classes":{"Cleric":{"ru":"Клирик","human":true,"minHp":4,"alignment":"Lawful","hp":{"d1":6,"d":6,"fixed":2,"conAlways":false},"levels":[{"xp":0,"saves":[14,11,16,12,15],"ab":1,"slots":[1]},{"xp":1750,"saves":[14,11,16,12,15],"ab":1,"slots":[2]},{"xp":3500,"saves":[14,11,16,12,15],"ab":1,"slots":[3]},{"xp":7000,"saves":[14,11,16,12,15],"ab":1,"slots":[3,1]},{"xp":14000,"saves":[12,9,14,10,12],"ab":1,"slots":[3,2,1]},{"xp":28000,"saves":[12,9,14,10,12],"ab":1,"slots":[3,3,2]},{"xp":56000,"saves":[12,9,14,10,12],"ab":1,"slots":[4,3,3,1]},{"xp":112000,"saves":[12,9,14,10,12],"ab":1,"slots":[4,3,3,2]},{"xp":224000,"saves":[10,7,12,8,9],"ab":1,"slots":[4,3,3,3,1]},{"xp":336000,"saves":[10,7,12,8,9],"ab":1,"slots":[4,4,3,3,2]},{"xp":448000,"saves":[10,7,12,8,9],"ab":1,"slots":[5,4,4,3,3,1]},{"xp":560000,"saves":[10,7,12,8,9],"ab":1,"slots":[5,4,4,3,3,2]},{"xp":672000,"saves":[8,3,8,4,6],"ab":1,"slots":[5,4,4,4,3,3,1]},{"xp":784000,"saves":[8,3,8,4,6],"ab":1,"slots":[5,5,4,4,3,3,2]},{"xp":896000,"saves":[8,3,8,4,6],"ab":1,"slots":[6,5,5,4,4,3,3]},{"xp":1008000,"saves":[8,3,8,4,6],"ab":1,"slots":[6,5,5,4,4,3,3]},{"xp":1120000,"saves":[6,2,6,4,5],"ab":1,"slots":[6,5,5,5,4,4,3]},{"xp":1232000,"saves":[6,2,6,4,5],"ab":1,"slots":[6,6,5,5,4,4,3]},{"xp":1344000,"saves":[6,2,6,4,5],"ab":1,"slots":[7,6,6,5,5,4,4]},{"xp":1456000,"saves":[6,2,6,4,5],"ab":1,"slots":[8,7,7,6,5,5,4]},{"xp":1568000,"saves":[6,2,6,4,5],"ab":1,"slots":[8,7,7,6,5,5,4]}]},"Fighter":{"ru":"Воин","human":true,"minHp":8,"alignment":null,"hp":{"d1":8,"d":8,"fixed":3,"conAlways":false},"levels":[{"xp":0,"saves":[14,12,15,13,16],"ab":2},{"xp":2000,"saves":[14,12,15,13,16],"ab":3},{"xp":4000,"saves":[14,12,15,13,16],"ab":4},{"xp":8000,"saves":[12,10,13,11,14],"ab":5},{"xp":16000,"saves":[12,10,13,11,14],"ab":6},{"xp":32000,"saves":[12,10,13,11,14],"ab":7},{"xp":64000,"saves":[10,8,9,9,12],"ab":8},{"xp":128000,"saves":[10,8,9,9,12],"ab":9},{"xp":256000,"saves":[10,8,9,9,12],"ab":10},{"xp":384000,"saves":[8,6,7,7,10],"ab":10},{"xp":512000,"saves":[8,6,7,7,10],"ab":10},{"xp":640000,"saves":[8,6,7,7,10],"ab":10},{"xp":768000,"saves":[6,4,5,5,8],"ab":10},{"xp":896000,"saves":[6,4,5,5,8],"ab":10},{"xp":1024000,"saves":[6,4,5,5,8],"ab":10},{"xp":1152000,"saves":[6,4,5,5,8],"ab":10},{"xp":1280000,"saves":[6,4,5,5,8],"ab":10},{"xp":1408000,"saves":[6,4,5,5,8],"ab":10},{"xp":1536000,"saves":[6,4,5,5,8],"ab":10},{"xp":1664000,"saves":[6,4,5,5,8],"ab":10},{"xp":1792000,"saves":[6,4,5,5,8],"ab":10}]},"Magic-User":{"ru":"Маг","human":true,"minHp":3,"alignment":"Chaotic","hp":{"d1":6,"d":4,"fixed":1,"conAlways":false},"levels":[{"xp":0,"saves":[13,13,16,13,14],"ab":1,"slots":[1]},{"xp":2250,"saves":[13,13,16,13,14],"ab":1,"slots":[2]},{"xp":4500,"saves":[13,13,16,13,14],"ab":1,"slots":[2,1]},{"xp":9000,"saves":[13,13,16,13,14],"ab":1,"slots":[2,2]},{"xp":18000,"saves":[13,13,16,13,14],"ab":1,"slots":[3,2,1]},{"xp":36000,"saves":[11,11,14,11,12],"ab":1,"slots":[3,2,2]},{"xp":72000,"saves":[11,11,14,11,12],"ab":1,"slots":[3,3,2,1]},{"xp":144000,"saves":[11,11,14,11,12],"ab":1,"slots":[4,3,2,2]},{"xp":288000,"saves":[11,11,14,11,12],"ab":1,"slots":[4,3,3,2,1]},{"xp":432000,"saves":[11,11,14,11,12],"ab":1,"slots":[4,4,3,2,2]},{"xp":576000,"saves":[9,9,12,9,8],"ab":1,"slots":[5,4,3,3,2,1]},{"xp":720000,"saves":[9,9,12,9,8],"ab":1,"slots":[5,4,4,3,2,2]},{"xp":864000,"saves":[9,9,12,9,8],"ab":1,"slots":[5,5,4,3,3,2,1]},{"xp":1008000,"saves":[9,9,12,9,8],"ab":1,"slots":[6,5,4,4,3,2,2]},{"xp":1152000,"saves":[9,9,12,9,8],"ab":1,"slots":[6,5,5,4,3,3,2,1]},{"xp":1296000,"saves":[6,7,8,5,6],"ab":1,"slots":[6,6,5,4,4,3,2,2]},{"xp":1440000,"saves":[6,7,8,5,6],"ab":1,"slots":[7,6,5,5,4,3,3,2,1]},{"xp":1584000,"saves":[6,7,8,5,6],"ab":1,"slots":[7,6,6,5,4,4,3,2,2]},{"xp":1728000,"saves":[5,6,7,4,4],"ab":1,"slots":[7,7,6,5,5,4,3,3,2]},{"xp":1872000,"saves":[5,6,7,4,4],"ab":1,"slots":[8,7,6,6,5,4,4,3,2]},{"xp":2016000,"saves":[5,6,7,4,4],"ab":1,"slots":[8,7,6,6,5,4,4,3,2]}]},"Specialist":{"ru":"Специалист","human":true,"minHp":4,"alignment":null,"hp":{"d1":6,"d":6,"fixed":2,"conAlways":false},"levels":[{"xp":0,"saves":[14,16,15,14,14],"ab":1,"skillPoints":4},{"xp":1500,"saves":[14,16,15,14,14],"ab":1,"skillPoints":6},{"xp":3000,"saves":[14,16,15,14,14],"ab":1,"skillPoints":8},{"xp":6000,"saves":[14,16,15,14,14],"ab":1,"skillPoints":10},{"xp":12000,"saves":[11,12,14,13,12],"ab":1,"skillPoints":12},{"xp":24000,"saves":[11,12,14,13,12],"ab":1,"skillPoints":14},{"xp":48000,"saves":[11,12,14,13,12],"ab":1,"skillPoints":16},{"xp":96000,"saves":[11,12,14,13,12],"ab":1,"skillPoints":18},{"xp":192000,"saves":[9,10,12,11,10],"ab":1,"skillPoints":20},{"xp":288000,"saves":[9,10,12,11,10],"ab":1,"skillPoints":22},{"xp":384000,"saves":[9,10,12,11,10],"ab":1,"skillPoints":24},{"xp":480000,"saves":[9,10,12,11,10],"ab":1,"skillPoints":26},{"xp":576000,"saves":[7,8,10,9,8],"ab":1,"skillPoints":28},{"xp":672000,"saves":[7,8,10,9,8],"ab":1,"skillPoints":30},{"xp":768000,"saves":[7,8,10,9,8],"ab":1,"skillPoints":32},{"xp":864000,"saves":[7,8,10,9,8],"ab":1,"skillPoints":34},{"xp":960000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":36},{"xp":1056000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":38},{"xp":1152000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":40},{"xp":1248000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":42},{"xp":1344000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":44}]},"Dwarf":{"ru":"Дворф","human":false,"minHp":6,"alignment":null,"hp":{"d1":10,"d":10,"fixed":3,"conAlways":true},"levels":[{"xp":0,"saves":[10,8,13,9,12],"ab":1,"architecture":3},{"xp":2200,"saves":[10,8,13,9,12],"ab":1,"architecture":3},{"xp":4400,"saves":[10,8,13,9,12],"ab":1,"architecture":3},{"xp":8800,"saves":[8,6,10,7,10],"ab":1,"architecture":4},{"xp":17600,"saves":[8,6,10,7,10],"ab":1,"architecture":4},{"xp":35200,"saves":[8,6,10,7,10],"ab":1,"architecture":4},{"xp":70400,"saves":[6,4,7,5,8],"ab":1,"architecture":5},{"xp":140800,"saves":[6,4,7,5,8],"ab":1,"architecture":5},{"xp":281600,"saves":[6,4,7,5,8],"ab":1,"architecture":5},{"xp":422400,"saves":[4,2,4,3,6],"ab":1,"architecture":6},{"xp":563200,"saves":[4,2,4,3,6],"ab":1,"architecture":6},{"xp":704000,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":844800,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":985600,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1126400,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1267200,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1408000,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1548800,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1689600,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1830400,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1971200,"saves":[2,2,2,2,4],"ab":1,"architecture":6}]},"Elf":{"ru":"Эльф","human":false,"minHp":4,"alignment":"Chaotic","hp":{"d1":6,"d":6,"fixed":2,"conAlways":false},"levels":[{"xp":0,"saves":[13,12,15,13,15],"ab":1,"slots":[1],"search":2},{"xp":3000,"saves":[13,12,15,13,15],"ab":1,"slots":[2],"search":2},{"xp":6000,"saves":[13,12,15,13,15],"ab":1,"slots":[2,1],"search":2},{"xp":12000,"saves":[11,10,13,11,13],"ab":1,"slots":[2,2],"search":3},{"xp":24000,"saves":[11,10,13,11,13],"ab":1,"slots":[3,2,1],"search":3},{"xp":48000,"saves":[11,10,13,11,13],"ab":1,"slots":[3,2,2],"search":3},{"xp":96000,"saves":[9,8,9,9,11],"ab":1,"slots":[3,3,2,1],"search":4},{"xp":192000,"saves":[9,8,9,9,11],"ab":1,"slots":[4,3,2,2],"search":4},{"xp":384000,"saves":[9,8,9,9,11],"ab":1,"slots":[4,3,3,2,1],"search":4},{"xp":576000,"saves":[7,6,7,7,9],"ab":1,"slots":[4,4,3,2,2],"search":5},{"xp":768000,"saves":[7,6,7,7,9],"ab":1,"slots":[5,4,3,3,2,1],"search":5},{"xp":960000,"saves":[7,6,7,7,9],"ab":1,"slots":[5,5,4,3,3,2,1],"search":5},{"xp":1152000,"saves":[5,4,5,5,7],"ab":1,"slots":[5,5,4,3,3,2,1],"search":6},{"xp":1344000,"saves":[5,4,5,5,7],"ab":1,"slots":[6,5,4,4,3,2,2],"search":6},{"xp":1536000,"saves":[5,4,5,5,7],"ab":1,"slots":[6,5,5,4,3,3,2,1],"search":6},{"xp":1728000,"saves":[5,4,5,5,7],"ab":1,"slots":[6,6,5,4,4,3,2,2],"search":6},{"xp":1920000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6},{"xp":2112000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6},{"xp":2304000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6},{"xp":2496000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6},{"xp":2688000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6}]},"Halfling":{"ru":"Полурослик","human":false,"minHp":4,"alignment":null,"hp":{"d1":6,"d":6,"fixed":2,"conAlways":false},"levels":[{"xp":0,"saves":[10,8,13,9,12],"ab":1,"bushcraft":3},{"xp":2000,"saves":[8,6,10,7,10],"ab":1,"bushcraft":3},{"xp":4000,"saves":[8,6,10,7,10],"ab":1,"bushcraft":3},{"xp":8000,"saves":[6,4,7,5,8],"ab":1,"bushcraft":4},{"xp":16000,"saves":[6,4,7,5,8],"ab":1,"bushcraft":4},{"xp":32000,"saves":[4,2,4,3,6],"ab":1,"bushcraft":4},{"xp":64000,"saves":[4,2,4,3,6],"ab":1,"bushcraft":5},{"xp":128000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":5},{"xp":256000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":5},{"xp":384000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":512000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":640000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":768000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":896000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1024000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1152000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1280000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1408000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1536000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1664000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1792000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6}]}},"spellLists":{"cleric":[[{"en":"Bless","ru":"Благословение"},{"en":"Command","ru":"Команда"},{"en":"Cure Light Wounds","ru":"Вылечить легкие раны"},{"en":"Detect Evil","ru":"Найти зло"},{"en":"Invisibility to Undead","ru":"Невидимость против нежити"},{"en":"Protection from Evil","ru":"Защита от зла"},{"en":"Purify Food and Drink","ru":"Очистить еду и воду"},{"en":"Remove Fear","ru":"Убрать страх"},{"en":"Sanctuary","ru":"Убежище"},{"en":"Turn Undead","ru":"Отпугнуть нежить"}],[{"en":"Augury","ru":"Гадание"},{"en":"Delay Poison","ru":"Отсрочить яд"},{"en":"Enthrall","ru":"Порабощение"},{"en":"Heat Metal","ru":"Раскаленный металл"},{"en":"Heroism","ru":"Героизм"},{"en":"Resist Cold","ru":"Сопротивление холоду"},{"en":"Resist Fire","ru":"Сопротивление огню"},{"en":"Silence 15' Radius","ru":"Молчание, радиус 15 футов"}],[{"en":"Cure Disease","ru":"Вылечить болезнь"},{"en":"Dispel Magic","ru":"Рассеять чары"},{"en":"Magic Vestment","ru":"Магическое облачение"},{"en":"Remove Curse","ru":"Снять проклятие"},{"en":"Sacrifice","ru":"Жертвоприношение"},{"en":"Water Walk","ru":"Ходить по воде"}],[{"en":"Cure Serious Wounds","ru":"Вылечить серьезные раны"},{"en":"Detect Lie","ru":"Обнаружить ложь"},{"en":"Divination","ru":"Ворожба"},{"en":"Neutralize Poison","ru":"Противоядие"},{"en":"Protection from Evil, 10' Radius","ru":"Защита от зла, радиус 10 футов"},{"en":"Spell Immunity","ru":"Иммунитет к заклинаниям"}],[{"en":"Commune","ru":"Единение с богом"},{"en":"Cure Critical Wounds","ru":"Вылечить критические раны"},{"en":"Dispel Evil","ru":"Рассеять зло"},{"en":"Insect Plague","ru":"Посеять чуму"},{"en":"Quest","ru":"Задание"},{"en":"True Seeing","ru":"Увидеть истину"}],[{"en":"Anti-Magic Shell","ru":"Антимагическая оболочка"},{"en":"Find the Path","ru":"Найти путь"},{"en":"Forbiddance","ru":"Запрет"},{"en":"Heal","ru":"Исцелить"},{"en":"Tongues","ru":"Языки"},{"en":"Word of Recall","ru":"Слово возврата"}],[{"en":"Control Weather","ru":"Управление погодой"},{"en":"Earthquake","ru":"Землетрясение"},{"en":"Holy Word","ru":"Святое слово"},{"en":"Part Water","ru":"Раздвинуть воду"}]],"magicUser":[[{"en":"Bookspeak","ru":"Разговор с книгой"},{"en":"Charm Person","ru":"Очаровать человека"},{"en":"Comprehend Languages","ru":"Понять язык"},{"en":"Detect Magic","ru":"Обнаружить магию"},{"en":"Enlarge","ru":"Увеличить"},{"en":"Faerie Fire","ru":"Колдовской огонь"},{"en":"Feather Fall","ru":"Падение пера"},{"en":"Floating Disc","ru":"Левитирующий диск"},{"en":"Hold Portal","ru":"Закрыть проход"},{"en":"Identify","ru":"Идентифицировать"},{"en":"Light","ru":"Свет"},{"en":"Magic Aura","ru":"Волшебная аура"},{"en":"Magic Missile","ru":"Волшебный снаряд"},{"en":"Mending","ru":"Починка"},{"en":"Message","ru":"Сообщение"},{"en":"Shield","ru":"Щит"},{"en":"Sleep","ru":"Сон"},{"en":"Spider Climb","ru":"Лезть как паук"},{"en":"Summon","ru":"Призыв"},{"en":"Unseen Servant","ru":"Невидимый слуга"}],[{"en":"Audible Glamour","ru":"Звуковые чары"},{"en":"Change Self","ru":"Изменить себя"},{"en":"Detect Invisible","ru":"Обнаружить невидимое"},{"en":"ESP","ru":"Услышать мысли"},{"en":"Force of Forbidment","ru":"Силовой запрет"},{"en":"Forget","ru":"Забыть"},{"en":"Invisibility","ru":"Невидимость"},{"en":"Knock","ru":"Стук"},{"en":"Levitate","ru":"Левитация"},{"en":"Light, Continual","ru":"Свет, длящийся"},{"en":"Locate Object","ru":"Найти предмет"},{"en":"Magic Mouth","ru":"Магический рот"},{"en":"Mirror Image","ru":"Зеркальное отражение"},{"en":"Phantasmal Force","ru":"Призрачная сила"},{"en":"Ray of Enfeeblement","ru":"Луч слабости"},{"en":"Speak with Animals","ru":"Разговор с животными"},{"en":"Stinking Cloud","ru":"Зловонное облако"},{"en":"Wall of Fog","ru":"Стена тумана"},{"en":"Web","ru":"Паутина"},{"en":"Wizard Lock","ru":"Волшебный замок"}],[{"en":"Army of One","ru":"Армия из одного"},{"en":"Clairvoyance","ru":"Ясновидение"},{"en":"Detect Illusion","ru":"Определить иллюзию"},{"en":"Dispel Magic","ru":"Рассеять чары"},{"en":"Explosive Runes","ru":"Взрывающиеся руны"},{"en":"False Alignment","ru":"Ложное мировоззрение"},{"en":"Fly","ru":"Полет"},{"en":"Gaseous Form","ru":"Газообразная форма"},{"en":"Gust of Wind","ru":"Сильный ветер"},{"en":"Haste","ru":"Спешка"},{"en":"Hold Person","ru":"Удержать существо"},{"en":"Howl of the Moon","ru":"Лунный рев"},{"en":"Invisibility 10' Radius","ru":"Невидимость, радиус 10 футов"},{"en":"Phantasmal Psychedelia","ru":"Призрачная психоделия"},{"en":"Protection from Normal Missiles","ru":"Защита от обычных снарядов"},{"en":"Secret Page","ru":"Секретная страница"},{"en":"Speak with Dead","ru":"Разговор с мертвыми"},{"en":"Strange Waters II","ru":"Странные воды II"},{"en":"Suggestion","ru":"Предложение"},{"en":"Water Breathing","ru":"Дыхание под водой"}],[{"en":"Charm Monster","ru":"Очаровать монстра"},{"en":"Confusion","ru":"Смущение"},{"en":"Creation, Minor","ru":"Создать (малое)"},{"en":"Dig","ru":"Копать"},{"en":"Dimension Door","ru":"Дверь перемещения"},{"en":"Extension","ru":"Расширение"},{"en":"Globe of Invulnerability, Minor","ru":"Сфера неуязвимости, малая"},{"en":"Hallucinatory Terrain","ru":"Земля галлюцинаций"},{"en":"Invisibility, Improved","ru":"Невидимость, улучшенная"},{"en":"Mnemonic Enhancer","ru":"Улучшить мнемонику"},{"en":"Plant Growth","ru":"Рост растений"},{"en":"Polymorph Others","ru":"Преобразовать других"},{"en":"Polymorph Self","ru":"Преобразовать себя"},{"en":"Protection from Normal Weapons","ru":"Защита от обычного оружия"},{"en":"Seven Gates","ru":"Семь врат"},{"en":"Shadow Monsters","ru":"Чудовища теней"},{"en":"Speak with Plants","ru":"Разговор с растениями"},{"en":"Wall of Fire","ru":"Стена огня"},{"en":"Wall of Ice","ru":"Стена льда"},{"en":"Wizard Eye","ru":"Взгляд мага"}],[{"en":"Airy Water","ru":"Воздушный пузырь"},{"en":"Animate Dead","ru":"Оживить мёртвых"},{"en":"Chaos","ru":"Хаос"},{"en":"Cloudkill","ru":"Облако-убийца"},{"en":"Contact Outer Sphere","ru":"Вопрос к звездам"},{"en":"Creation, Major","ru":"Создать (большое)"},{"en":"Faithful Hound","ru":"Верный пес"},{"en":"Feeblemind","ru":"Слабоумие"},{"en":"Hold Monster","ru":"Удержать чудовище"},{"en":"Interposing Hand","ru":"Подставить руку"},{"en":"Magic Jar","ru":"Волшебная банка"},{"en":"Passwall","ru":"Пройти сквозь стены"},{"en":"Secret Chest","ru":"Секретный сундук"},{"en":"Stone Shape","ru":"Форма камня"},{"en":"Telekinesis","ru":"Телекинез"},{"en":"Teleport","ru":"Телепортация"},{"en":"Transmute Rock to Mud","ru":"Превратить камень в грязь"},{"en":"Wall of Force","ru":"Стена силы"},{"en":"Wall of Iron","ru":"Стена железа"},{"en":"Wall of Stone","ru":"Стена камня"}],[{"en":"Animate Dead Monsters","ru":"Оживить мертвых чудовищ"},{"en":"Barrier","ru":"Барьер"},{"en":"Contingency","ru":"Непрерывность"},{"en":"Death Spell","ru":"Заклинание смерти"},{"en":"Disintegrate","ru":"Расщепить"},{"en":"Geas","ru":"Подчинение"},{"en":"Glass Eye","ru":"Всевидящий взгляд"},{"en":"Globe of Invulnerability, Major","ru":"Сфера неуязвимости, большая"},{"en":"Legend Lore","ru":"Легендарная мудрость"},{"en":"Lucubration","ru":"Размышления"},{"en":"Mind Switch","ru":"Обмен разумов"},{"en":"Move Earth","ru":"Сдвинуть землю"},{"en":"Phantasmal Supergoria","ru":"Призрачная сверхсила"},{"en":"Projected Image","ru":"Проекция"},{"en":"Shades","ru":"Тени"},{"en":"Speak with Monsters","ru":"Разговор с чудовищами"},{"en":"Stone to Flesh","ru":"Камень в плоть"},{"en":"Suggestion, Mass","ru":"Предположение, массовое"},{"en":"Veil","ru":"Пелена"},{"en":"Weird Vortex","ru":"Странная воронка"}],[{"en":"Animated Artwork","ru":"Оживший шедевр"},{"en":"Bestow Spell Ability","ru":"Возможность волшебства"},{"en":"Duo-Dimension","ru":"Двухмерность"},{"en":"Grasping Hand","ru":"Хватающая рука"},{"en":"Instant Summons","ru":"Немедленный призыв"},{"en":"Invisibility, Mass","ru":"Невидимость, массовая"},{"en":"Magic Sword","ru":"Магический меч"},{"en":"Phase Door","ru":"Волшебная дверь"},{"en":"Power Word Stun","ru":"Слово силы: оглушить"},{"en":"Prismatic Sphere","ru":"Призматическая сфера"},{"en":"Prismatic Spray","ru":"Призматический луч"},{"en":"Prismatic Wall","ru":"Призматическая стена"},{"en":"Remote Surveillance","ru":"Удаленное наблюдение"},{"en":"Reverse Gravity","ru":"Обратить притяжение"},{"en":"Simulacrum","ru":"Имитация"},{"en":"Spell Turning","ru":"Обратить заклинание"},{"en":"Statue","ru":"Статуя"},{"en":"Vanish","ru":"Исчезнуть"},{"en":"Vision","ru":"Видение"},{"en":"Witchlamp Aura","ru":"Колдовская лампа"}],[{"en":"Antipathy/Sympathy","ru":"Симпатия/антипатия"},{"en":"Charm Person, Mass","ru":"Очаровать, массово"},{"en":"Clone","ru":"Клон"},{"en":"Demand","ru":"Требование"},{"en":"Maze","ru":"Лабиринт"},{"en":"Mind Blank","ru":"Закрыть разум"},{"en":"Permanency","ru":"Постоянство"},{"en":"Polymorph Any Object","ru":"Преобразовать любой объект"},{"en":"Symbol","ru":"Символ"},{"en":"Trap the Soul","ru":"Поймать душу"}],[{"en":"Imprisonment","ru":"Заточение"},{"en":"Lost Dweomer","ru":null},{"en":"Power Word Kill","ru":"Слово силы: убить"},{"en":"Shape Change","ru":"Сменить форму"},{"en":"Temporal Stasis","ru":"Темпоральный стазис"},{"en":"Time Stop","ru":"Остановка времени"}]]}};
+  /* END GAME DATA */
+
   var ABILITIES = [
     { key: "CHA", name: "Charisma", desc: "Hire retainers and affect their loyalty" }, { key: "CON", name: "Constitution", desc: "Hit Points" },
     { key: "DEX", name: "Dexterity", desc: "Armor Class, ranged attacks and initiative" }, { key: "INT", name: "Intelligence", desc: "Languages, saving throws against Magic" },
     { key: "STR", name: "Strength", desc: "Melee attacks, Open Doors" }, { key: "WIS", name: "Wisdom", desc: "Saving throws against non-Magic" }
   ];
-  var MOD_TABLE = [
-    { label: "3", lo: 3, hi: 3, mod: -3 }, { label: "4–5", lo: 4, hi: 5, mod: -2 },
-    { label: "6–8", lo: 6, hi: 8, mod: -1 }, { label: "9–12", lo: 9, hi: 12, mod: 0 },
-    { label: "13–15", lo: 13, hi: 15, mod: 1 }, { label: "16–17", lo: 16, hi: 17, mod: 2 },
-    { label: "18", lo: 18, hi: 18, mod: 3 }
-  ];
+  var MOD_TABLE = GAME.abilityMods.map(function (m) { return { label: m.lo === m.hi ? String(m.lo) : m.lo + "–" + m.hi, lo: m.lo, hi: m.hi, mod: m.mod }; });
   var CLASSES = [
-    { human: true, name: "Cleric", hp: "d6", pts: [
+    { name: "Cleric", pts: [
       "Prepares and casts any spell on the Cleric list",
       "Needs a holy symbol to cast" ] },
-    { human: true, name: "Fighter", hp: "d8", pts: [
+    { name: "Fighter", pts: [
       "Best attack bonuses",
       "More combat options, like a stronger parry" ] },
-    { human: true, name: "Magic-User", hp: "d4", pts: [
+    { name: "Magic-User", pts: [
       "Casts spells from a spellbook of known spells",
       "Needs both hands free to cast" ] },
-    { human: true, name: "Specialist", hp: "d6", pts: [
+    { name: "Specialist", pts: [
       "Gets skill points to improve skills",
       "Can Sneak Attack and use Specialist Tools" ] },
-    { human: false, name: "Dwarf", hp: "d10", pts: [
+    { name: "Dwarf", pts: [
       "+1 Constitution modifier",
       "Carries 5 more items before becoming encumbered",
       "More combat options, like a stronger parry",
       "Architecture 3 in 6" ] },
-    { human: false, name: "Elf", hp: "d6", pts: [
+    { name: "Elf", pts: [
       "More combat options, like a stronger parry",
       "Casts Magic-User spells, but knows fewer of them",
       "Needs only one hand to cast",
       "Search 2 in 6, surprised only 1 in 6" ] },
-    { human: false, name: "Halfling", hp: "d6", pts: [
+    { name: "Halfling", pts: [
       "+1 Dexterity modifier, +1 AC when not surprised",
       "Stealth 5 in 6, Bushcraft 3 in 6",
       "Cannot use large weapons" ] }
   ];
+  CLASSES.forEach(function (c) {
+    var g = GAME.classes[c.name];
+    c.human = g.human;
+    c.hp = g.hp.d1 === g.hp.d ? "d" + g.hp.d : "d" + g.hp.d1 + ", then d" + g.hp.d;
+  });
   var STEPS = ["Ability scores", "Class", "Level & alignment", "Character details"];
   var PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
 
@@ -564,7 +568,8 @@ html[lang="ru"] h1 { font-weight: 500; }
     { name: "Neutral", text: "Follows neither Law nor Chaos, and simply exists between them." },
     { name: "Chaotic", text: "Believes chaos is the source of magic, and all things will be unmade." }
   ];
-  var FORCED = { "Cleric": "Lawful", "Magic-User": "Chaotic", "Elf": "Chaotic" };
+  var FORCED = {};
+  Object.keys(GAME.classes).forEach(function (k) { if (GAME.classes[k].alignment) FORCED[k] = GAME.classes[k].alignment; });
   var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s5: 3 };
   function renderRail() {
     var cur = VIEW_IDX[state.view], done = [state.confirmed, state.classDone, state.alignDone, state.detailsDone];
@@ -807,36 +812,14 @@ html[lang="ru"] h1 { font-weight: 500; }
   }
 
   /* ---------- step 4: character details ---------- */
-  var SAVES = {
-    "Cleric": [[4, 14, 11, 16, 12, 15], [8, 12, 9, 14, 10, 12], [12, 10, 7, 12, 8, 9], [16, 8, 3, 8, 4, 6], [99, 6, 2, 6, 4, 5]],
-    "Fighter": [[3, 14, 12, 15, 13, 16], [6, 12, 10, 13, 11, 14], [9, 10, 8, 9, 9, 12], [12, 8, 6, 7, 7, 10], [99, 6, 4, 5, 5, 8]],
-    "Magic-User": [[5, 13, 13, 16, 13, 14], [10, 11, 11, 14, 11, 12], [15, 9, 9, 12, 9, 8], [18, 6, 7, 8, 5, 6], [99, 5, 6, 7, 4, 4]],
-    "Specialist": [[4, 14, 16, 15, 14, 14], [8, 11, 12, 14, 13, 12], [12, 9, 10, 12, 11, 10], [16, 7, 8, 10, 9, 8], [99, 5, 6, 8, 7, 6]],
-    "Dwarf": [[3, 10, 8, 13, 9, 12], [6, 8, 6, 10, 7, 10], [9, 6, 4, 7, 5, 8], [11, 4, 2, 4, 3, 6], [99, 2, 2, 2, 2, 4]],
-    "Elf": [[3, 13, 12, 15, 13, 15], [6, 11, 10, 13, 11, 13], [9, 9, 8, 9, 9, 11], [12, 7, 6, 7, 7, 9], [16, 5, 4, 5, 5, 7], [99, 3, 3, 3, 3, 5]],
-    "Halfling": [[1, 10, 8, 13, 9, 12], [3, 8, 6, 10, 7, 10], [5, 6, 4, 7, 5, 8], [7, 4, 2, 4, 3, 6], [99, 2, 2, 2, 2, 4]]
-  };
-  var SAVE_NAMES = ["Paralyze", "Poison", "Breath Weapon", "Magical Device", "Magic"];
-  var HPT = {
-    "Cleric": { d1: 6, d: 6, fixed: 2, min: 4 }, "Fighter": { d1: 8, d: 8, fixed: 3, min: 8 },
-    "Magic-User": { d1: 6, d: 4, fixed: 1, min: 3 }, "Specialist": { d1: 6, d: 6, fixed: 2, min: 4 },
-    "Dwarf": { d1: 10, d: 10, fixed: 3, min: 6, conAlways: true }, "Elf": { d1: 6, d: 6, fixed: 2, min: 4 },
-    "Halfling": { d1: 6, d: 6, fixed: 2, min: 4 }
-  };
-  var SLOTS_CLERIC = [[1], [2], [3], [3, 1], [3, 2, 1], [3, 3, 2], [4, 3, 3, 1], [4, 3, 3, 2], [4, 3, 3, 3, 1], [4, 4, 3, 3, 2], [5, 4, 4, 3, 3, 1], [5, 4, 4, 3, 3, 2], [5, 4, 4, 4, 3, 3, 1], [5, 5, 4, 4, 3, 3, 2], [6, 5, 5, 4, 4, 3, 3], [6, 5, 5, 4, 4, 3, 3], [6, 5, 5, 5, 4, 4, 3], [6, 6, 5, 5, 4, 4, 3], [7, 6, 6, 5, 5, 4, 4], [8, 7, 7, 6, 5, 5, 4]];
-  var SLOTS_MU = [[1], [2], [2, 1], [2, 2], [3, 2, 1], [3, 2, 2], [3, 3, 2, 1], [4, 3, 2, 2], [4, 3, 3, 2, 1], [4, 4, 3, 2, 2], [5, 4, 3, 3, 2, 1], [5, 4, 4, 3, 2, 2], [5, 5, 4, 3, 3, 2, 1], [6, 5, 4, 4, 3, 2, 2], [6, 5, 5, 4, 3, 3, 2, 1], [6, 6, 5, 4, 4, 3, 2, 2], [7, 6, 5, 5, 4, 3, 3, 2, 1], [7, 6, 6, 5, 4, 4, 3, 2, 2], [7, 7, 6, 5, 5, 4, 3, 3, 2], [8, 7, 6, 6, 5, 4, 4, 3, 2]];
-  var MU_SPELLS = [
-    ["Bookspeak", "Charm Person", "Comprehend Languages", "Detect Magic", "Enlarge", "Faerie Fire", "Feather Fall", "Floating Disc", "Hold Portal", "Identify", "Light", "Magic Aura", "Magic Missile", "Mending", "Message", "Shield", "Sleep", "Spider Climb", "Summon", "Unseen Servant"],
-    ["Audible Glamour", "Change Self", "Detect Invisible", "ESP", "Force of Forbidment", "Forget", "Invisibility", "Knock", "Levitate", "Light, Continual", "Locate Object", "Magic Mouth", "Mirror Image", "Phantasmal Force", "Ray of Enfeeblement", "Speak with Animals", "Stinking Cloud", "Wall of Fog", "Web", "Wizard Lock"],
-    ["Army of One", "Clairvoyance", "Detect Illusion", "Dispel Magic", "Explosive Runes", "False Alignment", "Fly", "Gaseous Form", "Gust of Wind", "Haste", "Hold Person", "Howl of the Moon", "Invisibility 10' Radius", "Phantasmal Psychedelia", "Protection from Normal Missiles", "Secret Page", "Speak with Dead", "Strange Waters II", "Suggestion", "Water Breathing"],
-    ["Charm Monster", "Confusion", "Creation, Minor", "Dig", "Dimension Door", "Extension", "Globe of Invulnerability, Minor", "Hallucinatory Terrain", "Invisibility, Improved", "Mnemonic Enhancer", "Plant Growth", "Polymorph Others", "Polymorph Self", "Protection from Normal Weapons", "Seven Gates", "Shadow Monsters", "Speak with Plants", "Wall of Fire", "Wall of Ice", "Wizard Eye"],
-    ["Airy Water", "Animate Dead", "Chaos", "Cloudkill", "Contact Outer Sphere", "Creation, Major", "Faithful Hound", "Feeblemind", "Hold Monster", "Interposing Hand", "Magic Jar", "Passwall", "Secret Chest", "Stone Shape", "Telekinesis", "Teleport", "Transmute Rock to Mud", "Wall of Force", "Wall of Iron", "Wall of Stone"],
-    ["Animate Dead Monsters", "Barrier", "Contingency", "Death Spell", "Disintegrate", "Geas", "Glass Eye", "Globe of Invulnerability, Major", "Legend Lore", "Lucubration", "Mind Switch", "Move Earth", "Phantasmal Supergoria", "Projected Image", "Shades", "Speak with Monsters", "Stone to Flesh", "Suggestion, Mass", "Veil", "Weird Vortex"],
-    ["Animated Artwork", "Bestow Spell Ability", "Duo-Dimension", "Grasping Hand", "Instant Summons", "Invisibility, Mass", "Magic Sword", "Phase Door", "Power Word Stun", "Prismatic Sphere", "Prismatic Spray", "Prismatic Wall", "Remote Surveillance", "Reverse Gravity", "Simulacrum", "Spell Turning", "Statue", "Vanish", "Vision", "Witchlamp Aura"],
-    ["Antipathy/Sympathy", "Charm Person, Mass", "Clone", "Demand", "Maze", "Mind Blank", "Permanency", "Polymorph Any Object", "Symbol", "Trap the Soul"],
-    ["Imprisonment", "Lost Dweomer", "Power Word Kill", "Shape Change", "Temporal Stasis", "Time Stop"]
-  ];
-  var SKILLS = ["Architecture", "Bushcraft", "Climb", "Languages", "Search", "Sleight of Hand", "Sneak Attack", "Stealth", "Tinkering"];
+  /* the class-table row in effect at a level (levels past the table repeat its last row) */
+  function lvRow(k, L) { var t = GAME.classes[k].levels; return t[Math.max(1, Math.min(L, t.length)) - 1]; }
+  var SAVE_NAMES = GAME.saves.map(function (s) { return s.en; });
+  var HPT = {};
+  Object.keys(GAME.classes).forEach(function (k) { var c = GAME.classes[k]; HPT[k] = { d1: c.hp.d1, d: c.hp.d, fixed: c.hp.fixed, min: c.minHp, conAlways: c.hp.conAlways }; });
+  var MU_SPELLS = GAME.spellLists.magicUser.map(function (l) { return l.map(function (sp) { return sp.en; }); });
+  var SKILL_ORDER = GAME.skills.map(function (sk) { return sk.en; });
+  var SKILLS = SKILL_ORDER.filter(function (n) { return n !== "Open Doors"; });
   var FIGHTERISH = { "Fighter": 1, "Dwarf": 1, "Elf": 1 };
 
   function dN(n) { var a = new Uint32Array(1), lim = Math.floor(4294967296 / n) * n; do { crypto.getRandomValues(a); } while (a[0] >= lim); return (a[0] % n) + 1; }
@@ -857,19 +840,16 @@ html[lang="ru"] h1 { font-weight: 500; }
     return m === null ? null : m + racialBonus(key);
   }
 
-  function tier(a, b, c) { var L = state.level; return L <= 3 ? a : L <= 6 ? b : L <= 9 ? c : 6; }
   function skillBase(n) {
-    if (n === "Architecture") return state.klass === "Dwarf" ? tier(3, 4, 5) : 1;
-    if (n === "Bushcraft") return state.klass === "Halfling" ? tier(3, 4, 5) : 1;
-    if (n === "Search") { var L = state.level; return state.klass === "Elf" ? (L <= 3 ? 2 : L <= 6 ? 3 : L <= 9 ? 4 : L <= 12 ? 5 : 6) : 1; }
-    if (n === "Stealth") return state.klass === "Halfling" ? 5 : 1;
-    return 1;
+    var r = lvRow(state.klass, state.level);
+    if (n === "Architecture" && r.architecture) return r.architecture;
+    if (n === "Bushcraft" && r.bushcraft) return r.bushcraft;
+    if (n === "Search" && r.search) return r.search;
+    if (n === "Stealth" && state.klass === "Halfling") return 5;  /* in the wilderness, p. 29 */
+    return GAME.skills.find(function (sk) { return sk.en === n; }).base;
   }
-  function savesFor() { var rows = SAVES[state.klass], L = state.level; for (var i = 0; i < rows.length; i++) if (L <= rows[i][0]) return rows[i].slice(1); return rows[rows.length - 1].slice(1); }
-  function slotsFor() {
-    var t = state.klass === "Cleric" ? SLOTS_CLERIC : (state.klass === "Magic-User" || state.klass === "Elf") ? SLOTS_MU : null;
-    return t ? t[Math.min(state.level, 20) - 1] : null;
-  }
+  function savesFor() { return lvRow(state.klass, state.level).saves; }
+  function slotsFor() { return lvRow(state.klass, state.level).slots || null; }
 
   function sig() { return JSON.stringify([state.method, state.rolls ? autoScores() : null, state.klass, state.level, state.align]); }
   function ensureDetails() {
@@ -924,7 +904,7 @@ html[lang="ru"] h1 { font-weight: 500; }
 
   /* saving throws, attack bonus, combat options */
   function combatSection() {
-    var sv = savesFor(), base = state.klass === "Fighter" ? Math.min(state.level + 1, 10) : 1, f = FIGHTERISH[state.klass];
+    var sv = savesFor(), base = lvRow(state.klass, state.level).ab, f = FIGHTERISH[state.klass];
     var sm = effMod("STR"), dm = effMod("DEX");
     var tiles = SAVE_NAMES.map(function (n, i) {
       var key = i === 4 ? "INT" : "WIS", m = effMod(key);
@@ -951,7 +931,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     return v + " in 6";
   }
   function ptsUsed() { var t = 0; Object.keys(state.pts).forEach(function (k) { t += state.pts[k]; }); state.custom.forEach(function (c) { t += c.pts; }); return t; }
-  function pool() { return 4 + 2 * (state.level - 1); }
+  function pool() { return lvRow("Specialist", state.level).skillPoints; }
   function stepper(attr, key, p, canAdd) {
     return '<span class="stp"><button type="button" ' + attr + '="' + esc(key) + '" data-d="-1" aria-label="Remove a point"' + (p <= 0 ? " disabled" : "") + '>−</button><i>' + p + '</i><button type="button" ' + attr + '="' + esc(key) + '" data-d="1" aria-label="Add a point"' + (canAdd ? "" : " disabled") + ">+</button></span>";
   }
@@ -969,7 +949,7 @@ html[lang="ru"] h1 { font-weight: 500; }
   }
   function skillsSection() {
     var spec = state.klass === "Specialist", left = pool() - ptsUsed();
-    var order = ["Architecture", "Bushcraft", "Climb", "Languages", "Open Doors", "Search", "Sleight of Hand", "Sneak Attack", "Stealth", "Tinkering"];
+    var order = SKILL_ORDER;
     var tiles = order.map(function (n) {
       if (n === "Open Doors") {
         var so = effMod("STR"), op = state.pts["Open Doors"] || 0, raw = 1 + (so === null ? 0 : so);
@@ -990,13 +970,13 @@ html[lang="ru"] h1 { font-weight: 500; }
   }
 
   /* spells */
-  function spellDie(lv) { return lv <= 7 ? 20 : lv === 8 ? 10 : 6; }
+  function spellDie(lv) { return MU_SPELLS[lv - 1].length; }
   /* spell levels to roll: 3 starting 1st-level spells for Magic-Users, plus one free spell per level above 1,
      always of the highest spell level the character can cast at that level */
   function spellPlan() {
     var plan = {};
     if (state.klass === "Magic-User") plan[1] = 3;
-    for (var k = 2; k <= state.level; k++) { var lv = SLOTS_MU[k - 1].length; plan[lv] = (plan[lv] || 0) + 1; }
+    for (var k = 2; k <= state.level; k++) { var lv = lvRow(state.klass, k).slots.length; plan[lv] = (plan[lv] || 0) + 1; }
     return plan;
   }
   function rollSpells() {
@@ -1075,20 +1055,7 @@ html[lang="ru"] h1 { font-weight: 500; }
   }
 
   /* ---------- step 5: character sheet ---------- */
-  var XP_TABLES = {
-    "Cleric": { list: [0, 1750, 3500, 7000, 14000, 28000, 56000, 112000, 224000, 336000, 448000, 560000, 672000, 784000, 896000, 1008000, 1120000, 1232000, 1344000], from: 20, step: 112000 },
-    "Fighter": { list: [0, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000, 384000, 512000, 640000], from: 13, step: 128000 },
-    "Magic-User": { list: [0, 2250, 4500, 9000, 18000, 36000, 72000, 144000, 288000, 432000, 576000, 720000, 864000, 1008000, 1152000, 1296000, 1440000, 1584000, 1728000], from: 20, step: 144000 },
-    "Specialist": { list: [0, 1500, 3000, 6000, 12000, 24000, 48000, 96000, 192000, 288000, 384000, 480000, 576000, 672000, 768000, 864000], from: 17, step: 96000 },
-    "Dwarf": { list: [0, 2200, 4400, 8800, 17600, 35200, 70400, 140800, 281600, 422400, 563200], from: 12, step: 140800 },
-    "Elf": { list: [0, 3000, 6000, 12000, 24000, 48000, 96000, 192000, 384000, 576000, 768000, 960000, 1152000, 1344000, 1536000, 1728000], from: 17, step: 192000 },
-    "Halfling": { list: [0, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000], from: 10, step: 128000 }
-  };
-  function xpFor(k, lv) {
-    var t = XP_TABLES[k];
-    if (lv <= t.list.length) return t.list[lv - 1];
-    return t.list[t.list.length - 1] + (lv - t.list.length) * t.step;
-  }
+  function xpFor(k, lv) { return lvRow(k, lv).xp; }
   function num(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 
   function skillRating(n) {
@@ -1117,7 +1084,7 @@ html[lang="ru"] h1 { font-weight: 500; }
   function sheetHTML() {
     var k = state.klass, L = state.level, auto = state.method === "auto" && state.rolls, S = state.sheet;
     var sc = auto ? autoScores() : null, h = "";
-    var f = FIGHTERISH[k], sv = savesFor(), base = k === "Fighter" ? Math.min(L + 1, 10) : 1;
+    var f = FIGHTERISH[k], sv = savesFor(), base = lvRow(k, L).ab;
     var sm = effMod("STR"), dm = effMod("DEX");
     S.used = S.used || {};
 
@@ -1154,7 +1121,7 @@ html[lang="ru"] h1 { font-weight: 500; }
       }).join("") + '</div><p class="colhint">Roll a d20. Equal or higher saves.</p></section></div>';
 
     /* skills */
-    var order = ["Architecture", "Bushcraft", "Climb", "Languages", "Open Doors", "Search", "Sleight of Hand", "Sneak Attack", "Stealth", "Tinkering"];
+    var order = SKILL_ORDER;
     var tiles = order.map(function (n) {
       var cap = "", r = n === "Sneak Attack" ? Math.min(6, skillBase(n) + (state.pts[n] || 0)) : skillRating(n);
       if (n === "Languages" && effMod("INT") === null) cap = "+ INT mod";
@@ -1222,17 +1189,6 @@ html[lang="ru"] h1 { font-weight: 500; }
   }
 
   /* ---------- language (English source strings, Russian translated on render) ---------- */
-  var RU_SPELLS = [
-    ["Разговор с книгой", "Очаровать человека", "Понять язык", "Обнаружить магию", "Увеличить", "Колдовской огонь", "Падение пера", "Левитирующий диск", "Закрыть проход", "Идентифицировать", "Свет", "Волшебная аура", "Волшебный снаряд", "Починка", "Сообщение", "Щит", "Сон", "Лезть как паук", "Призыв", "Невидимый слуга"],
-    ["Звуковые чары", "Изменить себя", "Обнаружить невидимое", "Услышать мысли", "Силовой запрет", "Забыть", "Невидимость", "Стук", "Левитация", "Свет, длящийся", "Найти предмет", "Магический рот", "Зеркальное отражение", "Призрачная сила", "Луч слабости", "Разговор с животными", "Зловонное облако", "Стена тумана", "Паутина", "Волшебный замок"],
-    ["Армия из одного", "Ясновидение", "Определить иллюзию", "Рассеять чары", "Взрывающиеся руны", "Ложное мировоззрение", "Полёт", "Газообразная форма", "Сильный ветер", "Спешка", "Удержать существо", "Лунный рёв", "Невидимость, радиус 10 футов", "Призрачная психоделия", "Защита от обычных снарядов", "Секретная страница", "Разговор с мёртвыми", "Странные воды II", "Внушение", "Дыхание под водой"],
-    ["Очаровать монстра", "Смущение", "Создать (малое)", "Копать", "Дверь перемещения", "Расширение", "Сфера неуязвимости, малая", "Земля галлюцинаций", "Невидимость, улучшенная", "Улучшить мнемонику", "Рост растений", "Преобразовать других", "Преобразовать себя", "Защита от обычного оружия", "Семь врат", "Чудовища теней", "Разговор с растениями", "Стена огня", "Стена льда", "Взгляд мага"],
-    ["Воздушный пузырь", "Оживить мёртвых", "Хаос", "Облако-убийца", "Вопрос к звёздам", "Создать (большое)", "Верный пёс", "Слабоумие", "Удержать чудовище", "Подставить руку", "Волшебная банка", "Пройти сквозь стены", "Секретный сундук", "Форма камня", "Телекинез", "Телепортация", "Превратить камень в грязь", "Стена силы", "Стена железа", "Стена камня"],
-    ["Оживить мёртвых чудовищ", "Барьер", "Непрерывность", "Заклинание смерти", "Расщепить", "Подчинение", "Всевидящий взгляд", "Сфера неуязвимости, большая", "Легендарная мудрость", "Размышления", "Обмен разумов", "Сдвинуть землю", "Призрачная сверхсила", "Проекция", "Тени", "Разговор с чудовищами", "Камень в плоть", "Внушение, массовое", "Пелена", "Странная воронка"],
-    ["Оживший шедевр", "Возможность волшебства", "Двухмерность", "Хватающая рука", "Немедленный призыв", "Невидимость, массовая", "Волшебный меч", "Волшебная дверь", "Слово силы: оглушить", "Призматическая сфера", "Призматический луч", "Призматическая стена", "Удалённое наблюдение", "Обратить притяжение", "Имитация", "Обратить заклинание", "Статуя", "Исчезнуть", "Видение", "Колдовская лампа"],
-    ["Симпатия/антипатия", "Очаровать, массово", "Клон", "Требование", "Лабиринт", "Закрыть разум", "Постоянство", "Преобразовать любой объект", "Символ", "Поймать душу"],
-    ["Заточение", "Утраченное волшебство", "Слово силы: убить", "Сменить форму", "Темпоральный стазис", "Остановка времени"]
-  ];
   var RU = {
     "Your adventurers": "Ваши персонажи", "Create your adventurer": "Создание персонажа", "Saved characters": "Сохранённые персонажи",
     "← Characters": "← Персонажи", "Leave? Progress is lost": "Выйти? Прогресс пропадёт", "Language": "Язык",
@@ -1243,7 +1199,6 @@ html[lang="ru"] h1 { font-weight: 500; }
     "How do you want to roll?": "Как бросать кости?", "I'll roll my own dice": "Брошу свои кости", "Roll for me": "Бросьте за меня",
     "Choose a class": "Выбор класса", "Level and alignment": "Уровень и мировоззрение",
     /* abilities */
-    "Charisma": "Харизма", "Constitution": "Телосложение", "Dexterity": "Ловкость", "Intelligence": "Интеллект", "Strength": "Сила", "Wisdom": "Мудрость",
     "CHA": "ХАР", "CON": "ТЕЛ", "DEX": "ЛОВ", "INT": "ИНТ", "STR": "СИЛ", "WIS": "МДР",
     "Hire retainers and affect their loyalty": "Найм работников и их лояльность", "Hit Points": "Пункты здоровья",
     "Armor Class, ranged attacks and initiative": "Класс брони, стрелковые атаки и инициатива",
@@ -1260,7 +1215,6 @@ html[lang="ru"] h1 { font-weight: 500; }
     "Discard and reroll": "Отказаться и перебросить", "Redo ability scores": "Перебросить атрибуты", "Ability scores rolled manually": "Атрибуты брошены вручную",
     "Back": "Назад", "Level": "Уровень", "Alignment": "Мировоззрение", "modifier": "модификатор",
     /* classes */
-    "Cleric": "Клирик", "Fighter": "Воин", "Magic-User": "Маг", "Specialist": "Специалист", "Dwarf": "Дворф", "Elf": "Эльф", "Halfling": "Полурослик",
     "Human classes": "Люди", "Non-human classes": "Полу-люди",
     "Tip: new players are advised to start with a human class.": "Совет: новичкам лучше начать с человеческого класса.",
     "Prepares and casts any spell on the Cleric list": "Готовит и колдует любые заклинания из списка Клирика", "Needs a holy symbol to cast": "Для колдовства нужен святой символ",
@@ -1274,7 +1228,6 @@ html[lang="ru"] h1 { font-weight: 500; }
     "Stealth 5 in 6, Bushcraft 3 in 6": "Скрытность 5 из 6, Выживание в лесу 3 из 6", "Cannot use large weapons": "Не может пользоваться большим оружием",
     "Dwarf bonus": "Бонус Дворфа", "Halfling bonus": "Бонус Полурослика",
     /* alignment */
-    "Lawful": "Законный", "Neutral": "Нейтральный", "Chaotic": "Хаотичный",
     "Alignment is not good or evil, it is what the character believes about the universe.": "Мировоззрение — не добро и не зло, а то, во что персонаж верит о вселенной.",
     "Believes the universe follows one fixed plan, and looks for signs of it.": "Верит, что вселенная следует единому плану, и ищет его знаки.",
     "Follows neither Law nor Chaos, and simply exists between them.": "Не следует ни Закону, ни Хаосу, а просто существует между ними.",
@@ -1290,8 +1243,6 @@ html[lang="ru"] h1 { font-weight: 500; }
     "A cautious melee attack: +2 AC, −4 to hit.": "Осторожная рукопашная атака: +2 к КБ, −4 к удару.",
     "Skills": "Навыки", "Add a point": "Добавить очко", "Remove a point": "Убрать очко", "Custom skill": "Свой навык",
     "Each point adds 1 to a skill, up to 6 in 6. Sneak Attack points add 1 to the damage multiplier and give +2 to hit.": "Каждое очко добавляет 1 к навыку, до 6 из 6. Очки Скрытой атаки увеличивают множитель урона на 1 и дают +2 к удару.",
-    "Architecture": "Архитектура", "Bushcraft": "Выживание в лесу", "Climb": "Лазание", "Languages": "Языки", "Open Doors": "Открывание дверей",
-    "Search": "Поиск", "Sleight of Hand": "Ловкость рук", "Sneak Attack": "Скрытая атака", "Stealth": "Скрытность", "Tinkering": "Механика",
     "Spell slots": "Ячейки заклинаний", "Spellbook": "Книга заклинаний", "Spells": "Заклинания", "Roll spellbook": "Бросить заклинания", "Roll": "Бросьте",
     "Slots are the most spells you can have prepared at once, per spell level.": "Ячейки — сколько заклинаний каждого уровня можно держать подготовленными одновременно.",
     "Clerics have no spellbook. Any spell on the Cleric list, up to your highest spell level, can be prepared.": "У Клириков нет книги заклинаний. Можно подготовить любое заклинание из списка Клирика до высшего доступного уровня.",
@@ -1305,7 +1256,6 @@ html[lang="ru"] h1 { font-weight: 500; }
     "Unable to act": "Не может действовать", "Mortally wounded": "Смертельное ранение", "Dead": "Смерть",
     "AC": "КБ", "Melee AB": "Рукопашная", "Ranged AB": "Стрелковая", "Surprise": "Врасплох", "AC 10 when": "КБ 10, если", "surprised": "застигнут",
     "Combat options": "Боевые приёмы",
-    "Paralyze": "Паралич", "Poison": "Яд", "Breath Weapon": "Детонация", "Magical Device": "Магическое устройство", "Magic": "Магия",
     "Petrification, hold, mobility hazards": "Окаменение, удержание, обездвиживание", "Instant death, KO": "Мгновенная смерть, потеря сознания",
     "Area effects": "Эффекты по площади", "Spell-like effects from items": "Магические эффекты предметов", "Spells, innate abilities": "Заклинания, врождённые способности",
     "Roll a d20. Equal or higher saves.": "Бросьте d20: результат не ниже значения — спасение.",
@@ -1328,7 +1278,12 @@ html[lang="ru"] h1 { font-weight: 500; }
   var RU_GEN = { "Cleric": "Клирика", "Magic-User": "Мага", "Elf": "Эльфа" };
   var RU_ACC = { "Charisma": "Харизму", "Constitution": "Телосложение", "Dexterity": "Ловкость", "Intelligence": "Интеллект", "Strength": "Силу", "Wisdom": "Мудрость" };
   var RU_ORD = { "1st": "1-й", "2nd": "2-й", "3rd": "3-й", "4th": "4-й", "5th": "5-й", "6th": "6-й", "7th": "7-й", "8th": "8-й", "9th": "9-й" };
-  MU_SPELLS.forEach(function (lvl, i) { lvl.forEach(function (n, j) { if (RU_SPELLS[i] && RU_SPELLS[i][j]) RU[n] = RU_SPELLS[i][j]; }); });
+  /* rules terms use the fan translation's wording from the data */
+  Object.keys(GAME.classes).forEach(function (k) { RU[k] = GAME.classes[k].ru; });
+  Object.keys(GAME.abilities).forEach(function (a) { RU[GAME.abilities[a].en] = GAME.abilities[a].ru; });
+  Object.keys(GAME.alignments).forEach(function (a) { RU[a] = GAME.alignments[a]; });
+  GAME.saves.concat(GAME.skills).forEach(function (t) { RU[t.en] = t.ru; });
+  GAME.spellLists.magicUser.concat(GAME.spellLists.cleric).forEach(function (l) { l.forEach(function (sp) { if (sp.ru) RU[sp.en] = sp.ru; }); });
 
   /* token pass for short stat strings like "+2 hit, −4 AC" or "1d6 + 2 × CON mod" */
   var RU_TOKENS = [
@@ -1350,6 +1305,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     [/^Minimum (\d+) hit points at level 1\.$/, "Минимум $1 ПЗ на 1 уровне."],
     [/^Raised to the level 1 minimum of (\d+)\.$/, "Поднято до минимума 1 уровня: $1."],
     [/^HP (d\d+)$/, "ПЗ $1"],
+    [/^HP (d\d+), then (d\d+)$/, "ПЗ $1, затем $2"],
     [/^Take no other action this round for \+(\d) AC\.$/, "Никаких других действий в этом раунде: +$1 к КБ."],
     [/^Custom skill (\d) name$/, "Название своего навыка $1"],
     [/^Added (\d+)\.$/, "Добавлено: $1."],
@@ -1463,6 +1419,7 @@ html[lang="ru"] h1 { font-weight: 500; }
   function charTitle(c) { var t = c.state; return (t.sheet && t.sheet.name) || ("Level " + t.level + " " + t.klass); }
   function openChar(c) {
     state = Object.assign(freshState(), JSON.parse(JSON.stringify(c.state)));
+    if (state.pts && state.pts.Tinkering !== undefined) { state.pts.Tinker = state.pts.Tinkering; delete state.pts.Tinkering; }
     state.id = c.id; state.view = "s5"; syncChar(); layout(true);
   }
   function goHome() { state = freshState(); state.view = "home"; layout(true); }

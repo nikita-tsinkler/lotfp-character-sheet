@@ -1,1 +1,4 @@
+# Local only: rulebooks, extracted rules data and the tools that generate it
 *.pdf
+data/
+tools/
