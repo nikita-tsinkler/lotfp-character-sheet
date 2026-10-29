@@ -1,0 +1,1577 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>LotFP Character Generator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=IM+Fell+DW+Pica:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=Cormorant+SC:wght@500;600&family=EB+Garamond:ital@0;1&display=swap">
+<style>
+/* Layout: one narrow column, a funnel rail on top, one active step card below. Accent red is the single loud color. */
+:root {
+  --bg: #e6e3dc;
+  --surface: #f1efe9;
+  --fg: #171515;
+  --muted: #6a645b;
+  --line: #bdb7aa;
+  --accent: #a3141f;
+  --accent-fg: #f6f1e8;
+  --good: #2c6b58;
+  --die: #fbfaf6;
+  --die-pip: #171515;
+  --font-display: "IM Fell English SC", "Times New Roman", serif;
+  --font-body: "IM Fell DW Pica", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #110f10; --surface: #1a1718; --fg: #e8e2d6; --muted: #9a9286; --line: #3a3436;
+    --accent: #e0454f; --accent-fg: #130e0f; --good: #6cc2a3; --die: #e8e2d6; --die-pip: #131011;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #110f10; --surface: #1a1718; --fg: #e8e2d6; --muted: #9a9286; --line: #3a3436;
+  --accent: #e0454f; --accent-fg: #130e0f; --good: #6cc2a3; --die: #e8e2d6; --die-pip: #131011;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 18px; line-height: 1.5;
+  padding-block: 28px 64px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 400; margin: 0; text-wrap: balance; letter-spacing: .02em; }
+p { margin: 0; max-width: 62ch; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header .kicker { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+header h1 { font-size: clamp(30px, 8.4vw, 54px); line-height: 1.02; margin-top: 6px; white-space: nowrap; }
+header h1 em { color: var(--accent); font-style: normal; }
+
+/* funnel rail */
+.rail { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 0; margin: 0; list-style: none; font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.rail li { display: flex; align-items: center; gap: 8px; }
+.rail li::before { content: ""; width: 9px; height: 9px; border: 1px solid var(--muted); border-radius: 50%; }
+.rail li.on { color: var(--fg); }
+.rail li.on::before { background: var(--accent); border-color: var(--accent); }
+.rail li.done::before { background: var(--good); border-color: var(--good); }
+
+.card { background: var(--surface); border: 1px solid var(--line); padding: 22px; display: flex; flex-direction: column; gap: 18px; }
+.card > header { display: flex; flex-direction: column; gap: 6px; }
+.card h2 { font-size: 28px; }
+.sub { color: var(--muted); }
+#body, #body2, #body3, #body4, #body5, #bodyH { display: flex; flex-direction: column; gap: 20px; }
+#body:empty, #body2:empty, #body3:empty, #body4:empty, #body5:empty, #bodyH:empty { display: none; }
+
+/* method choice */
+.choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.choice { text-align: left; background: transparent; border: 1px solid var(--line); padding: 16px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
+.choice:hover { border-color: var(--fg); }
+.choice[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.choice b { font-family: var(--font-display); font-weight: 400; font-size: 21px; }
+.choice span { color: var(--muted); font-size: 16px; line-height: 1.35; }
+
+.btn { background: var(--accent); color: var(--accent-fg); border: 0; padding: 11px 20px; cursor: pointer; font-family: var(--font-mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; }
+.btn:hover { filter: brightness(1.1); }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--fg); }
+.btn:disabled { opacity: .4; cursor: not-allowed; filter: none; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* ability rows */
+.sheet { display: flex; flex-direction: column; border-top: 1px solid var(--fg); }
+.row { display: grid; grid-template-columns: minmax(0, 1.5fr) auto 3.6ch 4.4ch; align-items: center; gap: 4px 16px; padding: 10px 6px; border-bottom: 1px solid var(--line); background: none; text-align: left; width: 100%; border-left: 0; border-right: 0; border-top: 0; }
+.row .name { font-family: var(--font-display); font-size: 22px; line-height: 1.1; }
+.row .name small { display: block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--muted); }
+.row .total { font-family: var(--font-mono); font-size: 22px; font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+.row .mod { font-family: var(--font-mono); font-size: 22px; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.mod.neg { color: var(--accent); } .mod.pos { color: var(--good); } .mod.zero { color: var(--muted); }
+.row.pick { cursor: pointer; }
+.row.pick:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.row.sel { outline: 2px solid var(--accent); outline-offset: -2px; }
+.row.swapped .nm::after { content: " ⇄"; color: var(--accent); }
+.row .name small.desc { font-family: var(--font-body); font-size: 15px; letter-spacing: 0; color: var(--muted); line-height: 1.25; margin-top: 2px; }
+.cols { display: flex; flex-wrap: wrap; gap: 20px 0; }
+.cols > * { min-width: 0; }
+.col-abil { flex: 1 1 280px; padding-right: 28px; }
+.cols > :last-child { flex: 0 0 auto; border-left: 1px solid var(--line); padding-left: 28px; }
+@media (max-width: 640px) { .col-abil { padding-right: 0; padding-bottom: 20px; } .cols > :last-child { flex: 1 1 100%; border-left: 0; border-top: 1px solid var(--line); padding: 20px 0 0; } }
+.abil { margin: 0; display: grid; grid-template-columns: 1fr; gap: 0; font-size: 16px; }
+.abil dd { margin-bottom: 8px; }
+.abil dt { font-family: var(--font-display); font-size: 18px; }
+.abil dd { margin: 0; color: var(--muted); }
+.row.recap { grid-template-columns: minmax(0, 1fr) 3.6ch 4.4ch; }
+.row-head { display: grid; grid-template-columns: minmax(0, 1.5fr) auto 3.6ch 4.4ch; gap: 16px; padding: 0 6px 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.row-head span:nth-child(n+3) { text-align: right; }
+
+.dice { display: flex; gap: 6px; }
+.die { width: 34px; height: 34px; background: var(--die); border-radius: 6px; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); padding: 5px; border: 1px solid var(--line); }
+.die i { width: 6px; height: 6px; border-radius: 50%; background: var(--die-pip); margin: auto; opacity: 0; }
+.die i.on { opacity: 1; }
+.die i.clr { opacity: 1; background: transparent; border: 1.5px solid color-mix(in srgb, var(--die-pip) 50%, transparent); }
+.die.rolling { animation: tumble .45s ease-in-out; }
+@keyframes tumble { 0% { transform: rotate(0) scale(.8); } 50% { transform: rotate(180deg) scale(1.08); } 100% { transform: rotate(360deg) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .die.rolling, .hdie.rolling { animation: none; } }
+
+.tally { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px 20px; font-family: var(--font-mono); font-size: 14px; padding-top: 4px; }
+.tally b { font-size: 18px; }
+
+.note { border-left: 3px solid var(--line); padding: 4px 0 4px 14px; }
+.note.warn { border-color: var(--accent); }
+.note.ok { border-color: var(--good); }
+.note strong { font-weight: 400; font-family: var(--font-display); font-size: 20px; display: block; }
+
+/* tables */
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; font-family: var(--font-mono); font-size: 15px; min-width: 260px; }
+th, td { padding: 6px 22px 6px 0; text-align: left; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+tr.hit td { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.mt-title { font-size: 20px; margin-bottom: 6px; }
+
+/* manual entry */
+.entry { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.entry label { display: flex; flex-direction: column; gap: 4px; font-family: var(--font-display); font-size: 19px; }
+.entry label small { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--muted); }
+.entry input { font-family: var(--font-mono); font-size: 20px; width: 100%; padding: 8px 10px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); }
+.entry .m { font-family: var(--font-mono); font-size: 14px; min-height: 1.4em; }
+
+.next { color: var(--muted); font-size: 16px; }
+details summary { cursor: pointer; font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+details[open] summary { margin-bottom: 10px; }
+.link { background: none; border: 0; padding: 0; text-decoration: underline; cursor: pointer; color: var(--muted); }
+
+.group { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.klass-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.klass { text-align: left; background: transparent; border: 1px solid var(--line); padding: 16px; cursor: pointer; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.klass:hover { border-color: var(--fg); }
+.klass[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.klass h3 { font-size: 24px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { white-space: nowrap; font-family: var(--font-mono); font-size: 12px; padding: 2px 8px; border: 1px solid var(--line); color: var(--muted); }
+.k-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.tip { font-size: 15px; color: var(--muted); }
+.banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 10px 14px; border: 1px solid var(--line); background: var(--surface); }
+.banner .chips { display: flex; flex-wrap: wrap; gap: 4px 14px; font-family: var(--font-mono); font-size: 13px; }
+.chip b { font-weight: 600; letter-spacing: .06em; }
+.chip i { font-style: normal; font-weight: 600; }
+.panel { display: flex; flex-direction: column; gap: 12px; }
+.panel + .panel { padding-top: 6px; }
+ul.plain, ol.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; font-size: 17px; }
+.tiles, .slots { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.tile { border: 1px solid var(--line); padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.tile span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tile em { font-style: normal; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.tile b { font-family: var(--font-mono); font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.result { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 14px; }
+.result .big { font-family: var(--font-mono); font-size: 40px; font-weight: 500; color: var(--accent); }
+.inl { display: inline-flex; align-items: center; gap: 8px; font-size: 16px; }
+.inl input { width: 5ch; font-family: var(--font-mono); font-size: 18px; padding: 6px 8px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); }
+.hp-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 18px; }
+.formula { font-family: var(--font-mono); font-size: 26px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.hp-dice { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.hdie { display: block; }
+.hdie.rolling { animation: tumble .45s ease-in-out; }
+.hp-roll { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.result { display: flex; align-items: baseline; gap: 10px; }
+.points { font-size: 22px; font-family: var(--font-display); }
+.points b { font-family: var(--font-mono); font-size: 30px; color: var(--accent); font-weight: 600; }
+.skills-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 12px; }
+@media (max-width: 640px) { .skills-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.sk { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.sk-name { font-family: var(--font-display); font-size: 18px; line-height: 1.1; display: flex; align-items: flex-end; }
+.sk-note { font-family: var(--font-mono); font-size: 11px; color: var(--muted); line-height: 1.2; min-width: 0; }
+.sk-die { display: flex; align-items: center; gap: 8px; }
+.die.lg { width: 40px; height: 40px; padding: 6px; }
+.die.lg i { width: 8px; height: 8px; }
+.sk-stp { display: flex; flex-direction: column; gap: 4px; }
+.sk-stp button { width: 28px; height: 22px; background: transparent; border: 1px solid var(--line); cursor: pointer; font-family: var(--font-mono); font-size: 14px; line-height: 1; padding: 0; }
+.sk-stp button:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.sk-stp button:disabled { opacity: .3; cursor: not-allowed; }
+.stable { display: flex; flex-direction: column; border-top: 1px solid var(--fg); }
+.srow { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4px 14px; padding: 8px 4px; border-bottom: 1px solid var(--line); }
+.srow .sn { font-family: var(--font-display); font-size: 19px; min-width: 0; }
+.srow .sv { font-family: var(--font-mono); font-size: 14px; text-align: right; max-width: 13ch; line-height: 1.25; font-variant-numeric: tabular-nums; }
+.stp { display: inline-flex; align-items: center; border: 1px solid var(--line); }
+.stp.na { border: 0; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.stp button { width: 32px; height: 32px; background: transparent; border: 0; cursor: pointer; font-family: var(--font-mono); font-size: 16px; }
+.stp button:hover:not(:disabled) { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.stp button:disabled { opacity: .3; cursor: not-allowed; }
+.stp i { font-style: normal; font-family: var(--font-mono); min-width: 2ch; text-align: center; }
+.cname { width: 100%; font-family: var(--font-display); font-size: 19px; background: transparent; color: var(--fg); border: 0; border-bottom: 1px dashed var(--line); padding: 2px 0; }
+.fs { display: flex; flex-wrap: wrap; gap: 8px 14px; }
+.fs label { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; color: var(--muted); }
+.fs select { font: inherit; font-size: 15px; padding: 3px 6px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); }
+.book { display: flex; flex-direction: column; border-top: 1px solid var(--fg); }
+.brow { display: grid; grid-template-columns: 6.5em minmax(0, 1fr); gap: 6px 12px; padding: 8px 2px; border-bottom: 1px solid var(--line); align-items: start; }
+.bl { font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding-top: 4px; }
+.todo { font-size: 16px; padding: 2px 0; color: var(--muted); }
+.chips2 { display: flex; flex-wrap: wrap; gap: 6px; }
+.sp { border: 1px solid var(--line); padding: 3px 10px; font-size: 16px; display: inline-flex; gap: 8px; align-items: baseline; }
+.sp i { font-style: normal; font-family: var(--font-mono); font-size: 11px; color: var(--accent); }
+.klass:disabled { opacity: .45; cursor: not-allowed; }
+.klass:disabled:hover { border-color: var(--line); }
+.tag.req { font-size: 11px; padding: 2px 6px; align-self: flex-start; border-color: var(--accent); color: var(--accent); margin-top: auto; }
+.klass.align p { font-size: 16px; line-height: 1.35; color: var(--fg); }
+.group-inline { font-family: var(--font-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.align-grid { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.lvl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.stepper { display: inline-flex; border: 1px solid var(--fg); }
+.stepper button { width: 44px; height: 44px; background: transparent; border: 0; font-family: var(--font-mono); font-size: 20px; cursor: pointer; }
+.stepper button:hover { background: color-mix(in srgb, var(--fg) 8%, transparent); }
+.stepper input { width: 4.2ch; height: 44px; text-align: center; font-family: var(--font-mono); font-size: 20px; border: 0; border-left: 1px solid var(--line); border-right: 1px solid var(--line); background: var(--bg); color: var(--fg); -moz-appearance: textfield; appearance: textfield; }
+.stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.banner-info { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.banner-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 18px; }
+.chip-class { font-family: var(--font-mono); font-size: 13px; }
+.btn.sm { padding: 6px 12px; font-size: 11px; }
+.klass ul { margin: 0; padding-left: 18px; font-size: 16px; line-height: 1.35; display: flex; flex-direction: column; gap: 4px; }
+.klass-wrap { display: flex; flex-direction: column; gap: 12px; }
+.chosen { font-family: var(--font-display); font-size: 24px; }
+@media (max-width: 480px) {
+  .card { padding: 16px; }
+  .row { grid-template-columns: minmax(0, 1fr) 3.6ch 4.4ch; }
+  .row .dice { grid-column: 1 / -1; grid-row: 2; }
+  .row-head { grid-template-columns: minmax(0, 1fr) 3.6ch 4.4ch; }
+  .row-head span:nth-child(2) { display: none; }
+  .row-head span:nth-child(n+3) { text-align: right; }
+}
+
+/* character sheet */
+.book .brow { display: flex; gap: 12px; align-items: baseline; padding: 4px 0; } .book .bl { min-width: 70px; color: var(--muted); }
+.chips2 { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.chars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.char { display: flex; gap: 10px; align-items: stretch; }
+.char-open { flex: 1; text-align: left; background: transparent; color: var(--fg); border: 1px solid var(--line); padding: 12px 14px; cursor: pointer; font-family: var(--font-body); font-size: 17px; display: flex; flex-direction: column; gap: 2px; }
+.char-open:hover { border-color: var(--fg); }
+.char-open span { color: var(--muted); font-size: 14px; }
+.io { display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--line); padding-top: 14px; margin-top: 6px; }
+.io textarea { width: 100%; box-sizing: border-box; background: var(--surface); color: var(--fg); border: 1px solid var(--line); font: 12px var(--font-mono); padding: 8px; }
+label.file { cursor: pointer; display: inline-block; }
+.tip.warn { color: var(--accent); }
+
+.namein { width: 100%; box-sizing: border-box; background: transparent; color: var(--fg); border: 0; border-bottom: 1px solid var(--line); font-family: var(--font-display); font-size: 30px; padding: 4px 0; }
+.namein:focus-visible, .sm-in:focus-visible, .notes:focus-visible, .hpval input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.idgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: 12px; }
+.fld { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.fl { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.fld b { font-family: var(--font-display); font-size: 20px; font-weight: 400; }
+.fld small { color: var(--muted); font-size: 13px; }
+.sm-in { width: 100%; box-sizing: border-box; background: transparent; color: var(--fg); border: 0; border-bottom: 1px solid var(--line); font: 18px var(--font-body); padding: 2px 0; }
+.hpbar { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.hpb { width: 56px; height: 56px; padding: 0; font-size: 28px; line-height: 1; }
+.hpval { display: flex; align-items: baseline; gap: 8px; font-family: var(--font-mono); }
+.hpval input { width: 3.2ch; background: transparent; color: var(--accent); border: 0; text-align: right; font: 600 56px var(--font-mono); padding: 0; }
+.hpval .of { font-size: 22px; color: var(--muted); display: flex; align-items: baseline; gap: 4px; }
+.hpval .of .sm-in { width: 3ch; font: 22px var(--font-mono); }
+.notes { width: 100%; box-sizing: border-box; background: var(--surface); color: var(--fg); border: 1px solid var(--line); font: 16px var(--font-body); padding: 8px; resize: vertical; }
+
+#body5 .sheet.flat, #body5 .book.flat { border-top: 0; }
+#body5 .sheet.flat .row:first-child { padding-top: 4px; }
+.twocol { display: grid; grid-template-columns: 1fr 1fr; }
+.twocol > .panel:first-child { padding-right: 22px; }
+.twocol > .panel + .panel { padding: 0 0 0 22px; border-left: 1px solid var(--line); }
+.row.srow { grid-template-columns: minmax(0, 1fr) 3.6ch; }
+.row .total.svv { font-weight: 600; }
+.hpmid { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 150px; }
+.hpstat { min-height: 1.3em; font-family: var(--font-mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+.combat { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px; }
+.ac { border: 1px solid var(--line); padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ac b { font-family: var(--font-mono); font-size: 30px; font-weight: 500; }
+.ac em { font-style: normal; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.actog { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.actog button { background: transparent; color: var(--fg); border: 1px solid var(--line); padding: 4px 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .05em; text-transform: uppercase; cursor: pointer; }
+.actog button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.combat .tile { justify-content: flex-start; }
+.group-row { display: flex; justify-content: space-between; align-items: center; }
+.slotrows { display: flex; flex-direction: column; gap: 6px; }
+.srow2 { display: flex; align-items: center; gap: 12px; padding: 4px 0; }
+.srow2 .bl { min-width: 6.5em; padding: 0; }
+.dots { display: flex; flex-wrap: wrap; gap: 8px; }
+.slot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--fg); background: transparent; cursor: pointer; padding: 0; position: relative; }
+.slot.used { border-color: var(--muted); }
+.slot.used::before, .slot.used::after { content: ""; position: absolute; left: 50%; top: 50%; width: 22px; height: 2px; background: var(--accent); }
+.slot.used::before { transform: translate(-50%, -50%) rotate(45deg); } .slot.used::after { transform: translate(-50%, -50%) rotate(-45deg); }
+.slot:focus-visible, .actog button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 760px) {
+  .twocol { grid-template-columns: 1fr; gap: 20px; }
+  .twocol > .panel:first-child { padding-right: 0; }
+  .twocol > .panel + .panel { padding: 0; border-left: 0; }
+}
+@media (max-width: 560px) { .combat { grid-template-columns: 1fr 1fr; } .ac { grid-column: 1 / -1; } }
+
+.sheethead { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+#body5 .namein { font-size: 32px; }
+.ac { flex-direction: row; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.acl { display: flex; flex-direction: column; gap: 4px; }
+.actog { display: grid; grid-template-columns: repeat(2, auto); margin-top: 0; }
+.combat { grid-template-columns: 2.2fr 1fr 1fr; }
+.combat .tile b { font-size: 20px; }
+@media (max-width: 560px) { .combat { grid-template-columns: 1fr 1fr; } .ac { grid-column: 1 / -1; } }
+
+/* sheet v3 */
+#step5 { gap: 26px; }
+#body5 { gap: 30px; }
+#body5 .group { border-bottom: 0; padding-bottom: 0; }
+#body5 .tip { font-size: 14px; }
+.link { background: none; border: 0; padding: 4px 0; color: var(--muted); font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; }
+.link:hover { color: var(--fg); }
+.link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#body5 .namein { font-size: 34px; border-bottom-color: transparent; padding: 0; }
+#body5 .namein:hover, #body5 .namein:focus { border-bottom-color: var(--line); }
+#body5 .sheethead + .namein { margin-top: -18px; }
+.ident { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 24px; margin-top: -22px; }
+.idline { font-family: var(--font-display); font-size: 20px; color: var(--muted); }
+.xp { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 0 1 300px; }
+.xpbar { flex: 1; height: 4px; background: var(--line); min-width: 60px; }
+.xpbar i { display: block; height: 100%; background: var(--accent); }
+.xpnum { display: flex; align-items: baseline; gap: 6px; font-family: var(--font-mono); font-size: 13px; color: var(--muted); white-space: nowrap; }
+.xpnum input { width: 7ch; background: transparent; border: 0; border-bottom: 1px solid transparent; color: var(--fg); font: 13px var(--font-mono); text-align: right; padding: 0; }
+.xpnum input:hover, .xpnum input:focus { border-bottom-color: var(--line); outline: none; }
+.glance { display: grid; grid-template-columns: 2.3fr 1fr 1fr 1fr; border: 1px solid var(--line); }
+.glance > div { padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; justify-content: center; min-width: 0; }
+.glance > div + div { border-left: 1px solid var(--line); }
+.g-hp { flex-direction: row !important; align-items: center; justify-content: space-between !important; gap: 8px; }
+.hpb { width: 46px; height: 46px; flex: none; background: transparent; color: var(--fg); border: 1px solid var(--line); font: 24px var(--font-mono); cursor: pointer; padding: 0; }
+.hpb:hover { border-color: var(--fg); }
+.hpb:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hpmid { min-width: 0; }
+.hpval input { font-size: 48px; width: 2.4ch; }
+.g-hp .hpmid { flex: 1; }
+.hpval .of { font-size: 20px; }
+.hpstat { font-size: 11px; min-height: 1.2em; }
+.g-stat b { font-family: var(--font-mono); font-size: 30px; font-weight: 500; line-height: 1.1; }
+.g-stat b small, .g-sub { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+.opts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: -16px; }
+.opts .fl { margin-right: 4px; }
+.opt { border: 1px solid var(--line); padding: 4px 10px; font-size: 15px; }
+.opt b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 4px; }
+.row.arow { grid-template-columns: minmax(0, 1fr) 3ch 3.6ch; padding: 8px 2px; gap: 4px 12px; align-items: center; }
+.row.arow.srow { grid-template-columns: minmax(0, 1fr) 3.6ch; }
+.row.arow .name { font-size: 20px; }
+.row.arow .name small.desc { font-size: 14px; margin-top: 1px; }
+.row.arow .score { font-family: var(--font-mono); font-size: 14px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+.row.arow .mod { font-size: 24px; }
+.srow .mod { color: var(--fg); }
+.colhint { margin: 8px 0 0; font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; color: var(--muted); }
+.sk.dim { opacity: .45; }
+.spl { display: flex; flex-direction: column; }
+.splrow { display: grid; grid-template-columns: 3.2em auto minmax(0, 1fr); align-items: center; gap: 8px 18px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.splrow:first-child { padding-top: 2px; }
+.splrow .bl { padding: 0; }
+.splrow .dots { gap: 6px; }
+.splrow .slot { width: 26px; height: 26px; }
+.splrow .slot.used::before, .splrow .slot.used::after { width: 18px; }
+.sub.none { font-size: 14px; }
+@media (max-width: 760px) {
+  .glance { grid-template-columns: repeat(3, 1fr); }
+  .g-hp { grid-column: 1 / -1; border-bottom: 1px solid var(--line); }
+  .glance > div + div { border-left: 0; }
+  .glance > .g-stat + .g-stat { border-left: 1px solid var(--line); }
+  .hpb { width: 54px; height: 54px; }
+  .hpmid { align-items: center; }
+}
+@media (max-width: 640px) { #body5 .skills-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } #body5 .sk-name { font-size: 16px; } }
+@media (max-width: 560px) {
+  .xp { flex-basis: 100%; }
+  #step5 { background: transparent; border: 0; padding: 0; }
+  .splrow { grid-template-columns: 3.2em minmax(0, 1fr); }
+  .splrow .chips2 { grid-column: 2; }
+  .g-stat b { font-size: 26px; }
+  .glance > div { padding: 12px; }
+}
+
+#bodyH .tip, #body5 .tip { max-width: none; }
+.glance { grid-template-columns: 2.3fr 1fr 1fr 1fr 0.9fr; gap: 1px; background: var(--line); }
+.glance > div { background: var(--surface); }
+.glance > div + div, .glance > .g-stat + .g-stat { border-left: 0; }
+.g-sur .die { margin-top: 2px; }
+@media (max-width: 760px) {
+  .glance { grid-template-columns: repeat(4, 1fr); }
+  .g-hp { border-bottom: 0; }
+}
+@media (max-width: 560px) {
+  .glance { grid-template-columns: repeat(2, 1fr); }
+  .glance > div { background: var(--bg); }
+}
+
+.glance { grid-template-columns: minmax(240px, 2fr) 1fr 1fr 1fr 1.5fr; }
+.glance > div { padding: 14px 14px; }
+.g-surrow { display: flex; align-items: center; gap: 10px; }
+.g-surrow .g-sub { line-height: 1.3; }
+@media (max-width: 760px) { .glance { grid-template-columns: repeat(4, 1fr); } .g-sur .g-sub { display: none; } }
+@media (max-width: 560px) { .glance { grid-template-columns: repeat(2, 1fr); } .g-sur .g-sub { display: inline; } }
+
+.glance { grid-template-columns: minmax(280px, 2.2fr) 0.8fr 1fr 1fr 1.4fr; }
+.glance .fl { white-space: nowrap; letter-spacing: .05em; }
+.glance > div { padding: 14px 12px; }
+.g-hp .hpb { width: 42px; height: 42px; }
+@media (max-width: 760px) { .glance { grid-template-columns: repeat(4, 1fr); } .g-hp .hpb { width: 54px; height: 54px; } }
+@media (max-width: 560px) { .glance { grid-template-columns: repeat(2, 1fr); } }
+
+.top-r { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+.lang { display: inline-flex; border: 1px solid var(--line); }
+.lang button { background: transparent; color: var(--muted); border: 0; padding: 5px 9px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.lang button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+html[lang="ru"] { --font-display: "Cormorant SC", "IM Fell English SC", Georgia, serif; --font-body: "EB Garamond", "IM Fell DW Pica", Georgia, serif; }
+html[lang="ru"] h1 { font-weight: 500; }
+
+.top-r .btn { white-space: nowrap; }
+.sk-name { flex: 1; }
+@media (max-width: 480px) { #kicker { display: none; } }
+
+.verdict { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; }
+.verdict > div { flex: 1 1 260px; }
+.tip.outside { margin: -12px 0 0; padding: 0 2px; max-width: none; font-size: 14px; }
+.glance { grid-template-columns: minmax(280px, 2.2fr) 0.8fr 1fr 1fr 0.8fr; }
+.g-sur { align-items: flex-start; }
+.g-sur .g-sub { display: block !important; font-size: 12px; }
+@media (max-width: 760px) { .glance { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 560px) { .glance { grid-template-columns: repeat(2, 1fr); } .tip.outside { margin-top: -16px; } }
+#h-io:empty, #s-io:empty { display: none; }
+</style>
+
+<main>
+  <header id="pagehead">
+    <div class="top"><div class="kicker" id="kicker">Lamentations of the Flame Princess</div><div class="top-r"><button class="btn ghost sm" id="restart" type="button">&larr; Characters</button><div class="lang" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="ru" aria-pressed="false">RU</button></div></div></div>
+    <h1 id="title">Your adventurers</h1>
+  </header>
+
+  <ol class="rail" id="rail" aria-label="Character creation steps"></ol>
+
+  <section class="card" id="home" aria-label="Saved characters" hidden>
+    <div id="bodyH"></div>
+  </section>
+  <p class="tip outside" id="hometip" hidden></p>
+
+  <section class="card" id="step1" aria-labelledby="s1t">
+    <header>
+      <h2 id="s1t">Roll ability scores</h2>
+      <p class="sub">Roll 3d6 for each ability, in this order:<br>Charisma, Constitution, Dexterity, Intelligence, Strength, Wisdom.</p>
+    </header>
+
+    <div>
+      <div class="choices" role="group" aria-label="How do you want to roll?">
+        <button class="choice" id="pick-manual" aria-pressed="false" type="button"><b>I'll roll my own dice</b></button>
+        <button class="choice" id="pick-auto" aria-pressed="false" type="button"><b>Roll for me</b></button>
+      </div>
+    </div>
+
+    <div id="body"></div>
+  </section>
+
+  <div class="banner" id="banner" hidden></div>
+
+  <section class="card" id="step2" aria-labelledby="s2t" hidden>
+    <header>
+      <h2 id="s2t">Choose a class</h2>
+    </header>
+    <div id="body2"></div>
+  </section>
+
+  <section class="card" id="step3" aria-labelledby="s3t" hidden>
+    <header>
+      <h2 id="s3t">Level and alignment</h2>
+    </header>
+    <div id="body3"></div>
+  </section>
+
+  <section class="card" id="step4" aria-labelledby="s4t" hidden>
+    <header>
+      <h2 id="s4t">Character details</h2>
+    </header>
+    <div id="body4"></div>
+  </section>
+
+  <section class="card" id="step5" aria-label="Character sheet" hidden>
+    <div id="body5"></div>
+  </section>
+  <p class="tip outside" id="sheettip" hidden></p>
+</main>
+
+<script>
+(function () {
+  var ABILITIES = [
+    { key: "CHA", name: "Charisma", desc: "Hire retainers and affect their loyalty" }, { key: "CON", name: "Constitution", desc: "Hit Points" },
+    { key: "DEX", name: "Dexterity", desc: "Armor Class, ranged attacks and initiative" }, { key: "INT", name: "Intelligence", desc: "Languages, saving throws against Magic" },
+    { key: "STR", name: "Strength", desc: "Melee attacks, Open Doors" }, { key: "WIS", name: "Wisdom", desc: "Saving throws against non-Magic" }
+  ];
+  var MOD_TABLE = [
+    { label: "3", lo: 3, hi: 3, mod: -3 }, { label: "4–5", lo: 4, hi: 5, mod: -2 },
+    { label: "6–8", lo: 6, hi: 8, mod: -1 }, { label: "9–12", lo: 9, hi: 12, mod: 0 },
+    { label: "13–15", lo: 13, hi: 15, mod: 1 }, { label: "16–17", lo: 16, hi: 17, mod: 2 },
+    { label: "18", lo: 18, hi: 18, mod: 3 }
+  ];
+  var CLASSES = [
+    { human: true, name: "Cleric", hp: "d6", pts: [
+      "Prepares and casts any spell on the Cleric list",
+      "Needs a holy symbol to cast" ] },
+    { human: true, name: "Fighter", hp: "d8", pts: [
+      "Best attack bonuses",
+      "More combat options, like a stronger parry" ] },
+    { human: true, name: "Magic-User", hp: "d4", pts: [
+      "Casts spells from a spellbook of known spells",
+      "Needs both hands free to cast" ] },
+    { human: true, name: "Specialist", hp: "d6", pts: [
+      "Gets skill points to improve skills",
+      "Can Sneak Attack and use Specialist Tools" ] },
+    { human: false, name: "Dwarf", hp: "d10", pts: [
+      "+1 Constitution modifier",
+      "Carries 5 more items before becoming encumbered",
+      "More combat options, like a stronger parry",
+      "Architecture 3 in 6" ] },
+    { human: false, name: "Elf", hp: "d6", pts: [
+      "More combat options, like a stronger parry",
+      "Casts Magic-User spells, but knows fewer of them",
+      "Needs only one hand to cast",
+      "Search 2 in 6, surprised only 1 in 6" ] },
+    { human: false, name: "Halfling", hp: "d6", pts: [
+      "+1 Dexterity modifier, +1 AC when not surprised",
+      "Stealth 5 in 6, Bushcraft 3 in 6",
+      "Cannot use large weapons" ] }
+  ];
+  var STEPS = ["Ability scores", "Class", "Level & alignment", "Character details"];
+  var PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+
+  function modOf(s) { for (var i = 0; i < MOD_TABLE.length; i++) if (s >= MOD_TABLE[i].lo && s <= MOD_TABLE[i].hi) return MOD_TABLE[i].mod; return null; }
+  function fmt(m) { return m > 0 ? "+" + m : m < 0 ? "−" + Math.abs(m) : "0"; }
+  function cls(m) { return m > 0 ? "pos" : m < 0 ? "neg" : "zero"; }
+  function d6() { var a = new Uint32Array(1), lim = 4294967292; do { crypto.getRandomValues(a); } while (a[0] >= lim); return (a[0] % 6) + 1; }
+  function el(id) { return document.getElementById(id); }
+
+  function freshState() { return {
+    method: null,        // "manual" | "auto"
+    rolls: null,         // auto: array of 6 {dice:[a,b,c]}
+    rerolls: 0,
+    swapUsed: false, swapMode: false, swapSel: [], swapped: [],
+    animate: false,
+    confirmed: false,
+    klass: null, classDone: false, view: "s1",
+    level: 1, align: null, alignDone: false,
+    detailsDone: false, detSig: null, hp: null, spells: null, conInput: null, pts: {}, custom: [], extraLv: [], id: null, sheet: { name: "", player: "", age: "", sex: "", curhp: null, maxhp: "", notes: "", used: {} }
+   }; }
+  var state = freshState();
+
+
+  var ALIGNMENTS = [
+    { name: "Lawful", text: "Believes the universe follows one fixed plan, and looks for signs of it." },
+    { name: "Neutral", text: "Follows neither Law nor Chaos, and simply exists between them." },
+    { name: "Chaotic", text: "Believes chaos is the source of magic, and all things will be unmade." }
+  ];
+  var FORCED = { "Cleric": "Lawful", "Magic-User": "Chaotic", "Elf": "Chaotic" };
+  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s5: 3 };
+  function renderRail() {
+    var cur = VIEW_IDX[state.view], done = [state.confirmed, state.classDone, state.alignDone, state.detailsDone];
+    el("rail").innerHTML = STEPS.map(function (s, i) {
+      var c = i === cur ? "on" : done[i] ? "done" : "";
+      return '<li class="' + c + '">' + s + "</li>";
+    }).join("");
+  }
+
+  function modTable(scores) {
+    var hits = {};
+    (scores || []).forEach(function (s) { if (s) hits[modOf(s)] = true; });
+    return '<div><h3 class="mt-title">Ability modifiers</h3><div class="tbl-wrap"><table><thead><tr><th>Ability score</th><th>Modifier</th></tr></thead><tbody>' +
+      MOD_TABLE.map(function (r) { return '<tr class="' + (hits[r.mod] ? "hit" : "") + '"><td>' + r.label + "</td><td>" + fmt(r.mod) + "</td></tr>"; }).join("") +
+      "</tbody></table></div></div>";
+  }
+
+  function dieHTML(v, rolling) {
+    var on = PIPS[v] || [];
+    var s = '<span class="die' + (rolling ? " rolling" : "") + '" role="img" aria-label="' + v + '">';
+    for (var i = 0; i < 9; i++) s += "<i" + (on.indexOf(i) > -1 ? ' class="on"' : "") + "></i>";
+    return s + "</span>";
+  }
+
+  function autoScores() { return state.rolls.map(function (r) { return r.dice[0] + r.dice[1] + r.dice[2]; }); }
+
+  function suitability(mods) {
+    var sum = mods.reduce(function (a, b) { return a + b; }, 0);
+    return sum;
+  }
+
+  /* ---------- manual ---------- */
+  function renderManual() {
+    el("body").innerHTML =
+      '<div class="cols"><div class="col-abil"><dl class="abil">' + ABILITIES.map(function (a) { return "<dt>" + a.name + "</dt><dd>" + a.desc + "</dd>"; }).join("") + "</dl></div>" + modTable([]) + "</div>" +
+      '<div class="note"><strong>Additional rules</strong>If the total of all six ability modifiers is less than zero, you may discard the character and roll again. You may also swap the position of one pair of ability scores.</div>' +
+      '<div class="actions"><button class="btn" id="confirm" type="button">Continue</button></div>';
+    el("confirm").addEventListener("click", confirmScores);
+  }
+
+  /* ---------- automatic ---------- */
+  function rollAll() {
+    state.rolls = ABILITIES.map(function () { return { dice: [d6(), d6(), d6()] }; });
+    state.swapUsed = false; state.swapMode = false; state.swapSel = []; state.swapped = [];
+    state.animate = true;
+  }
+
+  function renderAuto() {
+    if (!state.rolls) {
+      el("body").innerHTML = '<div class="actions"><button class="btn" id="roll" type="button">Roll ability scores</button></div>';
+      el("roll").addEventListener("click", function () { rollAll(); renderAuto(); });
+      return;
+    }
+    var scores = autoScores(), mods = scores.map(modOf), sum = suitability(mods);
+    var rows = ABILITIES.map(function (a, i) {
+      var r = state.rolls[i];
+      var picking = state.swapMode;
+      var sel = state.swapSel.indexOf(i) > -1;
+      var tag = picking ? "button" : "div";
+      return "<" + tag + ' class="row' + (picking ? " pick" : "") + (sel ? " sel" : "") + (state.swapped.indexOf(i) > -1 ? " swapped" : "") + '" data-i="' + i + '"' + (picking ? ' type="button" aria-pressed="' + sel + '"' : "") + ">" +
+        '<span class="name"><span class="nm">' + a.name + '</span><small class="desc">' + a.desc + "</small></span>" +
+        '<span class="dice">' + r.dice.map(function (d) { return dieHTML(d, state.animate); }).join("") + "</span>" +
+        '<span class="total">' + scores[i] + "</span>" +
+        '<span class="mod ' + cls(mods[i]) + '">' + fmt(mods[i]) + "</span></" + tag + ">";
+    }).join("");
+    state.animate = false;
+
+    var verdict = sum < 0 ? '<div class="note warn verdict"><div><strong>Total modifier ' + fmt(sum) + "</strong>Below zero. The rules let you discard this character and roll a new one.</div>" + '<button class="btn ghost" id="reroll" type="button">Discard and reroll</button></div>' : "";
+
+    var swapUI = "";
+    if (state.swapMode) {
+      var ready = state.swapSel.length === 2;
+      swapUI = '<div class="note"><strong>Swap two scores</strong>' + (ready ? "Swap " + ABILITIES[state.swapSel[0]].name + " with " + ABILITIES[state.swapSel[1]].name + "? You can only do this once." : "Tap two abilities above. Their scores trade places. You can only do this once.") +
+        '</div><div class="actions"><button class="btn" id="swap-ok" type="button"' + (ready ? "" : " disabled") + '>Swap them</button><button class="btn ghost" id="swap-cancel" type="button">Cancel</button></div>';
+    } else {
+      swapUI = '<div class="actions">' +
+        '<button class="btn" id="confirm" type="button">Continue</button>' +
+        '<button class="btn ghost" id="swap" type="button"' + (state.swapUsed ? " disabled" : "") + ">" + (state.swapUsed ? "Swap used" : "Swap two scores") + "</button>" +
+
+        "</div>";
+    }
+
+    el("body").innerHTML =
+      '<div><div class="row-head"><span>Ability</span><span>3d6</span><span>Score</span><span>Mod</span></div><div class="sheet">' + rows + "</div></div>" +
+      verdict + swapUI;
+
+    if (state.swapMode) {
+      el("body").querySelectorAll(".row.pick").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var i = +b.dataset.i, k = state.swapSel.indexOf(i);
+          if (k > -1) state.swapSel.splice(k, 1);
+          else if (state.swapSel.length < 2) state.swapSel.push(i);
+          else state.swapSel = [state.swapSel[1], i];
+          renderAuto();
+        });
+      });
+      el("swap-cancel").addEventListener("click", function () { state.swapMode = false; state.swapSel = []; renderAuto(); });
+      el("swap-ok").addEventListener("click", function () {
+        var a = state.swapSel[0], b = state.swapSel[1], t = state.rolls[a];
+        state.rolls[a] = state.rolls[b]; state.rolls[b] = t;
+        state.swapped = [a, b]; state.swapUsed = true; state.swapMode = false; state.swapSel = [];
+        renderAuto();
+      });
+    } else {
+      el("confirm").addEventListener("click", confirmScores);
+      if (!state.swapUsed) el("swap").addEventListener("click", function () { state.swapMode = true; state.swapSel = []; renderAuto(); });
+      var rr = el("reroll");
+      if (rr) rr.addEventListener("click", function () { state.rerolls++; rollAll(); renderAuto(); });
+    }
+  }
+
+  /* ---------- confirm ---------- */
+
+  function syncChar() {
+    var ch = { method: state.method };
+    if (state.method === "auto" && state.rolls) {
+      var sc = autoScores();
+      ch.abilities = ABILITIES.reduce(function (o, a, i) { o[a.key] = { score: sc[i], mod: modOf(sc[i]) }; return o; }, {});
+    }
+    if (state.classDone) ch.class = state.klass;
+    if (state.alignDone) { ch.level = state.level; ch.alignment = state.align; }
+    if (state.detailsDone) {
+      ch.hp = state.hp ? state.hp.total : null;
+      ch.skills = {};
+      SKILLS.concat(["Open Doors"]).forEach(function (n) { ch.skills[n] = n === "Open Doors" ? (function () { var m = effMod("STR"), p = state.pts["Open Doors"] || 0; return m === null ? (1 + p) + " in 6 + STR mod" : Math.max(0, Math.min(6, 1 + m + p)) + " in 6"; })() : skillValue(n); });
+      state.custom.forEach(function (c) { if (c.name) ch.skills[c.name] = (1 + c.pts) + " in 6"; });
+      if (state.spells) ch.spellbook = ["Read Magic"].concat(flatSpells());
+    }
+    window.lotfpCharacter = ch;
+  }
+
+  function confirmScores() {
+    state.confirmed = true; state.view = "s2";
+    syncChar(); layout(true);
+  }
+
+  /* recap of step 1, shown when the player comes back from the class step */
+  function renderRecap() {
+    var html = "";
+    if (state.method === "auto") {
+      var sc = autoScores(), m = sc.map(modOf);
+      html = '<div class="sheet">' + ABILITIES.map(function (a, i) {
+        return '<div class="row recap"><span class="name"><span class="nm">' + a.name + '</span><small class="desc">' + a.desc + '</small></span><span class="total">' + sc[i] + '</span><span class="mod ' + cls(m[i]) + '">' + fmt(m[i]) + "</span></div>";
+      }).join("") + "</div>";
+    } else {
+      html = '<p class="sub">Ability scores rolled manually.</p>';
+    }
+    el("body").innerHTML = html +
+      '<div class="actions"><button class="btn" id="recap-next" type="button">Continue</button><button class="btn ghost" id="redo" type="button">Redo ability scores</button></div>';
+    el("recap-next").addEventListener("click", function () { state.view = "s2"; layout(true); });
+    el("redo").addEventListener("click", function () {
+      state.confirmed = false; state.view = "s1"; state.rolls = null; state.rerolls = 0;
+      state.swapUsed = false; state.swapMode = false; state.swapSel = []; state.swapped = [];
+      render();
+    });
+  }
+
+  /* ---------- banner ---------- */
+  function renderBanner() {
+    var b = el("banner"), inner;
+    if (state.method === "auto" && state.rolls) {
+      var sc = autoScores();
+      inner = '<div class="chips">' + ABILITIES.map(function (a, i) {
+        var m = modOf(sc[i]), bn = (state.view === "s3" || state.view === "s4") ? racialBonus(a.key) : 0;
+        if (bn) return '<span class="chip"><b>' + a.key + "</b> " + sc[i] + ' <i class="mod ' + cls(m + bn) + '" title="' + state.klass + ' bonus">(' + fmt(m) + " \u2192 " + fmt(m + bn) + ")</i></span>";
+        return '<span class="chip"><b>' + a.key + "</b> " + sc[i] + ' <i class="mod ' + cls(m) + '">(' + fmt(m) + ")</i></span>";
+      }).join("") + "</div>";
+    } else inner = '<span class="sub">Ability scores rolled manually</span>';
+    var row = "";
+    if (state.view === "s3" || state.view === "s4") row += '<span class="chip chip-class"><b>Class</b> ' + state.klass + "</span>";
+    if (state.method !== "auto" && (state.view === "s3" || state.view === "s4")) ["CON", "DEX"].forEach(function (k) { if (racialBonus(k)) row += '<span class="chip chip-class"><b>+1 ' + k + "</b> modifier</span>"; });
+    if (state.view === "s4") row += '<span class="chip chip-class"><b>Level</b> ' + state.level + '</span><span class="chip chip-class"><b>Alignment</b> ' + state.align + "</span>";
+    b.innerHTML = '<div class="banner-info"><div class="banner-row">' + inner + "</div>" + (row ? '<div class="banner-row">' + row + "</div>" : "") + '</div><button class="btn ghost sm" id="back1" type="button">Back</button>';
+    el("back1").addEventListener("click", function () {
+      state.view = state.view === "s4" ? "s3" : state.view === "s3" ? "s2" : "recap"; layout(true);
+    });
+  }
+
+  /* ---------- step 2: class ---------- */
+  function klassCard(c) {
+    return '<button class="klass" type="button" data-n="' + c.name + '" aria-pressed="' + (state.klass === c.name) + '">' +
+      '<div class="k-head"><h3>' + c.name + '</h3><span class="tag">HP ' + c.hp + "</span></div>" +
+      "<ul>" + c.pts.map(function (t) { return "<li>" + t + "</li>"; }).join("") + "</ul></button>";
+  }
+  function renderClass() {
+    var humans = CLASSES.filter(function (c) { return c.human; }), others = CLASSES.filter(function (c) { return !c.human; });
+    el("body2").innerHTML = '<div class="klass-wrap"><div class="group">Human classes</div><div class="klass-grid">' + humans.map(klassCard).join("") + "</div></div>" +
+      '<div class="klass-wrap"><div class="group">Non-human classes</div>' +
+      '<p class="tip">Tip: new players are advised to start with a human class.</p>' +
+      '<div class="klass-grid">' + others.map(klassCard).join("") + "</div></div>" +
+      '<div class="actions"><button class="btn" id="class-ok" type="button"' + (state.klass ? "" : " disabled") + ">Continue</button></div>";
+    el("body2").querySelectorAll(".klass").forEach(function (b) {
+      b.addEventListener("click", function () {
+        state.klass = b.dataset.n;
+        el("body2").querySelectorAll(".klass").forEach(function (x) { x.setAttribute("aria-pressed", x === b); });
+        el("class-ok").disabled = false;
+      });
+    });
+    el("class-ok").addEventListener("click", function () {
+      state.classDone = true; state.view = "s3";
+      syncChar(); layout(true);
+    });
+  }
+
+  /* ---------- step 3: level and alignment ---------- */
+  function clampLevel(v) { v = parseInt(v, 10); return isNaN(v) ? 1 : Math.max(1, Math.min(20, v)); }
+  function renderLevelAlign() {
+    var forced = FORCED[state.klass] || null;
+    if (forced) { state.align = forced; state.wasForced = true; }
+    else { if (state.wasForced) { state.align = null; state.wasForced = false; } if (!state.align) state.align = "Neutral"; }
+    var cards = ALIGNMENTS.map(function (a) {
+      var locked = forced && forced !== a.name;
+      return '<button class="klass align" type="button" data-n="' + a.name + '" aria-pressed="' + (state.align === a.name) + '"' + (locked ? " disabled" : "") + ">" +
+        '<div class="k-head"><h3>' + a.name + "</h3></div><p>" + a.text + "</p>" + (forced === a.name ? '<span class="tag req">Required for ' + state.klass + "</span>" : "") + "</button>";
+    }).join("");
+    el("body3").innerHTML =
+      '<div class="lvl"><span class="group-inline">Starting level</span><div class="stepper"><button type="button" id="lv-dn" aria-label="Lower level">\u2212</button>' +
+      '<input id="lv" type="number" inputmode="numeric" min="1" max="20" value="' + state.level + '" aria-label="Starting level">' +
+      '<button type="button" id="lv-up" aria-label="Raise level">+</button></div></div>' +
+      '<div class="klass-wrap"><div class="group">Alignment</div>' +
+      '<p class="tip">Alignment is not good or evil, it is what the character believes about the universe.' + "" + "</p>" +
+      '<div class="klass-grid align-grid">' + cards + "</div></div>" +
+      '<div class="actions"><button class="btn" id="la-ok" type="button"' + (state.align ? "" : " disabled") + ">Continue</button></div>";
+    var lv = el("lv");
+    function setLv(v) { state.level = clampLevel(v); lv.value = state.level; }
+    el("lv-dn").addEventListener("click", function () { setLv(state.level - 1); });
+    el("lv-up").addEventListener("click", function () { setLv(state.level + 1); });
+    lv.addEventListener("change", function () { setLv(lv.value); });
+    el("body3").querySelectorAll(".align:not([disabled])").forEach(function (b) {
+      b.addEventListener("click", function () {
+        state.align = b.dataset.n;
+        el("body3").querySelectorAll(".align").forEach(function (x) { x.setAttribute("aria-pressed", x === b); });
+        el("la-ok").disabled = false;
+      });
+    });
+    el("la-ok").addEventListener("click", function () {
+      setLv(lv.value);
+      state.alignDone = true; state.view = "s4"; syncChar(); layout(true);
+    });
+  }
+
+  /* ---------- step 4: character details ---------- */
+  var SAVES = {
+    "Cleric": [[4, 14, 11, 16, 12, 15], [8, 12, 9, 14, 10, 12], [12, 10, 7, 12, 8, 9], [16, 8, 3, 8, 4, 6], [99, 6, 2, 6, 4, 5]],
+    "Fighter": [[3, 14, 12, 15, 13, 16], [6, 12, 10, 13, 11, 14], [9, 10, 8, 9, 9, 12], [12, 8, 6, 7, 7, 10], [99, 6, 4, 5, 5, 8]],
+    "Magic-User": [[5, 13, 13, 16, 13, 14], [10, 11, 11, 14, 11, 12], [15, 9, 9, 12, 9, 8], [18, 6, 7, 8, 5, 6], [99, 5, 6, 7, 4, 4]],
+    "Specialist": [[4, 14, 16, 15, 14, 14], [8, 11, 12, 14, 13, 12], [12, 9, 10, 12, 11, 10], [16, 7, 8, 10, 9, 8], [99, 5, 6, 8, 7, 6]],
+    "Dwarf": [[3, 10, 8, 13, 9, 12], [6, 8, 6, 10, 7, 10], [9, 6, 4, 7, 5, 8], [11, 4, 2, 4, 3, 6], [99, 2, 2, 2, 2, 4]],
+    "Elf": [[3, 13, 12, 15, 13, 15], [6, 11, 10, 13, 11, 13], [9, 9, 8, 9, 9, 11], [12, 7, 6, 7, 7, 9], [16, 5, 4, 5, 5, 7], [99, 3, 3, 3, 3, 5]],
+    "Halfling": [[1, 10, 8, 13, 9, 12], [3, 8, 6, 10, 7, 10], [5, 6, 4, 7, 5, 8], [7, 4, 2, 4, 3, 6], [99, 2, 2, 2, 2, 4]]
+  };
+  var SAVE_NAMES = ["Paralyze", "Poison", "Breath Weapon", "Magical Device", "Magic"];
+  var HPT = {
+    "Cleric": { d1: 6, d: 6, fixed: 2, min: 4 }, "Fighter": { d1: 8, d: 8, fixed: 3, min: 8 },
+    "Magic-User": { d1: 6, d: 4, fixed: 1, min: 3 }, "Specialist": { d1: 6, d: 6, fixed: 2, min: 4 },
+    "Dwarf": { d1: 10, d: 10, fixed: 3, min: 6, conAlways: true }, "Elf": { d1: 6, d: 6, fixed: 2, min: 4 },
+    "Halfling": { d1: 6, d: 6, fixed: 2, min: 4 }
+  };
+  var SLOTS_CLERIC = [[1], [2], [3], [3, 1], [3, 2, 1], [3, 3, 2], [4, 3, 3, 1], [4, 3, 3, 2], [4, 3, 3, 3, 1], [4, 4, 3, 3, 2], [5, 4, 4, 3, 3, 1], [5, 4, 4, 3, 3, 2], [5, 4, 4, 4, 3, 3, 1], [5, 5, 4, 4, 3, 3, 2], [6, 5, 5, 4, 4, 3, 3], [6, 5, 5, 4, 4, 3, 3], [6, 5, 5, 5, 4, 4, 3], [6, 6, 5, 5, 4, 4, 3], [7, 6, 6, 5, 5, 4, 4], [8, 7, 7, 6, 5, 5, 4]];
+  var SLOTS_MU = [[1], [2], [2, 1], [2, 2], [3, 2, 1], [3, 2, 2], [3, 3, 2, 1], [4, 3, 2, 2], [4, 3, 3, 2, 1], [4, 4, 3, 2, 2], [5, 4, 3, 3, 2, 1], [5, 4, 4, 3, 2, 2], [5, 5, 4, 3, 3, 2, 1], [6, 5, 4, 4, 3, 2, 2], [6, 5, 5, 4, 3, 3, 2, 1], [6, 6, 5, 4, 4, 3, 2, 2], [7, 6, 5, 5, 4, 3, 3, 2, 1], [7, 6, 6, 5, 4, 4, 3, 2, 2], [7, 7, 6, 5, 5, 4, 3, 3, 2], [8, 7, 6, 6, 5, 4, 4, 3, 2]];
+  var MU_SPELLS = [
+    ["Bookspeak", "Charm Person", "Comprehend Languages", "Detect Magic", "Enlarge", "Faerie Fire", "Feather Fall", "Floating Disc", "Hold Portal", "Identify", "Light", "Magic Aura", "Magic Missile", "Mending", "Message", "Shield", "Sleep", "Spider Climb", "Summon", "Unseen Servant"],
+    ["Audible Glamour", "Change Self", "Detect Invisible", "ESP", "Force of Forbidment", "Forget", "Invisibility", "Knock", "Levitate", "Light, Continual", "Locate Object", "Magic Mouth", "Mirror Image", "Phantasmal Force", "Ray of Enfeeblement", "Speak with Animals", "Stinking Cloud", "Wall of Fog", "Web", "Wizard Lock"],
+    ["Army of One", "Clairvoyance", "Detect Illusion", "Dispel Magic", "Explosive Runes", "False Alignment", "Fly", "Gaseous Form", "Gust of Wind", "Haste", "Hold Person", "Howl of the Moon", "Invisibility 10' Radius", "Phantasmal Psychedelia", "Protection from Normal Missiles", "Secret Page", "Speak with Dead", "Strange Waters II", "Suggestion", "Water Breathing"],
+    ["Charm Monster", "Confusion", "Creation, Minor", "Dig", "Dimension Door", "Extension", "Globe of Invulnerability, Minor", "Hallucinatory Terrain", "Invisibility, Improved", "Mnemonic Enhancer", "Plant Growth", "Polymorph Others", "Polymorph Self", "Protection from Normal Weapons", "Seven Gates", "Shadow Monsters", "Speak with Plants", "Wall of Fire", "Wall of Ice", "Wizard Eye"],
+    ["Airy Water", "Animate Dead", "Chaos", "Cloudkill", "Contact Outer Sphere", "Creation, Major", "Faithful Hound", "Feeblemind", "Hold Monster", "Interposing Hand", "Magic Jar", "Passwall", "Secret Chest", "Stone Shape", "Telekinesis", "Teleport", "Transmute Rock to Mud", "Wall of Force", "Wall of Iron", "Wall of Stone"],
+    ["Animate Dead Monsters", "Barrier", "Contingency", "Death Spell", "Disintegrate", "Geas", "Glass Eye", "Globe of Invulnerability, Major", "Legend Lore", "Lucubration", "Mind Switch", "Move Earth", "Phantasmal Supergoria", "Projected Image", "Shades", "Speak with Monsters", "Stone to Flesh", "Suggestion, Mass", "Veil", "Weird Vortex"],
+    ["Animated Artwork", "Bestow Spell Ability", "Duo-Dimension", "Grasping Hand", "Instant Summons", "Invisibility, Mass", "Magic Sword", "Phase Door", "Power Word Stun", "Prismatic Sphere", "Prismatic Spray", "Prismatic Wall", "Remote Surveillance", "Reverse Gravity", "Simulacrum", "Spell Turning", "Statue", "Vanish", "Vision", "Witchlamp Aura"],
+    ["Antipathy/Sympathy", "Charm Person, Mass", "Clone", "Demand", "Maze", "Mind Blank", "Permanency", "Polymorph Any Object", "Symbol", "Trap the Soul"],
+    ["Imprisonment", "Lost Dweomer", "Power Word Kill", "Shape Change", "Temporal Stasis", "Time Stop"]
+  ];
+  var SKILLS = ["Architecture", "Bushcraft", "Climb", "Languages", "Search", "Sleight of Hand", "Sneak Attack", "Stealth", "Tinkering"];
+  var FIGHTERISH = { "Fighter": 1, "Dwarf": 1, "Elf": 1 };
+
+  function dN(n) { var a = new Uint32Array(1), lim = Math.floor(4294967296 / n) * n; do { crypto.getRandomValues(a); } while (a[0] >= lim); return (a[0] % n) + 1; }
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function rangeLbl(a, b) { return a === b ? "Level " + a : "Levels " + a + "–" + b; }
+  function ordinal(n) { return n + (n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"); }
+
+  /* modifiers: numeric when ability scores were rolled on this page, otherwise symbolic */
+  function knownMod(key) {
+    if (state.method !== "auto" || !state.rolls) return null;
+    var i = ABILITIES.findIndex(function (a) { return a.key === key; });
+    return modOf(autoScores()[i]);
+  }
+  function racialBonus(key) { return (key === "CON" && state.klass === "Dwarf") || (key === "DEX" && state.klass === "Halfling") ? 1 : 0; }
+  function effMod(key) {
+    var m = knownMod(key);
+    if (m === null && key === "CON" && state.conInput !== null) m = state.conInput;
+    return m === null ? null : m + racialBonus(key);
+  }
+
+  function tier(a, b, c) { var L = state.level; return L <= 3 ? a : L <= 6 ? b : L <= 9 ? c : 6; }
+  function skillBase(n) {
+    if (n === "Architecture") return state.klass === "Dwarf" ? tier(3, 4, 5) : 1;
+    if (n === "Bushcraft") return state.klass === "Halfling" ? tier(3, 4, 5) : 1;
+    if (n === "Search") { var L = state.level; return state.klass === "Elf" ? (L <= 3 ? 2 : L <= 6 ? 3 : L <= 9 ? 4 : L <= 12 ? 5 : 6) : 1; }
+    if (n === "Stealth") return state.klass === "Halfling" ? 5 : 1;
+    return 1;
+  }
+  function savesFor() { var rows = SAVES[state.klass], L = state.level; for (var i = 0; i < rows.length; i++) if (L <= rows[i][0]) return rows[i].slice(1); return rows[rows.length - 1].slice(1); }
+  function slotsFor() {
+    var t = state.klass === "Cleric" ? SLOTS_CLERIC : (state.klass === "Magic-User" || state.klass === "Elf") ? SLOTS_MU : null;
+    return t ? t[Math.min(state.level, 20) - 1] : null;
+  }
+
+  function sig() { return JSON.stringify([state.method, state.rolls ? autoScores() : null, state.klass, state.level, state.align]); }
+  function ensureDetails() {
+    if (state.detSig === sig()) return;
+    state.detSig = sig(); state.hp = null; state.spells = null; state.detailsDone = false; state.conInput = null;
+    state.pts = {}; state.custom = [{ name: "", pts: 0 }, { name: "", pts: 0 }];
+  }
+
+  /* hit points */
+  function polyDie(sides, v, rolling) {
+    var pts = sides === 4 ? "18,3 34,32 2,32" : sides === 8 ? "18,2 33,18 18,34 3,18" : "18,2 33,14 27,33 9,33 3,14";
+    var y = sides === 4 ? 20 : sides === 10 ? 18.5 : 17.5;
+    return '<svg class="hdie' + (rolling ? " rolling" : "") + '" viewBox="0 0 36 36" width="38" height="38" role="img" aria-label="d' + sides + ": " + v + '"><polygon points="' + pts + '" fill="var(--die)" stroke="var(--die-pip)" stroke-width="1.6" stroke-linejoin="round"/><text x="18" y="' + y + '" text-anchor="middle" dominant-baseline="central" font-family="IBM Plex Mono, monospace" font-weight="600" font-size="' + (v >= 10 ? 12 : 14) + '" fill="var(--die-pip)">' + v + "</text></svg>";
+  }
+  function anyDie(sides, v, rolling) { return sides === 6 ? dieHTML(v, rolling) : polyDie(sides, v, rolling); }
+  function hpParts() {
+    var h = HPT[state.klass], L = state.level, n = Math.min(L, 9), c = effMod("CON");
+    var dice = h.d1 === h.d ? n + "d" + h.d : "1d" + h.d1 + (n > 1 ? " + " + (n - 1) + "d" + h.d : "");
+    var conCount = n + (h.conAlways ? Math.max(0, L - 9) : 0), fixed = Math.max(0, L - 9) * h.fixed, flat = "";
+    if (c !== null) {
+      var f = conCount * c + fixed;
+      if (f) flat = (f > 0 ? " + " : " \u2212 ") + Math.abs(f);
+    } else {
+      flat = " + " + (conCount > 1 ? conCount + " \u00d7 " : "") + "CON mod" + (fixed ? " + " + fixed : "");
+    }
+    return dice + flat;
+  }
+  function hpSection() {
+    var h = HPT[state.klass], L = state.level, needCon = knownMod("CON") === null, r = state.hp, right;
+    if (r) right = '<div class="result"><span class="big">' + r.total + '</span><span class="sub">hit points</span></div>';
+    else right = '<div class="hp-roll">' + (needCon ? '<label class="inl" for="con-in">CON modifier <input id="con-in" type="number" min="-3" max="3" value="' + (state.conInput === null ? 0 : state.conInput) + '"></label>' : "") +
+      '<button class="btn" id="roll-hp" type="button">Roll hit points</button></div>';
+    var diceRow = "";
+    if (r) { diceRow = '<div class="hp-dice">' + r.dice.map(function (d, i) { return anyDie(r.sides[i], d, state.hpAnim); }).join("") + "</div>"; state.hpAnim = false; }
+    var notes = [];
+    if (L === 1) notes.push("Minimum " + h.min + " hit points at level 1.");
+    if (needCon && state.klass === "Dwarf") notes.push("The Dwarf +1 to CON modifier is added for you.");
+    if (r && r.l1min) notes.push("Raised to the level 1 minimum of " + h.min + ".");
+    return '<section class="panel"><div class="group">Hit points</div><div class="hp-row"><div class="formula">' + hpParts() + "</div>" + right + "</div>" + diceRow +
+      (notes.length ? '<p class="tip">' + notes.join(" ") + "</p>" : "") + "</section>";
+  }
+  function rollHP() {
+    var h = HPT[state.klass], L = state.level, c = effMod("CON");
+    if (c === null) c = racialBonus("CON");
+    var dice = [dN(h.d1)], sides = [h.d1], total = dice[0] + c, l1min = false;
+    for (var lv = 2; lv <= Math.min(L, 9); lv++) { var d = dN(h.d); dice.push(d); sides.push(h.d); total += d + c; }
+    if (L === 1 && total < h.min) { total = h.min; l1min = true; }
+    for (lv = 10; lv <= L; lv++) total += h.fixed + (h.conAlways ? c : 0);
+    state.hp = { total: total, dice: dice, sides: sides, l1min: l1min };
+    state.hpAnim = true;
+  }
+
+  /* saving throws, attack bonus, combat options */
+  function combatSection() {
+    var sv = savesFor(), base = state.klass === "Fighter" ? Math.min(state.level + 1, 10) : 1, f = FIGHTERISH[state.klass];
+    var sm = effMod("STR"), dm = effMod("DEX");
+    var tiles = SAVE_NAMES.map(function (n, i) {
+      var key = i === 4 ? "INT" : "WIS", m = effMod(key);
+      if (m === null) return '<div class="tile"><span>' + n + "</span><b>" + sv[i] + "</b><em>+ " + key + " mod</em></div>";
+      return '<div class="tile"><span>' + n + "</span><b>" + (sv[i] - m) + "</b><em>" + sv[i] + " " + (m > 0 ? "\u2212" : "+") + Math.abs(m) + " " + key + "</em></div>";
+    }).join("");
+    return '<section class="panel"><div class="group">Saving throws</div><div class="tiles">' + tiles + "</div>" +
+      "</section>" +
+      '<section class="panel"><div class="group">Attack bonuses and combat options</div>' +
+      '<div class="tiles"><div class="tile"><span>Base AB</span><b>' + fmt(base) + "</b></div>" +
+      '<div class="tile"><span>Melee AB</span><b>' + (sm === null ? fmt(base) + " + STR" : fmt(base + sm)) + "</b></div>" +
+      '<div class="tile"><span>Ranged AB</span><b>' + (dm === null ? fmt(base) + " + DEX" : fmt(base + dm)) + "</b></div></div>" +
+      '<ul class="plain"><li><b>Standard attack</b>. Attack normally.</li>' +
+      "<li><b>Parry</b>. Take no other action this round for +" + (f ? 4 : 2) + " AC.</li>" +
+      (f ? "<li><b>Press</b>. A fierce melee attack: +2 to hit, −4 AC.</li><li><b>Defensive fighting</b>. A cautious melee attack: +2 AC, −4 to hit.</li>" : "") +
+      "</ul></section>";
+  }
+
+  /* skills */
+  function skillValue(n) {
+    var v = skillBase(n) + (state.pts[n] || 0);
+    if (n === "Sneak Attack") return "×" + v;
+    if (n === "Languages") { var m = effMod("INT"); return m === null ? v + " in 6 + INT mod" : Math.max(0, v + m) + " in 6"; }
+    return v + " in 6";
+  }
+  function ptsUsed() { var t = 0; Object.keys(state.pts).forEach(function (k) { t += state.pts[k]; }); state.custom.forEach(function (c) { t += c.pts; }); return t; }
+  function pool() { return 4 + 2 * (state.level - 1); }
+  function stepper(attr, key, p, canAdd) {
+    return '<span class="stp"><button type="button" ' + attr + '="' + esc(key) + '" data-d="-1" aria-label="Remove a point"' + (p <= 0 ? " disabled" : "") + '>−</button><i>' + p + '</i><button type="button" ' + attr + '="' + esc(key) + '" data-d="1" aria-label="Add a point"' + (canAdd ? "" : " disabled") + ">+</button></span>";
+  }
+  var SIX = [0, 3, 6, 2, 5, 8];   /* the 6-face: two columns of three, filled left column first */
+  function dieBox(n) {
+    var h = '<span class="die lg" role="img" aria-label="' + n + ' of 6">';
+    for (var i = 0; i < 9; i++) { var k = SIX.indexOf(i); h += "<i" + (k < 0 ? "" : k < n ? ' class="on"' : ' class="clr"') + "></i>"; }
+    return h + "</span>";
+  }
+  function skillTile(name, rating, cap, step, caption, label) {
+    return '<div class="sk"><span class="sk-name">' + label + '</span><div class="sk-die">' + dieBox(Math.max(0, Math.min(6, rating))) + (step || "") + (caption ? '<small class="sk-note">' + caption + "</small>" : "") + "</div></div>";
+  }
+  function skStep(attr, key, p, canAdd) {
+    return '<span class="sk-stp"><button type="button" ' + attr + '="' + esc(key) + '" data-d="1" aria-label="Add a point"' + (canAdd ? "" : " disabled") + '>+</button><button type="button" ' + attr + '="' + esc(key) + '" data-d="-1" aria-label="Remove a point"' + (p <= 0 ? " disabled" : "") + ">\u2212</button></span>";
+  }
+  function skillsSection() {
+    var spec = state.klass === "Specialist", left = pool() - ptsUsed();
+    var order = ["Architecture", "Bushcraft", "Climb", "Languages", "Open Doors", "Search", "Sleight of Hand", "Sneak Attack", "Stealth", "Tinkering"];
+    var tiles = order.map(function (n) {
+      if (n === "Open Doors") {
+        var so = effMod("STR"), op = state.pts["Open Doors"] || 0, raw = 1 + (so === null ? 0 : so);
+        return skillTile(n, raw + op, 0, spec ? skStep("data-sk", n, op, left > 0 && raw + op < 6) : "", so === null ? "+ STR mod" : "", n);
+      }
+      var p = state.pts[n] || 0, base = skillBase(n), cap = 6 - base, rating = base + p, cap2 = "";
+      if (n === "Languages") { var im = effMod("INT"); if (im !== null) rating += im; else cap2 = "+ INT mod"; }
+      if (n === "Sneak Attack") cap2 = spec && p > 0 ? "\u00d7" + (base + p) + " damage" : "";
+      return skillTile(n, rating, cap, spec ? skStep("data-sk", n, p, left > 0 && p < cap) : "", cap2, n);
+    });
+    if (spec) state.custom.forEach(function (c, i) {
+      tiles.push(skillTile("c" + i, 1 + c.pts, 5, skStep("data-ck", i, c.pts, left > 0 && c.pts < 5), "",
+        '<input class="cname" data-ci="' + i + '" type="text" maxlength="24" placeholder="Custom skill" value="' + esc(c.name) + '" aria-label="Custom skill ' + (i + 1) + ' name">'));
+    });
+    return '<section class="panel"><div class="group">Skills</div>' +
+      (spec ? '<p class="tip">Each point adds 1 to a skill, up to 6 in 6. Sneak Attack points add 1 to the damage multiplier and give +2 to hit.</p><div class="points"><b>' + left + "</b> of " + pool() + " skill points left</div>" : "") +
+      '<div class="skills-grid">' + tiles.join("") + "</div></section>";
+  }
+
+  /* spells */
+  function spellDie(lv) { return lv <= 7 ? 20 : lv === 8 ? 10 : 6; }
+  /* spell levels to roll: 3 starting 1st-level spells for Magic-Users, plus one free spell per level above 1,
+     always of the highest spell level the character can cast at that level */
+  function spellPlan() {
+    var plan = {};
+    if (state.klass === "Magic-User") plan[1] = 3;
+    for (var k = 2; k <= state.level; k++) { var lv = SLOTS_MU[k - 1].length; plan[lv] = (plan[lv] || 0) + 1; }
+    return plan;
+  }
+  function rollSpells() {
+    var plan = spellPlan(), used = {}, out = {};
+    Object.keys(plan).forEach(function (lv) {
+      var list = MU_SPELLS[lv - 1], arr = [];
+      for (var n = 0; n < plan[lv]; n++) {
+        var name, tries = 0;
+        do { name = list[dN(list.length) - 1]; tries++; } while (used[name] && tries < 200);
+        used[name] = true; arr.push(name);
+      }
+      out[lv] = arr;
+    });
+    state.spells = out;
+  }
+  function flatSpells() {
+    var r = [];
+    if (!state.spells) return r;
+    Object.keys(state.spells).sort(function (a, b) { return a - b; }).forEach(function (lv) { state.spells[lv].forEach(function (n) { r.push(n); }); });
+    return r;
+  }
+  function spellSection() {
+    var slots = slotsFor();
+    if (!slots) return "";
+    var k = state.klass;
+    var grid = '<div class="slots">' + slots.map(function (n, i) { return '<div class="tile"><span>' + ordinal(i + 1) + " level</span><b>" + n + "</b></div>"; }).join("") + "</div>";
+    var html = "";
+    if (k === "Cleric") {
+      return "";
+    }
+    var plan = spellPlan(), levels = Object.keys(plan).map(Number);
+    if (levels.indexOf(1) < 0) levels.push(1);
+    levels.sort(function (a, b) { return a - b; });
+    html += '<div class="group">Spellbook</div><p class="tip">Your spellbook has Read Magic and the spells below. Each level above 1 adds one free spell, of the highest spell level you can cast at that level. Re-roll duplicates.</p><div class="book">' +
+      levels.map(function (lv) {
+        var body = lv === 1 ? '<span class="sp">Read Magic</span>' : "";
+        if (state.spells) (state.spells[lv] || []).forEach(function (n) { body += '<span class="sp">' + esc(n) + "</span>"; });
+        else if (plan[lv]) body += '<span class="todo">Roll <b>1d' + spellDie(lv) + "</b>" + (plan[lv] > 1 ? " \u00d7 " + plan[lv] : "") + "</span>";
+        return '<div class="brow"><span class="bl">' + ordinal(lv) + " level</span><div class=\"chips2\">" + body + "</div></div>";
+      }).join("") + "</div>";
+    if (!state.spells && Object.keys(plan).length) html += '<div class="actions"><button class="btn" id="roll-spells" type="button">Roll spellbook</button></div>';
+    return '<section class="panel">' + html + "</section>";
+  }
+
+  function renderDetails() {
+    ensureDetails();
+    var b = el("body4");
+    if (state.detailsDone) {
+      b.innerHTML = '<div class="chosen">Character details recorded</div>' +
+        '<ul class="plain">' + (state.hp ? "<li>Hit points: <b>" + state.hp.total + "</b></li>" : "<li>Hit points: rolled at the table</li>") +
+        (state.spells ? "<li>Spellbook: Read Magic, " + flatSpells().map(esc).join(", ") + "</li>" : "") + "</ul>" +
+        '<p class="next">Next step: possessions.</p><div class="actions"><button class="btn ghost" id="edit-det" type="button">Edit details</button></div>';
+      el("edit-det").addEventListener("click", function () { state.detailsDone = false; renderDetails(); renderRail(); });
+      return;
+    }
+    b.innerHTML = hpSection() + (state.klass === "Specialist" ? skillsSection() : "") + spellSection() +
+      '<div class="actions"><button class="btn" id="det-ok" type="button">Continue</button></div>';
+    var rh = el("roll-hp");
+    if (rh) rh.addEventListener("click", function () {
+      var ci = el("con-in");
+      if (ci) state.conInput = Math.max(-3, Math.min(3, parseInt(ci.value, 10) || 0));
+      rollHP(); renderDetails();
+    });
+    var rs = el("roll-spells");
+    if (rs) rs.addEventListener("click", function () { rollSpells(); renderDetails(); });
+    b.querySelectorAll("[data-sk]").forEach(function (x) {
+      x.addEventListener("click", function () { var n = x.dataset.sk; state.pts[n] = Math.max(0, (state.pts[n] || 0) + (+x.dataset.d)); renderDetails(); });
+    });
+    b.querySelectorAll("[data-ck]").forEach(function (x) {
+      x.addEventListener("click", function () { var c = state.custom[+x.dataset.ck]; c.pts = Math.max(0, c.pts + (+x.dataset.d)); renderDetails(); });
+    });
+    b.querySelectorAll(".cname").forEach(function (x) {
+      x.addEventListener("input", function () { state.custom[+x.dataset.ci].name = x.value; });
+    });
+    el("det-ok").addEventListener("click", function () { state.detailsDone = true; syncChar(); state.view = "s5"; layout(true); });
+  }
+
+  /* ---------- step 5: character sheet ---------- */
+  var XP_TABLES = {
+    "Cleric": { list: [0, 1750, 3500, 7000, 14000, 28000, 56000, 112000, 224000, 336000, 448000, 560000, 672000, 784000, 896000, 1008000, 1120000, 1232000, 1344000], from: 20, step: 112000 },
+    "Fighter": { list: [0, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000, 384000, 512000, 640000], from: 13, step: 128000 },
+    "Magic-User": { list: [0, 2250, 4500, 9000, 18000, 36000, 72000, 144000, 288000, 432000, 576000, 720000, 864000, 1008000, 1152000, 1296000, 1440000, 1584000, 1728000], from: 20, step: 144000 },
+    "Specialist": { list: [0, 1500, 3000, 6000, 12000, 24000, 48000, 96000, 192000, 288000, 384000, 480000, 576000, 672000, 768000, 864000], from: 17, step: 96000 },
+    "Dwarf": { list: [0, 2200, 4400, 8800, 17600, 35200, 70400, 140800, 281600, 422400, 563200], from: 12, step: 140800 },
+    "Elf": { list: [0, 3000, 6000, 12000, 24000, 48000, 96000, 192000, 384000, 576000, 768000, 960000, 1152000, 1344000, 1536000, 1728000], from: 17, step: 192000 },
+    "Halfling": { list: [0, 2000, 4000, 8000, 16000, 32000, 64000, 128000, 256000], from: 10, step: 128000 }
+  };
+  function xpFor(k, lv) {
+    var t = XP_TABLES[k];
+    if (lv <= t.list.length) return t.list[lv - 1];
+    return t.list[t.list.length - 1] + (lv - t.list.length) * t.step;
+  }
+  function num(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+
+  function skillRating(n) {
+    var p = state.pts[n] || 0, v;
+    if (n === "Open Doors") { var sm = effMod("STR"); v = 1 + (sm === null ? 0 : sm) + p; }
+    else if (n === "Languages") { var im = effMod("INT"); v = skillBase(n) + p + (im === null ? 0 : im); }
+    else v = skillBase(n) + p;
+    return Math.max(0, Math.min(6, v));
+  }
+
+  function fld(label, inner) { return '<div class="fld"><span class="fl">' + label + "</span>" + inner + "</div>"; }
+  var SAVE_HINT = ["Petrification, hold, mobility hazards", "Instant death, KO", "Area effects", "Spell-like effects from items", "Spells, innate abilities"];
+  var ABIL_SHORT = { CHA: "Retainers, loyalty", CON: "Hit points", DEX: "AC, ranged, initiative", INT: "Languages, magic saves", STR: "Melee, Open Doors", WIS: "Non-magic saves" };
+
+  function hpStatus(v) {
+    if (isNaN(v)) return "";
+    return v <= -4 ? "Dead" : v === -3 ? "Mortally wounded" : v <= 0 ? "Unable to act" : "";
+  }
+  function setHpStatus(raw) { var e = el("hpstat"); if (e) e.textContent = hpStatus(parseInt(raw, 10)); }
+  function xpPct(xp) {
+    var a = xpFor(state.klass, state.level), b = xpFor(state.klass, state.level + 1), v = parseInt(String(xp).replace(/[^\d]/g, ""), 10);
+    if (isNaN(v)) v = a;
+    return Math.max(0, Math.min(100, (v - a) / (b - a) * 100));
+  }
+
+  function sheetHTML() {
+    var k = state.klass, L = state.level, auto = state.method === "auto" && state.rolls, S = state.sheet;
+    var sc = auto ? autoScores() : null, h = "";
+    var f = FIGHTERISH[k], sv = savesFor(), base = k === "Fighter" ? Math.min(L + 1, 10) : 1;
+    var sm = effMod("STR"), dm = effMod("DEX");
+    S.used = S.used || {};
+
+    /* identity */
+    var xp = S.xp === undefined || S.xp === null || S.xp === "" ? xpFor(k, L) : S.xp, xpn = parseInt(String(xp).replace(/[^\d]/g, ""), 10);
+    if (!isNaN(xpn)) xp = num(xpn);
+    h += '<div class="ident"><span class="idline">Level ' + L + " " + esc(k) + " · " + esc(state.align) + "</span>" +
+      '<div class="xp"><div class="xpbar" aria-hidden="true"><i id="xpfill" style="width:' + xpPct(xp) + '%"></i></div>' +
+      '<label class="xpnum"><input data-f="xp" id="xpin" type="text" inputmode="numeric" maxlength="9" aria-label="Current experience points" value="' + esc(xp) + '"><span>/ ' + num(xpFor(k, L + 1)) + " XP</span></label></div></div>";
+
+    /* at a glance */
+    var max = state.hp ? state.hp.total : "", cur = S.curhp === null ? max : S.curhp;
+    var maxHTML = state.hp ? "<b>" + max + "</b>" : '<input class="sm-in" data-f="maxhp" type="text" inputmode="numeric" maxlength="3" aria-label="Maximum hit points" value="' + esc(S.maxhp || "") + '">';
+    h += '<section class="glance">' +
+      '<div class="g-hp"><button class="hpb" type="button" data-hp="-1" aria-label="Lose 1 hit point">−</button>' +
+      '<div class="hpmid"><div class="hpval"><input id="curhp" data-f="curhp" type="text" inputmode="numeric" aria-label="Current hit points" value="' + esc(cur) + '"><span class="of">/ ' + maxHTML + "</span></div>" +
+      '<span class="fl">Hit points</span><span class="hpstat" id="hpstat" role="status">' + hpStatus(parseInt(cur, 10)) + "</span></div>" +
+      '<button class="hpb" type="button" data-hp="1" aria-label="Gain 1 hit point">+</button></div>' +
+      '<div class="g-stat"><span class="fl">AC</span><b>' + (dm === null ? "12<small> + DEX</small>" : 12 + dm) + "</b></div>" +
+      '<div class="g-stat"><span class="fl">Melee AB</span><b>' + (sm === null ? fmt(base) + "<small> + STR</small>" : fmt(base + sm)) + "</b></div>" +
+      '<div class="g-stat"><span class="fl">Ranged AB</span><b>' + (dm === null ? fmt(base) + "<small> + DEX</small>" : fmt(base + dm)) + "</b></div>" +
+      '<div class="g-stat g-sur"><span class="fl">Surprise</span>' + dieBox(k === "Elf" ? 1 : 2) + '<small class="g-sub">AC 10</small></div></section>';
+    h += '<div class="opts"><span class="fl">Combat options</span><span class="opt">Parry <b>+' + (f ? 4 : 2) + " AC</b></span>" +
+      (f ? '<span class="opt">Press <b>+2 hit, −4 AC</b></span><span class="opt">Defensive <b>+2 AC, −4 hit</b></span>' : "") + "</div>";
+
+    /* abilities + saves */
+    h += '<div class="twocol"><section class="panel"><div class="group">Ability scores</div><div class="sheet flat">' + ABILITIES.map(function (a, i) {
+      var m = effMod(a.key), bn = racialBonus(a.key);
+      return '<div class="row arow"><span class="name"><span class="nm">' + a.name + '</span><small class="desc">' + ABIL_SHORT[a.key] + (bn ? " · " + k + " +1" : "") + '</small></span><span class="score">' + (auto ? sc[i] : "") + '</span><span class="mod ' + (m === null ? "zero" : cls(m)) + '">' + (m === null ? "—" : fmt(m)) + "</span></div>";
+    }).join("") + "</div></section>" +
+      '<section class="panel"><div class="group">Saving throws</div><div class="sheet flat">' + SAVE_NAMES.map(function (n, i) {
+        var key = i === 4 ? "INT" : "WIS", m = effMod(key);
+        return '<div class="row arow srow"><span class="name"><span class="nm">' + n + '</span><small class="desc">' + SAVE_HINT[i] + (m === null ? " · + " + key + " mod" : "") + '</small></span><span class="mod">' + (m === null ? sv[i] : sv[i] - m) + "</span></div>";
+      }).join("") + '</div><p class="colhint">Roll a d20. Equal or higher saves.</p></section></div>';
+
+    /* skills */
+    var order = ["Architecture", "Bushcraft", "Climb", "Languages", "Open Doors", "Search", "Sleight of Hand", "Sneak Attack", "Stealth", "Tinkering"];
+    var tiles = order.map(function (n) {
+      var cap = "", r = n === "Sneak Attack" ? Math.min(6, skillBase(n) + (state.pts[n] || 0)) : skillRating(n);
+      if (n === "Languages" && effMod("INT") === null) cap = "+ INT mod";
+      if (n === "Open Doors" && effMod("STR") === null) cap = "+ STR mod";
+      if (n === "Sneak Attack" && r > 1) cap = "×" + r + " damage";
+      var t = skillTile(n, r, 0, "", cap, n);
+      return t;
+    });
+    if (k === "Specialist") state.custom.forEach(function (c) { if (c.name || c.pts) tiles.push(skillTile("c", 1 + c.pts, 5, "", "", esc(c.name || "Custom skill"))); });
+    h += '<section class="panel"><div class="group">Skills</div><div class="skills-grid">' + tiles.join("") + "</div></section>";
+
+    /* spells: slots and known spells per level */
+    var slots = slotsFor();
+    if (slots) {
+      var book = k !== "Cleric";
+      h += '<section class="panel"><div class="group">Spells</div><div class="spl">' + slots.map(function (n, i) {
+        var lv = i + 1, dots = "", known = [];
+        for (var d = 0; d < n; d++) { var key = lv + "-" + d, u = S.used[key]; dots += '<button type="button" class="slot' + (u ? " used" : "") + '" data-slot="' + key + '" aria-pressed="' + !!u + '" aria-label="' + ordinal(lv) + " level slot " + (d + 1) + '"></button>'; }
+        if (book) { if (lv === 1) known.push("Read Magic"); if (state.spells && state.spells[lv]) known = known.concat(state.spells[lv]); }
+        return '<div class="splrow"><span class="bl">' + ordinal(lv) + '</span><div class="dots">' + dots + "</div>" +
+          (book ? '<div class="chips2">' + (known.length ? known.map(function (s) { return '<span class="sp">' + esc(s) + "</span>"; }).join("") : '<span class="sub none">No spells known</span>') + "</div>" : "") + "</div>";
+      }).join("") + "</div>" + (book ? "" : '<p class="colhint">Prepare any Cleric spell of a level you have slots for.</p>') + "</section>";
+    }
+
+    h += '<section class="panel"><div class="group">Notes</div><textarea class="notes" data-f="notes" rows="4" aria-label="Notes" placeholder="Anything worth remembering">' + esc(S.notes || "") + "</textarea></section>";
+    return h;
+  }
+
+  function renderSheet() {
+    ensureDetails();
+    var auto = state.method === "auto" && state.rolls, notes = ["Saved automatically on this device."];
+    if (!auto) notes.push("Ability scores were rolled at the table, so values that depend on them show the modifier to add.");
+    notes.push("Armor class assumes no armor until equipment is added.");
+    el("body5").innerHTML =
+      '<div class="sheethead"><button class="link" id="back-home" type="button">&larr; Characters</button><button class="link" id="back-det" type="button">Edit</button></div>' +
+      '<input class="namein" data-f="name" type="text" maxlength="40" placeholder="Character name" aria-label="Character name" value="' + esc(state.sheet.name) + '">' +
+      sheetHTML();
+    el("sheettip").textContent = notes.join(" ");
+    persist();
+    el("back-home").addEventListener("click", goHome);
+    el("back-det").addEventListener("click", function () { state.detailsDone = false; state.view = "s4"; layout(true); });
+    var b = el("body5");
+    b.querySelectorAll("[data-f]").forEach(function (i) {
+      i.addEventListener("input", function () {
+        state.sheet[i.dataset.f] = i.value;
+        if (i.id === "curhp") setHpStatus(i.value);
+        if (i.id === "xpin") el("xpfill").style.width = xpPct(i.value) + "%";
+        persist();
+      });
+    });
+    b.querySelectorAll("[data-hp]").forEach(function (x) {
+      x.addEventListener("click", function () {
+        var c = el("curhp"), v = parseInt(c.value, 10);
+        if (isNaN(v)) v = state.hp ? state.hp.total : 0;
+        c.value = v + (+x.dataset.hp); state.sheet.curhp = c.value; setHpStatus(c.value); persist();
+      });
+    });
+    b.querySelectorAll("[data-slot]").forEach(function (x) {
+      x.addEventListener("click", function () {
+        var key = x.dataset.slot, u = !state.sheet.used[key];
+        if (u) state.sheet.used[key] = true; else delete state.sheet.used[key];
+        x.classList.toggle("used", u); x.setAttribute("aria-pressed", u); persist();
+      });
+    });
+  }
+
+  /* ---------- language (English source strings, Russian translated on render) ---------- */
+  var RU_SPELLS = [
+    ["Разговор с книгой", "Очаровать человека", "Понять язык", "Обнаружить магию", "Увеличить", "Колдовской огонь", "Падение пера", "Левитирующий диск", "Закрыть проход", "Идентифицировать", "Свет", "Волшебная аура", "Волшебный снаряд", "Починка", "Сообщение", "Щит", "Сон", "Лезть как паук", "Призыв", "Невидимый слуга"],
+    ["Звуковые чары", "Изменить себя", "Обнаружить невидимое", "Услышать мысли", "Силовой запрет", "Забыть", "Невидимость", "Стук", "Левитация", "Свет, длящийся", "Найти предмет", "Магический рот", "Зеркальное отражение", "Призрачная сила", "Луч слабости", "Разговор с животными", "Зловонное облако", "Стена тумана", "Паутина", "Волшебный замок"],
+    ["Армия из одного", "Ясновидение", "Определить иллюзию", "Рассеять чары", "Взрывающиеся руны", "Ложное мировоззрение", "Полёт", "Газообразная форма", "Сильный ветер", "Спешка", "Удержать существо", "Лунный рёв", "Невидимость, радиус 10 футов", "Призрачная психоделия", "Защита от обычных снарядов", "Секретная страница", "Разговор с мёртвыми", "Странные воды II", "Внушение", "Дыхание под водой"],
+    ["Очаровать монстра", "Смущение", "Создать (малое)", "Копать", "Дверь перемещения", "Расширение", "Сфера неуязвимости, малая", "Земля галлюцинаций", "Невидимость, улучшенная", "Улучшить мнемонику", "Рост растений", "Преобразовать других", "Преобразовать себя", "Защита от обычного оружия", "Семь врат", "Чудовища теней", "Разговор с растениями", "Стена огня", "Стена льда", "Взгляд мага"],
+    ["Воздушный пузырь", "Оживить мёртвых", "Хаос", "Облако-убийца", "Вопрос к звёздам", "Создать (большое)", "Верный пёс", "Слабоумие", "Удержать чудовище", "Подставить руку", "Волшебная банка", "Пройти сквозь стены", "Секретный сундук", "Форма камня", "Телекинез", "Телепортация", "Превратить камень в грязь", "Стена силы", "Стена железа", "Стена камня"],
+    ["Оживить мёртвых чудовищ", "Барьер", "Непрерывность", "Заклинание смерти", "Расщепить", "Подчинение", "Всевидящий взгляд", "Сфера неуязвимости, большая", "Легендарная мудрость", "Размышления", "Обмен разумов", "Сдвинуть землю", "Призрачная сверхсила", "Проекция", "Тени", "Разговор с чудовищами", "Камень в плоть", "Внушение, массовое", "Пелена", "Странная воронка"],
+    ["Оживший шедевр", "Возможность волшебства", "Двухмерность", "Хватающая рука", "Немедленный призыв", "Невидимость, массовая", "Волшебный меч", "Волшебная дверь", "Слово силы: оглушить", "Призматическая сфера", "Призматический луч", "Призматическая стена", "Удалённое наблюдение", "Обратить притяжение", "Имитация", "Обратить заклинание", "Статуя", "Исчезнуть", "Видение", "Колдовская лампа"],
+    ["Симпатия/антипатия", "Очаровать, массово", "Клон", "Требование", "Лабиринт", "Закрыть разум", "Постоянство", "Преобразовать любой объект", "Символ", "Поймать душу"],
+    ["Заточение", "Утраченное волшебство", "Слово силы: убить", "Сменить форму", "Темпоральный стазис", "Остановка времени"]
+  ];
+  var RU = {
+    "Your adventurers": "Ваши персонажи", "Create your adventurer": "Создание персонажа", "Saved characters": "Сохранённые персонажи",
+    "← Characters": "← Персонажи", "Leave? Progress is lost": "Выйти? Прогресс пропадёт", "Language": "Язык",
+    "Character creation steps": "Шаги создания персонажа", "Character sheet": "Лист персонажа",
+    "Ability scores": "Атрибуты", "Class": "Класс", "Level & alignment": "Уровень и мировоззрение", "Character details": "Параметры персонажа",
+    "Roll ability scores": "Бросок атрибутов", "Roll 3d6 for each ability, in this order:": "Бросьте 3d6 для каждого атрибута, по порядку:",
+    "Charisma, Constitution, Dexterity, Intelligence, Strength, Wisdom.": "Харизма, Телосложение, Ловкость, Интеллект, Сила, Мудрость.",
+    "How do you want to roll?": "Как бросать кости?", "I'll roll my own dice": "Брошу свои кости", "Roll for me": "Бросьте за меня",
+    "Choose a class": "Выбор класса", "Level and alignment": "Уровень и мировоззрение",
+    /* abilities */
+    "Charisma": "Харизма", "Constitution": "Телосложение", "Dexterity": "Ловкость", "Intelligence": "Интеллект", "Strength": "Сила", "Wisdom": "Мудрость",
+    "CHA": "ХАР", "CON": "ТЕЛ", "DEX": "ЛОВ", "INT": "ИНТ", "STR": "СИЛ", "WIS": "МДР",
+    "Hire retainers and affect their loyalty": "Найм работников и их лояльность", "Hit Points": "Пункты здоровья",
+    "Armor Class, ranged attacks and initiative": "Класс брони, стрелковые атаки и инициатива",
+    "Languages, saving throws against Magic": "Языки, спасброски против магии", "Melee attacks, Open Doors": "Рукопашные атаки, открывание дверей",
+    "Saving throws against non-Magic": "Спасброски против немагических эффектов",
+    "Retainers, loyalty": "Работники, лояльность", "Hit points": "Пункты здоровья", "AC, ranged, initiative": "КБ, стрельба, инициатива",
+    "Languages, magic saves": "Языки, спасброски от магии", "Melee, Open Doors": "Рукопашная, открывание дверей", "Non-magic saves": "Спасброски от немагических эффектов",
+    "Ability modifiers": "Модификаторы атрибутов", "Ability score": "Значение атрибута", "Modifier": "Модификатор", "Ability": "Атрибут", "Score": "Значение", "Mod": "Мод.",
+    "Additional rules": "Дополнительные правила",
+    "If the total of all six ability modifiers is less than zero, you may discard the character and roll again. You may also swap the position of one pair of ability scores.": "Если сумма всех шести модификаторов меньше нуля, можно отказаться от персонажа и бросить заново. Также можно один раз поменять местами значения двух атрибутов.",
+    "Swap two scores": "Поменять два атрибута", "Swap used": "Обмен использован", "Swap them": "Поменять", "Cancel": "Отмена", "Continue": "Продолжить",
+    "Tap two abilities above. Their scores trade places. You can only do this once.": "Выберите два атрибута выше. Их значения поменяются местами. Это можно сделать только один раз.",
+    "Below zero. The rules let you discard this character and roll a new one.": "Меньше нуля. По правилам можно отказаться от персонажа и бросить заново.",
+    "Discard and reroll": "Отказаться и перебросить", "Redo ability scores": "Перебросить атрибуты", "Ability scores rolled manually": "Атрибуты брошены вручную",
+    "Back": "Назад", "Level": "Уровень", "Alignment": "Мировоззрение", "modifier": "модификатор",
+    /* classes */
+    "Cleric": "Клирик", "Fighter": "Воин", "Magic-User": "Маг", "Specialist": "Специалист", "Dwarf": "Дворф", "Elf": "Эльф", "Halfling": "Полурослик",
+    "Human classes": "Люди", "Non-human classes": "Полу-люди",
+    "Tip: new players are advised to start with a human class.": "Совет: новичкам лучше начать с человеческого класса.",
+    "Prepares and casts any spell on the Cleric list": "Готовит и колдует любые заклинания из списка Клирика", "Needs a holy symbol to cast": "Для колдовства нужен святой символ",
+    "Best attack bonuses": "Лучшие бонусы атаки", "More combat options, like a stronger parry": "Больше боевых приёмов, например усиленное парирование",
+    "Casts spells from a spellbook of known spells": "Колдует известные заклинания из книги заклинаний", "Needs both hands free to cast": "Для колдовства нужны свободные руки",
+    "Gets skill points to improve skills": "Получает очки навыков", "Can Sneak Attack and use Specialist Tools": "Скрытая атака и инструменты специалиста",
+    "+1 Constitution modifier": "+1 к модификатору Телосложения", "Carries 5 more items before becoming encumbered": "Несёт на 5 предметов больше без перегрузки",
+    "Architecture 3 in 6": "Архитектура 3 из 6", "Casts Magic-User spells, but knows fewer of them": "Колдует заклинания Мага, но знает их меньше",
+    "Needs only one hand to cast": "Для колдовства нужна одна рука", "Search 2 in 6, surprised only 1 in 6": "Поиск 2 из 6, застигнут врасплох лишь 1 из 6",
+    "+1 Dexterity modifier, +1 AC when not surprised": "+1 к модификатору Ловкости, +1 КБ, если не застигнут врасплох",
+    "Stealth 5 in 6, Bushcraft 3 in 6": "Скрытность 5 из 6, Выживание в лесу 3 из 6", "Cannot use large weapons": "Не может пользоваться большим оружием",
+    "Dwarf bonus": "Бонус Дворфа", "Halfling bonus": "Бонус Полурослика",
+    /* alignment */
+    "Lawful": "Законный", "Neutral": "Нейтральный", "Chaotic": "Хаотичный",
+    "Alignment is not good or evil, it is what the character believes about the universe.": "Мировоззрение — не добро и не зло, а то, во что персонаж верит о вселенной.",
+    "Believes the universe follows one fixed plan, and looks for signs of it.": "Верит, что вселенная следует единому плану, и ищет его знаки.",
+    "Follows neither Law nor Chaos, and simply exists between them.": "Не следует ни Закону, ни Хаосу, а просто существует между ними.",
+    "Believes chaos is the source of magic, and all things will be unmade.": "Верит, что хаос — источник магии и всё сущее будет разрушено.",
+    "Starting level": "Начальный уровень", "Lower level": "Понизить уровень", "Raise level": "Повысить уровень",
+    /* details step */
+    "Roll hit points": "Бросить ПЗ", "hit points": "пунктов здоровья", "CON modifier": "Модификатор ТЕЛ",
+    "The Dwarf +1 to CON modifier is added for you.": "Бонус Дворфа +1 к модификатору ТЕЛ уже учтён.",
+    "Saving throws": "Спасброски", "Attack bonuses and combat options": "Бонусы атаки и боевые приёмы", "Base AB": "Базовый БА",
+    "Standard attack": "Обычная атака", "Attack normally.": "Атака без изменений.",
+    "Parry": "Парирование", "Press": "Напор", "Defensive fighting": "Бой от обороны", "Defensive": "От обороны",
+    "A fierce melee attack: +2 to hit, −4 AC.": "Яростная рукопашная атака: +2 к удару, −4 к КБ.",
+    "A cautious melee attack: +2 AC, −4 to hit.": "Осторожная рукопашная атака: +2 к КБ, −4 к удару.",
+    "Skills": "Навыки", "Add a point": "Добавить очко", "Remove a point": "Убрать очко", "Custom skill": "Свой навык",
+    "Each point adds 1 to a skill, up to 6 in 6. Sneak Attack points add 1 to the damage multiplier and give +2 to hit.": "Каждое очко добавляет 1 к навыку, до 6 из 6. Очки Скрытой атаки увеличивают множитель урона на 1 и дают +2 к удару.",
+    "Architecture": "Архитектура", "Bushcraft": "Выживание в лесу", "Climb": "Лазание", "Languages": "Языки", "Open Doors": "Открывание дверей",
+    "Search": "Поиск", "Sleight of Hand": "Ловкость рук", "Sneak Attack": "Скрытая атака", "Stealth": "Скрытность", "Tinkering": "Механика",
+    "Spell slots": "Ячейки заклинаний", "Spellbook": "Книга заклинаний", "Spells": "Заклинания", "Roll spellbook": "Бросить заклинания", "Roll": "Бросьте",
+    "Slots are the most spells you can have prepared at once, per spell level.": "Ячейки — сколько заклинаний каждого уровня можно держать подготовленными одновременно.",
+    "Clerics have no spellbook. Any spell on the Cleric list, up to your highest spell level, can be prepared.": "У Клириков нет книги заклинаний. Можно подготовить любое заклинание из списка Клирика до высшего доступного уровня.",
+    "Your spellbook has Read Magic and the spells below. Each level above 1 adds one free spell, of the highest spell level you can cast at that level. Re-roll duplicates.": "В книге есть «Читать магию» и заклинания ниже. Каждый уровень выше первого даёт одно бесплатное заклинание высшего доступного на нём уровня. Повторы перебрасываются.",
+    "No spells known": "Нет известных заклинаний", "Prepare any Cleric spell of a level you have slots for.": "Можно подготовить любое заклинание Клирика того уровня, для которого есть ячейки.",
+    "Read Magic": "Читать магию",
+    "Character details recorded": "Параметры персонажа записаны", "Next step: possessions.": "Следующий шаг: снаряжение.", "Edit details": "Изменить параметры",
+    /* sheet */
+    "Edit": "Изменить", "Character name": "Имя персонажа", "Current experience points": "Текущий опыт",
+    "Lose 1 hit point": "Потерять 1 ПЗ", "Gain 1 hit point": "Получить 1 ПЗ", "Current hit points": "Текущие ПЗ", "Maximum hit points": "Максимум ПЗ",
+    "Unable to act": "Не может действовать", "Mortally wounded": "Смертельное ранение", "Dead": "Смерть",
+    "AC": "КБ", "Melee AB": "Рукопашная", "Ranged AB": "Стрелковая", "Surprise": "Врасплох", "AC 10 when": "КБ 10, если", "surprised": "застигнут",
+    "Combat options": "Боевые приёмы",
+    "Paralyze": "Паралич", "Poison": "Яд", "Breath Weapon": "Детонация", "Magical Device": "Магическое устройство", "Magic": "Магия",
+    "Petrification, hold, mobility hazards": "Окаменение, удержание, обездвиживание", "Instant death, KO": "Мгновенная смерть, потеря сознания",
+    "Area effects": "Эффекты по площади", "Spell-like effects from items": "Магические эффекты предметов", "Spells, innate abilities": "Заклинания, врождённые способности",
+    "Roll a d20. Equal or higher saves.": "Бросьте d20: результат не ниже значения — спасение.",
+    "Notes": "Заметки", "Anything worth remembering": "Всё, что стоит запомнить",
+    "Saved automatically on this device.": "Сохраняется автоматически на этом устройстве.",
+    "Ability scores were rolled at the table, so values that depend on them show the modifier to add.": "Атрибуты брошены за столом, поэтому у зависящих от них значений указан модификатор, который нужно добавить.",
+    "Armor class assumes no armor until equipment is added.": "Класс брони указан без доспехов, пока не добавлено снаряжение.",
+    /* list */
+    "New character": "Новый персонаж", "Backup": "Резервная копия", "Import": "Импорт", "Export": "Экспорт", "Delete": "Удалить", "Sure?": "Точно?",
+    "No saved characters yet. Create your first one.": "Сохранённых персонажей пока нет. Создайте первого.",
+    "Characters are saved automatically in this browser on this device. Use Backup to keep a copy elsewhere.": "Персонажи сохраняются автоматически в этом браузере на этом устройстве. Сделайте резервную копию, чтобы хранить их где-то ещё.",
+    "This browser is blocking saving, so characters will be lost when you close the page. Use Backup to keep a copy.": "Этот браузер блокирует сохранение, и персонажи пропадут после закрытия страницы. Сделайте резервную копию.",
+    "Copy this text and keep it somewhere safe.": "Скопируйте этот текст и сохраните его в надёжном месте.",
+    "Copy this text to keep or move this character. Use Import to add it back.": "Скопируйте этот текст, чтобы сохранить или перенести персонажа. Вернуть его можно через Импорт.",
+    "Paste backup text here, or choose a file.": "Вставьте сюда текст резервной копии или выберите файл.",
+    "Add characters": "Добавить персонажей", "Choose file": "Выбрать файл", "Close": "Закрыть", "Copy": "Копировать", "Copied.": "Скопировано.",
+    "Press Ctrl/Cmd+C to copy.": "Нажмите Ctrl/Cmd+C, чтобы скопировать.", "That doesn't look like a character backup.": "Это не похоже на резервную копию персонажа.",
+    "Backup text": "Текст резервной копии"
+  };
+  var RU_GEN = { "Cleric": "Клирика", "Magic-User": "Мага", "Elf": "Эльфа" };
+  var RU_ACC = { "Charisma": "Харизму", "Constitution": "Телосложение", "Dexterity": "Ловкость", "Intelligence": "Интеллект", "Strength": "Силу", "Wisdom": "Мудрость" };
+  var RU_ORD = { "1st": "1-й", "2nd": "2-й", "3rd": "3-й", "4th": "4-й", "5th": "5-й", "6th": "6-й", "7th": "7-й", "8th": "8-й", "9th": "9-й" };
+  MU_SPELLS.forEach(function (lvl, i) { lvl.forEach(function (n, j) { if (RU_SPELLS[i] && RU_SPELLS[i][j]) RU[n] = RU_SPELLS[i][j]; }); });
+
+  /* token pass for short stat strings like "+2 hit, −4 AC" or "1d6 + 2 × CON mod" */
+  var RU_TOKENS = [
+    [/\b(CHA|CON|DEX|INT|STR|WIS) mod\b/g, function (m, k) { return "мод. " + RU[k]; }],
+    [/\b(CHA|CON|DEX|INT|STR|WIS)\b/g, function (m, k) { return RU[k]; }],
+    [/\bin 6\b/g, "из 6"], [/\bAC\b/g, "КБ"], [/\bHP\b/g, "ПЗ"], [/\bXP\b/g, "опыта"], [/\bhit\b/g, "к удару"], [/\bdamage\b/g, "урона"], [/\bmod\b/g, "мод."]
+  ];
+  var RU_RULES = [
+    [/^Level (\d+) (Cleric|Fighter|Magic-User|Specialist|Dwarf|Elf|Halfling)$/, function (m, l, k) { return RU[k] + " " + l + "-го уровня"; }],
+    [/^(Cleric|Fighter|Magic-User|Specialist|Dwarf|Elf|Halfling) \+1$/, function (m, k) { return RU[k] + " +1"; }],
+    [/^Required for (.+)$/, function (m, k) { return "Обязательно для " + (RU_GEN[k] || RU[k] || k); }],
+    [/^(1st|2nd|3rd|[4-9]th)$/, function (m, o) { return RU_ORD[o]; }],
+    [/^(1st|2nd|3rd|[4-9]th) level$/, function (m, o) { return RU_ORD[o] + " уровень"; }],
+    [/^(1st|2nd|3rd|[4-9]th) level slot (\d+)$/, function (m, o, n) { return "Ячейка " + RU_ORD[o].replace("-й", "-го") + " уровня, " + n; }],
+    [/^(\d+) of 6$/, "$1 из 6"],
+    [/^of (\d+) skill points left$/, "из $1 очков навыков осталось"],
+    [/^Total modifier (.+)$/, "Сумма модификаторов $1"],
+    [/^Swap (\w+) with (\w+)\? You can only do this once\.$/, function (m, a, b) { return "Поменять " + RU_ACC[a] + " и " + RU_ACC[b] + "? Это можно сделать только один раз."; }],
+    [/^Minimum (\d+) hit points at level 1\.$/, "Минимум $1 ПЗ на 1 уровне."],
+    [/^Raised to the level 1 minimum of (\d+)\.$/, "Поднято до минимума 1 уровня: $1."],
+    [/^HP (d\d+)$/, "ПЗ $1"],
+    [/^Take no other action this round for \+(\d) AC\.$/, "Никаких других действий в этом раунде: +$1 к КБ."],
+    [/^Custom skill (\d) name$/, "Название своего навыка $1"],
+    [/^Added (\d+)\.$/, "Добавлено: $1."],
+    [/^Hit points: rolled at the table$/, "Пункты здоровья: брошены за столом"],
+    [/^(Hit points|Spellbook): ?$/, function (m, k) { return RU[k] + ": "; }]
+  ];
+
+  var LANG = "en";
+  try { LANG = localStorage.getItem("lotfp.lang") === "ru" ? "ru" : "en"; } catch (e) {}
+  function trOne(s) {
+    if (RU.hasOwnProperty(s)) return RU[s];
+    for (var i = 0; i < RU_RULES.length; i++) if (RU_RULES[i][0].test(s)) return s.replace(RU_RULES[i][0], RU_RULES[i][1]);
+    return null;
+  }
+  function tr(s) {
+    var r = trOne(s);
+    if (r !== null) return r;
+    if (s.indexOf(" · ") > -1) return s.split(" · ").map(tr).join(" · ");
+    var lead = s.match(/^[.,:;]\s*/);
+    if (lead) { r = tr(s.slice(lead[0].length)); return r === s.slice(lead[0].length) ? s : lead[0] + r; }
+    var parts = s.replace(/([.?!])\s+(?=[A-Z])/g, "$1\u0000").split("\u0000");
+    if (parts.length > 1) { var ok = true, out = parts.map(function (p) { var q = trOne(p); if (q === null) ok = false; return q; }); if (ok) return out.join(" "); }
+    var t = s;
+    RU_TOKENS.forEach(function (x) { t = t.replace(x[0], x[1]); });
+    if (!/[A-Za-z]/.test(t.replace(/\b\d*d\d+\b/g, ""))) return t;
+    if (window.__i18nMissing) window.__i18nMissing.add(s);
+    return s;
+  }
+  function skipNode(n) {
+    for (var p = n.parentNode; p && p !== document.body; p = p.parentNode) {
+      if (p.nodeType === 1 && (p.tagName === "SCRIPT" || p.tagName === "STYLE" || p.tagName === "TEXTAREA" || p.hasAttribute("data-notr"))) return true;
+    }
+    return false;
+  }
+  var ATTRS = ["placeholder", "aria-label", "title"];
+  function translateTree(root) {
+    if (LANG !== "ru" || !root) return;
+    if (root.nodeType === 3) { trText(root); return; }
+    if (root.nodeType !== 1) return;
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), n, list = [];
+    while ((n = w.nextNode())) list.push(n);
+    list.forEach(trText);
+    var els = [root].concat([].slice.call(root.querySelectorAll("[placeholder],[aria-label],[title]")));
+    els.forEach(function (e) {
+      if (!e.getAttribute) return;
+      ATTRS.forEach(function (a) {
+        var v = e.getAttribute(a);
+        if (!v || !/[A-Za-z]/.test(v)) return;
+        e.__en = e.__en || {};
+        if (!(a in e.__en)) e.__en[a] = v;
+        var r = tr(v);
+        if (r !== v) e.setAttribute(a, r);
+      });
+    });
+  }
+  function trText(n) {
+    var d = n.data;
+    if (!/[A-Za-z]/.test(d) || skipNode(n)) return;
+    var m = d.match(/^(\s*)([\s\S]*?)(\s*)$/), core = m[2].replace(/\s+/g, " ");
+    var r = tr(core);
+    if (r !== core) { if (n.__en === undefined) n.__en = d; n.data = m[1] + r + m[3]; }
+  }
+  function restoreEnglish() {
+    var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), n;
+    while ((n = w.nextNode())) if (n.__en !== undefined) { n.data = n.__en; n.__en = undefined; }
+    document.querySelectorAll("[placeholder],[aria-label],[title]").forEach(function (e) {
+      if (e.__en) { Object.keys(e.__en).forEach(function (a) { e.setAttribute(a, e.__en[a]); }); e.__en = null; }
+    });
+  }
+  var observer = new MutationObserver(function (muts) {
+    if (LANG !== "ru") return;
+    muts.forEach(function (m) { m.addedNodes.forEach(function (x) { translateTree(x); }); });
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+  function renderLangToggle() {
+    document.querySelectorAll("[data-lang]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.lang === LANG); });
+  }
+  function setLang(l) {
+    if (l === LANG) return;
+    LANG = l;
+    try { localStorage.setItem("lotfp.lang", l); } catch (e) {}
+    document.documentElement.lang = l;
+    if (l === "en") restoreEnglish();
+    render();
+    if (l === "ru") translateTree(document.body);
+    renderLangToggle();
+  }
+  document.documentElement.lang = LANG;
+  document.querySelectorAll("[data-lang]").forEach(function (b) { b.addEventListener("click", function () { setLang(b.dataset.lang); }); });
+  renderLangToggle();
+
+  /* ---------- storage ---------- */
+  var KEY = "lotfp.characters.v1", mem = null, storageOk = true;
+  function loadAll() {
+    if (mem) return mem;
+    try { var r = localStorage.getItem(KEY); mem = r ? JSON.parse(r) : []; } catch (e) { storageOk = false; mem = []; }
+    if (!Array.isArray(mem)) mem = [];
+    return mem;
+  }
+  function saveAll(list) {
+    mem = list;
+    try { localStorage.setItem(KEY, JSON.stringify(list)); storageOk = true; } catch (e) { storageOk = false; }
+  }
+  function persist() {
+    if (!state.id) state.id = "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    var list = loadAll().slice(), snap = { id: state.id, savedAt: Date.now(), state: JSON.parse(JSON.stringify(state)) };
+    var i = list.findIndex(function (x) { return x.id === state.id; });
+    if (i < 0) list.unshift(snap); else list[i] = snap;
+    saveAll(list);
+  }
+  function charTitle(c) { var t = c.state; return (t.sheet && t.sheet.name) || ("Level " + t.level + " " + t.klass); }
+  function openChar(c) {
+    state = Object.assign(freshState(), JSON.parse(JSON.stringify(c.state)));
+    state.id = c.id; state.view = "s5"; syncChar(); layout(true);
+  }
+  function goHome() { state = freshState(); state.view = "home"; layout(true); }
+  function importText(txt) {
+    var data = JSON.parse(txt), arr = Array.isArray(data) ? data : [data], n = 0, list = loadAll().slice();
+    arr.forEach(function (c) {
+      if (!c || !c.id || !c.state || !c.state.klass || !c.state.level) return;
+      var i = list.findIndex(function (x) { return x.id === c.id; });
+      if (i < 0) list.push(c); else list[i] = c;
+      n++;
+    });
+    if (!n) throw new Error("no characters");
+    saveAll(list); return n;
+  }
+
+  function renderHome() {
+    var list = loadAll(), b = el("bodyH");
+    var items = list.map(function (c) {
+      var t = c.state;
+      return '<li class="char"><button class="char-open" type="button" data-open="' + esc(c.id) + '"><b' + (t.sheet && t.sheet.name ? " data-notr" : "") + '>' + esc(charTitle(c)) + "</b><span>" + esc(t.klass) + " \u00b7 " + esc(t.align || "") + (t.hp ? " \u00b7 " + t.hp.total + " HP" : "") + '</span></button><button class="btn ghost sm" type="button" data-exp="' + esc(c.id) + '">Export</button><button class="btn ghost sm" type="button" data-del="' + esc(c.id) + '">Delete</button></li>';
+    }).join("");
+    b.innerHTML = '<div class="actions"><button class="btn" id="h-new" type="button">New character</button></div>' +
+      (list.length ? '<ul class="chars">' + items + "</ul>" : '<p class="sub">No saved characters yet. Create your first one.</p>') +
+      '<div class="actions"><button class="btn ghost sm" id="h-bak" type="button">Backup</button><button class="btn ghost sm" id="h-imp" type="button">Import</button></div>' +
+      '<div id="h-io"></div>';
+    var ht = el("hometip");
+    ht.className = "tip outside" + (storageOk ? "" : " warn");
+    ht.textContent = storageOk ? "Characters are saved automatically in this browser on this device. Use Backup to keep a copy elsewhere." : "This browser is blocking saving, so characters will be lost when you close the page. Use Backup to keep a copy.";
+    el("h-new").addEventListener("click", function () { state = freshState(); render(); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    el("h-bak").addEventListener("click", function () { ioPanel("Copy this text and keep it somewhere safe.", JSON.stringify(loadAll()), false); });
+    el("h-imp").addEventListener("click", function () { ioPanel("Paste backup text here, or choose a file.", "", true); });
+    b.querySelectorAll("[data-open]").forEach(function (x) { x.addEventListener("click", function () { var c = loadAll().find(function (q) { return q.id === x.dataset.open; }); if (c) openChar(c); }); });
+    b.querySelectorAll("[data-exp]").forEach(function (x) { x.addEventListener("click", function () { var c = loadAll().find(function (q) { return q.id === x.dataset.exp; }); if (c) ioPanel("Copy this text to keep or move this character. Use Import to add it back.", JSON.stringify([c]), false); }); });
+    b.querySelectorAll("[data-del]").forEach(function (x) {
+      x.addEventListener("click", function () {
+        if (x.dataset.arm !== "1") { x.dataset.arm = "1"; x.textContent = "Sure?"; setTimeout(function () { x.dataset.arm = ""; x.textContent = "Delete"; }, 3000); return; }
+        saveAll(loadAll().filter(function (q) { return q.id !== x.dataset.del; })); renderHome();
+      });
+    });
+  }
+  function ioPanel(msg, text, imp, host) {
+    var h = el(host || "h-io");
+    h.innerHTML = '<div class="io"><p class="sub">' + msg + '</p><textarea id="io-t" rows="5" spellcheck="false" aria-label="Backup text">' + esc(text) + "</textarea>" +
+      '<div class="actions">' + (imp ? '<button class="btn" id="io-go" type="button">Add characters</button><label class="btn ghost file">Choose file<input id="io-f" type="file" accept=".json,.txt,application/json,text/plain" hidden></label>' : '<button class="btn" id="io-copy" type="button">Copy</button>') +
+      '<button class="btn ghost" id="io-x" type="button">Close</button><span class="sub" id="io-m"></span></div></div>';
+    var t = el("io-t"), m = el("io-m");
+    el("io-x").addEventListener("click", function () { h.innerHTML = ""; });
+    if (imp) {
+      var go = function () { try { var n = importText(t.value); if (!host) renderHome(); else m.textContent = "Added " + n + "."; } catch (e) { m.textContent = "That doesn't look like a character backup."; } };
+      el("io-go").addEventListener("click", go);
+      el("io-f").addEventListener("change", function (ev) { var f = ev.target.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () { t.value = r.result; go(); }; r.readAsText(f); });
+    } else {
+      t.addEventListener("focus", function () { t.select(); });
+      el("io-copy").addEventListener("click", function () { t.select(); try { navigator.clipboard.writeText(t.value).then(function () { m.textContent = "Copied."; }, function () { m.textContent = "Press Ctrl/Cmd+C to copy."; }); } catch (e) { m.textContent = "Press Ctrl/Cmd+C to copy."; } });
+    }
+  }
+
+  /* which card is visible */
+  function layout(scroll) {
+    var v = state.view;
+    el("home").hidden = v !== "home"; el("hometip").hidden = v !== "home"; el("sheettip").hidden = v !== "s5";
+    el("rail").hidden = v === "home" || v === "s5";
+    el("title").hidden = v === "s5"; el("kicker").hidden = v === "s5";
+    el("title").textContent = v === "home" ? "Your adventurers" : "Create your adventurer";
+    el("restart").hidden = v === "home" || v === "s5";
+    el("step1").hidden = !(v === "s1" || v === "recap");
+    el("step2").hidden = v !== "s2";
+    el("step3").hidden = v !== "s3";
+    el("step4").hidden = v !== "s4";
+    el("step5").hidden = v !== "s5";
+    el("banner").hidden = !(v === "s2" || v === "s3" || v === "s4");
+    if (v === "recap") renderRecap();
+    if (v === "s2") { renderBanner(); renderClass(); }
+    if (v === "s3") { renderBanner(); renderLevelAlign(); }
+    if (v === "s4") { renderBanner(); renderDetails(); }
+    if (v === "s5") renderSheet();
+    if (v === "home") renderHome();
+    renderRail();
+    if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function render() {
+    el("pick-manual").setAttribute("aria-pressed", state.method === "manual");
+    el("pick-auto").setAttribute("aria-pressed", state.method === "auto");
+    layout(false);
+    if (state.view === "s1") {
+      if (state.method === "manual") renderManual();
+      else if (state.method === "auto") renderAuto();
+      else el("body").innerHTML = "";
+    }
+  }
+
+  var restartTimer = null;
+  el("restart").addEventListener("click", function () {
+    var b = el("restart");
+    if (state.method && !restartTimer) {
+      b.textContent = "Leave? Progress is lost";
+      restartTimer = setTimeout(function () { restartTimer = null; b.innerHTML = "&larr; Characters"; }, 3000);
+      return;
+    }
+    clearTimeout(restartTimer); restartTimer = null; b.innerHTML = "&larr; Characters";
+    window.lotfpCharacter = undefined; goHome();
+  });
+  el("pick-manual").addEventListener("click", function () { state.method = "manual"; state.confirmed = false; state.view = "s1"; render(); });
+  el("pick-auto").addEventListener("click", function () { state.method = "auto"; state.confirmed = false; state.view = "s1"; render(); });
+  state.view = "home";
+  render();
+  translateTree(document.body);
+})();
+</script>
+
+</body></html>
