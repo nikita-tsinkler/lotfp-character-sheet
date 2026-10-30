@@ -467,7 +467,7 @@ html[lang="ru"] h1 { font-weight: 500; }
 .eb-bot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 12px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
 .eb-mv { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
 .eb-warn { margin: 0; font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
-.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--fg); }
+.seg { display: grid; grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr)); border: 1px solid var(--fg); }
 .seg button { background: transparent; color: var(--fg); border: 0; padding: 9px 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
 .seg button[aria-selected="true"] { background: var(--fg); color: var(--bg); }
 .seg button i { font-style: normal; opacity: .7; margin-left: 4px; }
@@ -535,13 +535,32 @@ html[lang="ru"] h1 { font-weight: 500; }
 .gopts > button { grid-column: 4; border-style: dashed; }
 .gopts button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); border-style: solid; }
 .gdesc { grid-column: 1 / -1; margin: 0; max-width: none; }
+/* inventory in play: the same bar and views as the equipment step, plus a purse, a market and an add form */
+#body7 { display: flex; flex-direction: column; gap: 16px; }
+#body7:empty { display: none; }
+.purse { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.purse input { width: 8em; font: 17px var(--font-mono); padding: 5px 8px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 0; text-transform: none; }
+.mkt { display: flex; flex-direction: column; gap: 6px; }
+.mkt .seg { max-width: 280px; }
+.mkt .tip { margin: 0; font-size: 14px; }
+.it .stp.drop { width: 72px; }
+.it .stp.drop i { flex: 1; }
+.it .stp.buy i { font-style: normal; font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-right: 8px; align-self: center; }
+.newit { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.newit .row2 { display: grid; grid-template-columns: minmax(0, 1fr) 5.5em; gap: 10px; }
+.newit label, .newit .lbl { display: flex; flex-direction: column; gap: 4px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.newit input, .newit textarea, .newit select { font: 17px var(--font-body); padding: 7px 10px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 0; text-transform: none; letter-spacing: 0; }
+.newit textarea { resize: vertical; min-height: 3.2em; }
+.encpick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); }
+.encpick button { background: transparent; color: var(--muted); border: 0; padding: 7px 2px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; }
+.encpick button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.it-n .tg.c { border-style: dashed; }
 @media (max-width: 560px) {
   .kitrow { grid-template-columns: 1fr; }
   .it-n { font-size: 16px; }
   .it { gap: 4px 8px; }
 }
-@media (max-width: 480px) { .gearhead { margin: -4px -16px 0; padding: 10px 16px; } }
-</style>
+@media (max-width: 480px) { .gearhead { margin: -4px -16px 0; padding: 10px 16px; } }</style>
 
 <main>
   <header id="pagehead">
@@ -600,6 +619,14 @@ html[lang="ru"] h1 { font-weight: 500; }
       <h2 id="s6t">Equipment</h2>
     </header>
     <div id="body6"></div>
+  </section>
+
+  <section class="card" id="step7" aria-labelledby="s7t" hidden>
+    <header>
+      <div class="sheethead"><button class="link" id="inv-back" type="button">&larr; Sheet</button></div>
+      <h2 id="s7t">Inventory</h2>
+    </header>
+    <div id="body7"></div>
   </section>
 
   <section class="card" id="step5" aria-label="Character sheet" hidden>
@@ -672,7 +699,8 @@ html[lang="ru"] h1 { font-weight: 500; }
     klass: null, classDone: false, view: "s1",
     level: 1, align: null, alignDone: false,
     detailsDone: false, detSig: null, hp: null, spells: null, conInput: null, pts: {}, custom: [], extraLv: [],
-    money: null, gear: null, gearSig: null, gearDone: false, shopTab: "combat", shopSub: {}, shopQ: "", gearView: "pack", gunOpt: {}, id: null, sheet: { name: "", player: "", age: "", sex: "", curhp: null, maxhp: "", notes: "", used: {} }
+    money: null, gear: null, gearSig: null, gearDone: false, shopTab: "combat", shopSub: {}, shopQ: "", gearView: "pack", gunOpt: {},
+    purse: null, homebrew: {}, invView: "pack", market: "city", addQ: "", id: null, sheet: { name: "", player: "", age: "", sex: "", curhp: null, maxhp: "", notes: "", used: {} }
    }; }
   var state = freshState();
 
@@ -684,7 +712,7 @@ html[lang="ru"] h1 { font-weight: 500; }
   ];
   var FORCED = {};
   Object.keys(GAME.classes).forEach(function (k) { if (GAME.classes[k].alignment) FORCED[k] = GAME.classes[k].alignment; });
-  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s6: 4, s5: 4 };
+  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s6: 4, s5: 4, inv: 4 };
   function renderRail() {
     var cur = VIEW_IDX[state.view], done = [state.confirmed, state.classDone, state.alignDone, state.detailsDone, state.gearDone];
     el("rail").innerHTML = STEPS.map(function (s, i) {
@@ -1161,7 +1189,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     var rm = el("roll-money");
     if (rm) rm.addEventListener("click", function () { rollMoney(); renderDetails(); });
     var mi = el("money-in");
-    if (mi) mi.addEventListener("input", function () { var v = parseInt(mi.value.replace(/[^\d]/g, ""), 10); state.money = isNaN(v) ? null : { total: v }; });
+    if (mi) mi.addEventListener("input", function () { var v = parseInt(mi.value.replace(/[^\d]/g, ""), 10); state.money = isNaN(v) ? null : { total: v }; state.purse = null; });
     var rh = el("roll-hp");
     if (rh) rh.addEventListener("click", function () {
       var ci = el("con-in");
@@ -1190,7 +1218,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     var dice = [], s = 0;
     for (var i = 0; i < moneyDice(); i++) { dice.push(d6()); s += dice[i]; }
     state.money = { total: (state.level > 1 ? SM.base : 0) + s * SM.mult, dice: dice };
-    state.moneyAnim = true;
+    state.moneyAnim = true; state.purse = null;
   }
   function moneySection() {
     var m = state.money, right, dice = "";
@@ -1216,6 +1244,11 @@ html[lang="ru"] h1 { font-weight: 500; }
     { k: "travel", en: "Travel", subs: [["animals", "Animals"], ["vehicles", "Vehicles"]] },
     { k: "misc", en: "Misc", subs: [["containers", "Containers"], ["tools", "Tools"], ["clothing", "Clothing & valuables"], ["holy", "Holy & herbs"], ["writing", "Books & writing"], ["other", "Other"]] }
   ];
+  /* in play, purchases use the City or Rural price; creation pays the lower of the two, which is the data's sp */
+  var MARKETS = ["city", "rural"], MARKET_LBL = { city: "Town", rural: "Rural" };
+  var HAS_MARKETS = GAME.equipment.some(function (e) { return MARKETS.some(function (m) { return m in e; }); });
+  /* "create" while building the character, "play" on the sheet's inventory page */
+  var MODE = "create";
   var PACK_GROUPS = [["food", "Food"], ["light", "Light"], ["combat", "Combat & clothing"], ["misc", "Misc"]];
   var CLASS_NEEDS = { "Cleric": { ids: ["holy-symbol-wood", "holy-symbol-steel", "holy-symbol-silver"], text: "Clerics need a holy symbol to cast spells." },
     "Specialist": { ids: ["specialists-tools"], text: "Specialists need Specialist's Tools to find traps and open locks." } };
@@ -1232,22 +1265,32 @@ html[lang="ru"] h1 { font-weight: 500; }
   }
   function variant(base, lock, rifled) {
     var id = base + "~" + lock + (rifled ? "~r" : ""), b = ITEMS[base], L = lockOf(lock);
-    if (!ITEMS[id]) ITEMS[id] = Object.assign({}, b, { id: id, base: base, en: b.en + " (" + L.en + (rifled ? ", rifled" : "") + ")", sp: b.sp * L.mult * (rifled ? FO.rifled.mult : 1), desc: null });
+    if (!ITEMS[id]) {
+      var v = ITEMS[id] = Object.assign({}, b, { id: id, base: base, en: b.en + " (" + L.en + (rifled ? ", rifled" : "") + ")", desc: null });
+      ["sp"].concat(MARKETS).forEach(function (k) { if (typeof b[k] === "number") v[k] = b[k] * L.mult * (rifled ? FO.rifled.mult : 1); });
+    }
     return ITEMS[id];
   }
+  /* items described by the player in play; they live in state.homebrew and join the catalog like gun variants */
+  function homebrewItem(id, h) { return ITEMS[id] = { id: id, en: h.en, enc: h.enc, desc: h.desc || null, sp: 0, pack: "misc", custom: true }; }
   function registerVariants() {
-    Object.keys(state.gear).forEach(function (id) { var p = id.split("~"); if (p.length > 1) variant(p[0], p[1], p[2] === "r"); });
+    Object.keys(state.gear || {}).forEach(function (id) { var p = id.split("~"); if (p.length > 1) variant(p[0], p[1], p[2] === "r"); });
+    state.homebrew = state.homebrew || {};
+    Object.keys(state.homebrew).forEach(function (id) { homebrewItem(id, state.homebrew[id]); });
   }
 
   function gearSig() { return JSON.stringify([state.klass, state.level]); }
   function ensureGear() {
     state.gunOpt = state.gunOpt || {};
     if (state.gear && state.gearSig === gearSig()) { registerVariants(); return; }
-    state.gearSig = gearSig(); state.money = null; state.gearDone = false;
+    state.gearSig = gearSig(); state.money = null; state.purse = null; state.gearDone = false; state.homebrew = {};
     state.gear = { "travel-clothes": { q: 1 } };
     if (state.klass === "Magic-User" || state.klass === "Elf") state.gear.spellbook = { q: 1 };
   }
-  function cpOf(it) { return Math.round((it.sp || 0) * 10); }
+  function mkt() { return MODE === "play" ? state.market : null; }
+  /* a market column set to null means the item isn't sold there */
+  function unsold(it) { var m = mkt(); return !!m && it[m] === null && it.sp !== null; }
+  function cpOf(it) { var m = mkt(), v = m && typeof it[m] === "number" ? it[m] : it.sp; return Math.round((v || 0) * 10); }
   function stepOf(it) { return it.step || 1; }
   function money(cp) {
     var neg = cp < 0, s, c;
@@ -1256,10 +1299,15 @@ html[lang="ru"] h1 { font-weight: 500; }
   }
   function spentCp() {
     var t = 0;
-    Object.keys(state.gear).forEach(function (id) { var it = ITEMS[id]; if (it && !it.free) t += cpOf(it) * state.gear[id].q; });
+    Object.keys(state.gear).forEach(function (id) { var it = ITEMS[id]; if (it && !it.free) t += Math.round((it.sp || 0) * 10) * state.gear[id].q; });
     return t;
   }
-  function leftCp() { return state.money ? state.money.total * 10 - spentCp() : null; }
+  /* money left is derived from the starting money until the character goes into play; from then on it's a purse
+     that purchases take from and the player can set, so eating a ration doesn't refund it */
+  function leftCp() {
+    if (typeof state.purse === "number") return state.purse;
+    return state.money ? state.money.total * 10 - spentCp() : null;
+  }
   function owned(id) { var x = state.gear[id]; return x ? x.q : 0; }
   function carried(id) { var x = state.gear[id]; return x && !x.away ? x.q : 0; }
   function itemName(it) { return it.en; }
@@ -1279,10 +1327,20 @@ html[lang="ru"] h1 { font-weight: 500; }
     return { body: body, ac: ac + (sh ? sh.melee : 0), missile: ac + (sh ? sh.missile : 0) };
   }
 
-  /* encumbrance (p. 42): chain/plate add points, then every 5 different items past the 5th, then each oversized item */
+  /* things that come in explicit stacks count one item per stack: shafts and sling bullets by the bundle they're sold in,
+     pistols by the brace; everything else counts one item each */
+  var STACKS = { "arrows": 20, "bolts": 20, "sling-bullets": 10, "fa-pistol": 2, "fa-gunpowder": 50 };
+  /* holders carry their contents inside their own item: a quiver holds 20 shafts, a horn 50 shots of powder, the Apostles 12 */
+  var HOLDERS = [{ ids: ["arrows", "bolts"], by: { "quiver": 20 } }, { ids: ["fa-gunpowder"], by: { "fa-powder-horn": 50, "fa-12-apostles": 12 } }];
+  function stackOf(it) { return STACKS[it.base || it.id] || 1; }
+
+  /* encumbrance (p. 42): chain/plate add points, then every 5 items past the 5th, then each oversized item */
   function encInfo() {
-    var g = state.gear, body = bodyArmor(), rows = {}, items = 0, over = 0, armor = 0;
-    var quiver = carried("quiver") * 20, shafts = carried("arrows") + carried("bolts");
+    var g = state.gear, body = bodyArmor(), rows = {}, items = 0, over = 0, armor = 0, held = {};
+    HOLDERS.forEach(function (h) {
+      var room = Object.keys(h.by).reduce(function (t, id) { return t + carried(id) * h.by[id]; }, 0);
+      h.ids.forEach(function (id) { var n = Math.min(room, carried(id)); held[id] = n; room -= n; });
+    });
     Object.keys(g).forEach(function (id) {
       var it = ITEMS[id], q = carried(id), r = { items: 0, over: 0, armor: 0 };
       rows[id] = r;
@@ -1290,8 +1348,10 @@ html[lang="ru"] h1 { font-weight: 500; }
       if (id === body || it.worn) { r.worn = true; if (ENC.armor[id]) { r.armor = ENC.armor[id]; q--; } }
       if (it.worn || it.enc === "n" || !q) { /* not counted */ }
       else if (it.enc === "o") r.over = q * (it.over || 1);
-      else if ((id === "arrows" || id === "bolts") && quiver && shafts <= quiver) r.quiver = true;  // a quiver and up to 20 shafts are one item
-      else r.items = it.weapon ? q : 1;
+      else {
+        if (held[id]) { r.held = held[id]; q -= held[id]; }
+        r.items = Math.ceil(q / stackOf(it));
+      }
       items += r.items; over += r.over; armor += r.armor;
     });
     var left = leftCp(), coins = left > 0 ? Math.floor(left / 10) + left % 10 : 0, coinItems = Math.floor(coins / 100);
@@ -1353,19 +1413,26 @@ html[lang="ru"] h1 { font-weight: 500; }
   }
   function priceOf(it) {
     if (it.free || it.sp === null) return "Free";
+    if (unsold(it)) return "Not sold here";
     return money(cpOf(it) * stepOf(it)) + (stepOf(it) > 1 ? " / " + stepOf(it) : "");
   }
-  function qtyCtl(it, canAdd) {
+  /* creation: − and + undo and repeat a purchase. In play the shop only buys, and the pack only removes
+     (eaten, spent, lost or sold), one at a time and without a refund */
+  function qtyCtl(it, canAdd, where) {
     var q = owned(it.id), n = esc(itemName(it));
-    if (it.free) return '<span class="tag">Free</span>';
     var add = '<button type="button" data-add="' + it.id + '" aria-label="Buy ' + n + '"' + (canAdd ? "" : " disabled") + ">+</button>";
+    if (MODE === "play") {
+      if (where === "pack") return '<span class="stp drop"><button type="button" data-drop="' + it.id + '" aria-label="Remove one ' + n + '">−</button><i>' + q + "</i></span>";
+      return '<span class="stp buy">' + (q ? '<i title="Owned">×' + q + "</i>" : "") + add + "</span>";
+    }
+    if (it.free) return '<span class="tag">Free</span>';
     if (!q) return '<span class="stp buy">' + add + "</span>";
     return '<span class="stp"><button type="button" data-sub="' + it.id + '" aria-label="Remove ' + n + '">−</button><i>' + q + "</i>" + add + "</span>";
   }
   /* arrows and bolts bring a quiver along when there is none (a quiver and its 20 shafts are one item) */
   function needsQuiver(it) { return (it.id === "arrows" || it.id === "bolts") && !owned("quiver"); }
   function addCp(it) { return cpOf(it) * stepOf(it) + (needsQuiver(it) ? cpOf(ITEMS.quiver) : 0); }
-  function canBuy(it, left) { return left === null || addCp(it) <= left; }
+  function canBuy(it, left) { return !unsold(it) && (left === null || addCp(it) <= left); }
   function shopRow(it, left) {
     var q = owned(it.id), ok = canBuy(it, left);
     return '<div class="it' + (it.enc === "o" ? " ov" : "") + (q ? " own" : "") + (!ok && !q ? " dim" : "") + '"><div class="it-l"><div class="it-h"><span class="it-n">' + esc(itemName(it)) + tagsOf(it) + '</span><span class="it-p">' + priceOf(it) + "</span></div>" +
@@ -1418,21 +1485,26 @@ html[lang="ru"] h1 { font-weight: 500; }
       '<div class="subs" role="tablist">' + t.subs.map(function (s) { return '<button type="button" role="tab" data-subtab="' + s[0] + '" aria-selected="' + (s[0] === sub) + '">' + s[1] + "</button>"; }).join("") + "</div>";
   }
 
+  var HOLD_LBL = { "arrows": "In quiver", "bolts": "In quiver", "fa-gunpowder": "In powder holders" };
   function packRow(id, E) {
-    var it = ITEMS[id], x = state.gear[id], r = E.rows[id] || {}, m;
-    if (x.away) m = "";
-    else if (r.worn) m = "Worn" + (r.armor ? " · " + ptsLbl(r.armor) : "") + (r.over ? " · " + ptsLbl(r.over) : "") + (r.items ? " · " + itemsLbl(r.items) : "");
-    else if (r.over) m = ptsLbl(r.over);
-    else if (r.quiver) m = "In quiver";
-    else if (r.items) m = itemsLbl(r.items);
-    else m = "";
+    var it = ITEMS[id], x = state.gear[id], r = E.rows[id] || {}, m = [];
+    if (x.away) { /* nothing counted */ }
+    else {
+      if (r.worn) m.push("Worn");
+      if (r.armor) m.push(ptsLbl(r.armor));
+      if (r.over) m.push(ptsLbl(r.over));
+      if (r.held) m.push(HOLD_LBL[id] + (r.items ? " " + r.held : ""));
+      if (r.items) m.push(itemsLbl(r.items) + (stackOf(it) > 1 ? " (" + stackOf(it) + " per item)" : ""));
+    }
+    m = m.join(" · ");
     var mv = it.free && it.worn || it.away ? "" : '<button type="button" class="mv" data-' + (x.away ? "carry" : "stow") + '="' + id + '">' + (x.away ? "Carry" : "Stow") + "</button>";
-    return '<div class="it pk' + (r.over ? " ov" : "") + '"><div class="it-l"><span class="it-n">' + esc(itemName(it)) + "</span>" +
-      (m ? '<span class="it-m">' + m + "</span>" : "") + "</div>" + mv + qtyCtl(it, canBuy(it, leftCp())) + "</div>";
+    var desc = MODE === "play" && it.custom && it.desc ? '<span class="it-d"><span data-notr>' + esc(it.desc) + "</span></span>" : "";
+    return '<div class="it pk' + (r.over ? " ov" : "") + '"><div class="it-l"><span class="it-n">' + (it.custom ? "<span data-notr>" + esc(it.en) + '</span><span class="tg c">Custom</span>' : esc(itemName(it))) + "</span>" +
+      (m ? '<span class="it-m">' + m + "</span>" : "") + desc + "</div>" + mv + qtyCtl(it, canBuy(it, leftCp()), "pack") + "</div>";
   }
   function packHTML(E) {
     var ids = Object.keys(state.gear).filter(function (id) { return state.gear[id].q > 0 && ITEMS[id]; }), h = "";
-    function rank(id) { var r = E.rows[id]; return r.over ? 0 : r.items || r.armor || r.quiver ? 1 : 2; }
+    function rank(id) { var r = E.rows[id]; return r.over ? 0 : r.items || r.armor || r.held ? 1 : 2; }
     PACK_GROUPS.forEach(function (g) {
       var list = ids.filter(function (id) { return ITEMS[id].pack === g[0] && !state.gear[id].away; });
       var coins = g[0] === "misc" && E.coins ? '<div class="it pk coins"><div class="it-l"><span class="it-n">Coins <b>×' + num(E.coins) + '</b></span><span class="it-m">' +
@@ -1451,55 +1523,143 @@ html[lang="ru"] h1 { font-weight: 500; }
     if (away.length) h += '<section class="pgroup away"><div class="group">Other possessions</div><p class="tip">Owned but not carried: animals, vehicles and anything you stow.</p>' +
       away.map(function (id) { return packRow(id, E); }).join("") + "</section>";
     var bought = ids.some(function (id) { return !ITEMS[id].free; });
-    return (bought ? "" : '<p class="sub none">Nothing bought yet.</p>') + h;
+    return (bought || MODE === "play" ? "" : '<p class="sub none">Nothing bought yet.</p>') + h;
   }
 
   function packCount() { return Object.keys(state.gear).filter(function (id) { return state.gear[id].q > 0 && !ITEMS[id].free; }).length; }
+  function gearBody() { return el(MODE === "play" ? "body7" : "body6"); }
+  function gearView() { return MODE === "play" ? state.invView : state.gearView; }
   function refreshGear() {
-    var E = encInfo(), f = document.activeElement, key = null;
-    if (f && f.dataset) ["add", "sub", "stow", "carry", "lock", "rifle"].some(function (k) { if (f.dataset[k]) { key = "[data-" + k + '="' + f.dataset[k] + '"]'; return true; } });
+    var E = encInfo(), f = document.activeElement, key = null, v = gearView();
+    if (f && f.dataset) ["add", "sub", "drop", "found", "stow", "carry", "lock", "rifle"].some(function (k) { if (f.dataset[k]) { key = "[data-" + k + '="' + f.dataset[k] + '"]'; return true; } });
     el("encbar").innerHTML = encBar(E);
     el("seg-pack").innerHTML = 'Pack <i>' + packCount() + "</i>";
-    if (state.gearView === "shop") { el("gtabs").hidden = !!state.shopQ.trim(); el("gtabs").innerHTML = shopTabs(); el("glist").innerHTML = shopList(); }
+    if (v === "shop") { el("gtabs").hidden = !!state.shopQ.trim(); el("gtabs").innerHTML = shopTabs(); el("glist").innerHTML = shopList(); }
+    else if (v === "add") el("glist").innerHTML = foundList();
     else el("gpack").innerHTML = packHTML(E);
-    if (key) { var t = el("body6").querySelector(key); if (t && !t.disabled) t.focus(); }
+    if (key) { var t = gearBody().querySelector(key); if (t && !t.disabled) t.focus(); }
     if (state.id) persist();
+  }
+  function shopHTML() {
+    return '<div class="gshop"><input class="gsearch" id="gsearch" type="search" placeholder="Search equipment" aria-label="Search equipment" value="' + esc(state.shopQ) + '"><div id="gtabs"></div><div class="ilist" id="glist"></div></div>';
+  }
+  function bindSearch() {
+    var s = el("gsearch");
+    if (s) s.addEventListener("input", function () { state.shopQ = s.value; refreshGear(); });
   }
   function renderGear() {
     ensureDetails();
     var shop = state.gearView === "shop";
     el("body6").innerHTML = '<div class="gearhead" id="encbar"></div>' +
       '<div class="seg" role="tablist"><button type="button" role="tab" id="seg-pack" data-view="pack" aria-selected="' + !shop + '"></button><button type="button" role="tab" data-view="shop" aria-selected="' + shop + '">Shop</button></div>' +
-      (shop ? '<div class="gshop"><input class="gsearch" id="gsearch" type="search" placeholder="Search equipment" aria-label="Search equipment" value="' + esc(state.shopQ) + '"><div id="gtabs"></div><div class="ilist" id="glist"></div></div>'
-        : '<div class="ilist" id="gpack"></div>') +
+      (shop ? shopHTML() : '<div class="ilist" id="gpack"></div>') +
       '<div class="actions"><button class="btn" id="gear-ok" type="button">Continue</button><button class="btn ghost" id="gear-back" type="button">Back</button></div>';
     refreshGear();
-    var s = el("gsearch");
-    if (s) s.addEventListener("input", function () { state.shopQ = s.value; refreshGear(); });
+    bindSearch();
     el("gear-ok").addEventListener("click", function () { state.gearDone = true; syncChar(); state.view = "s5"; layout(true); });
     el("gear-back").addEventListener("click", function () { state.detailsDone = false; state.view = "s4"; layout(true); });
   }
-  el("body6").addEventListener("click", function (ev) {
+
+  /* ---------- inventory in play: the sheet's own page, never back into character creation ---------- */
+  var NEW_ENC = "s";
+  function foundRow(it) {
+    var q = owned(it.id), n = esc(itemName(it));
+    return '<div class="it' + (it.enc === "o" ? " ov" : "") + (q ? " own" : "") + '"><div class="it-l"><div class="it-h"><span class="it-n">' + n + tagsOf(it) + "</span></div>" +
+      lineTwo(it, it.desc) + '</div><span class="stp buy">' + (q ? '<i title="Owned">×' + q + "</i>" : "") + '<button type="button" data-found="' + it.id + '" aria-label="Add ' + n + '">+</button></span></div>';
+  }
+  function foundList() {
+    var q = state.addQ.trim(), h = "";
+    if (!q) return '<p class="tip">Found or were given something? Search for it to add it without paying, or describe it below.</p>';
+    SHOP_TABS.forEach(function (t) {
+      t.subs.forEach(function (s) {
+        var hits = GAME.equipment.filter(function (it) { return it.shop === t.k + "." + s[0] && matches(it, q); });
+        if (hits.length) h += '<div class="ihead"><span>' + t.en + "</span> · <span>" + s[1] + "</span></div>" + hits.map(foundRow).join("");
+      });
+    });
+    return h || '<p class="sub none">No items match.</p>';
+  }
+  function marketHTML() {
+    return '<div class="mkt"><div class="seg" role="tablist" aria-label="Prices">' + MARKETS.map(function (m) {
+      return '<button type="button" role="tab" data-market="' + m + '" aria-selected="' + (state.market === m) + '">' + MARKET_LBL[m] + "</button>";
+    }).join("") + '</div><p class="tip">' + (HAS_MARKETS ? "Town: a settlement of 1,000 or more. Rural: a day or more away from one." :
+      "This rules data has one price per item, so Town and Rural prices are the same.") + "</p></div>";
+  }
+  function newItemHTML() {
+    return '<form class="newit" id="newit" autocomplete="off"><div class="group">Describe your own item</div>' +
+      '<div class="row2"><label>Name<input id="ni-name" type="text" maxlength="60"></label><label>Quantity<input id="ni-q" type="text" inputmode="numeric" maxlength="4" value="1"></label></div>' +
+      '<div class="lbl"><span>Encumbrance</span><div class="encpick" role="group" aria-label="Encumbrance">' +
+      [["n", "Non-encumbering"], ["s", "Encumbering"], ["o", "Oversized"]].map(function (e) { return '<button type="button" data-newenc="' + e[0] + '" aria-pressed="' + (NEW_ENC === e[0]) + '">' + e[1] + "</button>"; }).join("") + "</div></div>" +
+      '<label>Description<textarea id="ni-desc" rows="2" maxlength="300"></textarea></label>' +
+      '<div class="actions"><button class="btn" type="submit">Add to inventory</button></div></form>';
+  }
+  function purseVal() { return typeof state.purse === "number" ? String(state.purse / 10) : ""; }
+  function renderInventory() {
+    ensureDetails();
+    var v = state.invView = state.invView || "pack";
+    if (typeof state.purse !== "number" && leftCp() !== null) state.purse = leftCp();
+    var segs = [["pack", ""], ["shop", "Buy"], ["add", "Add"]], h = '<div class="gearhead" id="encbar"></div>' +
+      '<div class="seg" role="tablist" style="--n:' + segs.length + '">' + segs.map(function (x) {
+        return '<button type="button" role="tab"' + (x[0] === "pack" ? ' id="seg-pack"' : "") + ' data-view="' + x[0] + '" aria-selected="' + (v === x[0]) + '">' + x[1] + "</button>";
+      }).join("") + "</div>";
+    if (v === "shop") h += marketHTML() + shopHTML();
+    else if (v === "add") h += '<div class="gshop"><input class="gsearch" id="asearch" type="search" placeholder="Search items to add" aria-label="Search items to add" value="' + esc(state.addQ) + '"><div class="ilist" id="glist"></div>' + newItemHTML() + "</div>";
+    else h += '<label class="purse">Money <input id="purse-in" type="text" inputmode="decimal" maxlength="9" aria-label="Money in silver pieces" value="' + purseVal() + '"> sp</label><div class="ilist" id="gpack"></div>';
+    el("body7").innerHTML = h + '<div class="actions"><button class="btn" id="inv-done" type="button">Done</button></div>';
+    refreshGear();
+    bindSearch();
+    var a = el("asearch"), p = el("purse-in"), form = el("newit");
+    if (a) a.addEventListener("input", function () { state.addQ = a.value; refreshGear(); });
+    if (p) p.addEventListener("input", function () {
+      var n = parseFloat(p.value.replace(",", ".").replace(/[^\d.\-]/g, ""));
+      if (!isNaN(n)) { state.purse = Math.round(n * 10); refreshGear(); }
+    });
+    if (form) form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var name = el("ni-name").value.trim(), q = parseInt(el("ni-q").value, 10);
+      if (!name) { el("ni-name").focus(); return; }
+      var id = "x-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+      state.homebrew[id] = { en: name, enc: NEW_ENC, desc: el("ni-desc").value.trim() };
+      homebrewItem(id, state.homebrew[id]);
+      state.gear[id] = { q: isNaN(q) || q < 1 ? 1 : q };
+      state.invView = "pack"; renderInventory();
+    });
+    el("inv-done").addEventListener("click", closeInventory);
+  }
+  function closeInventory() { syncChar(); state.view = "s5"; layout(true); }
+  el("inv-back").addEventListener("click", closeInventory);
+
+  function gearClick(ev) {
     var b = ev.target.closest("button");
     if (!b || b.disabled) return;
-    var d = b.dataset, g = state.gear;
-    if (d.view) { state.gearView = d.view; renderGear(); return; }
+    var d = b.dataset, g = state.gear, play = MODE === "play", paid = typeof state.purse === "number";
+    if (d.view) { if (play) { state.invView = d.view; renderInventory(); } else { state.gearView = d.view; renderGear(); } return; }
+    if (d.market) { state.market = d.market; renderInventory(); return; }
+    if (d.newenc) { NEW_ENC = d.newenc; b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
     if (d.tab) { state.shopTab = d.tab; }
     else if (d.subtab) { state.shopSub[state.shopTab] = d.subtab; }
     else if (d.add) {
       var it = ITEMS[d.add];
+      if (paid) state.purse -= addCp(it);
       if (needsQuiver(it)) g.quiver = { q: 1 };
       if (!g[d.add]) g[d.add] = { q: 0, away: !!it.away };
       g[d.add].q += stepOf(it);
     }
-    else if (d.sub) { g[d.sub].q -= Math.min(g[d.sub].q, stepOf(ITEMS[d.sub])); if (!g[d.sub].q) delete g[d.sub]; }
+    else if (d.sub) {
+      var n = Math.min(g[d.sub].q, stepOf(ITEMS[d.sub]));
+      if (paid) state.purse += cpOf(ITEMS[d.sub]) * n;
+      g[d.sub].q -= n; if (!g[d.sub].q) delete g[d.sub];
+    }
+    else if (d.drop) { if (!--g[d.drop].q) { delete g[d.drop]; delete state.homebrew[d.drop]; } }
+    else if (d.found) { if (!g[d.found]) g[d.found] = { q: 0, away: !!ITEMS[d.found].away }; g[d.found].q++; }
     else if (d.lock) { gunOpt(d.lock.split(":")[0]).lock = d.lock.split(":")[1]; }
     else if (d.rifle) { var o = gunOpt(d.rifle); o.rifled = !o.rifled; }
     else if (d.stow) { g[d.stow].away = true; }
     else if (d.carry) { g[d.carry].away = false; }
     else return;
     refreshGear();
-  });
+  }
+  el("body6").addEventListener("click", gearClick);
+  el("body7").addEventListener("click", gearClick);
 
   /* ---------- step 5: character sheet ---------- */
   function xpFor(k, lv) { return lvRow(k, lv).xp; }
@@ -1620,7 +1780,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     var ids = Object.keys(state.gear).filter(function (id) { return state.gear[id].q > 0 && ITEMS[id]; });
     function chip(id) {
       var q = state.gear[id].q;
-      return '<span class="sp' + (E.rows[id] && E.rows[id].over ? " ov" : "") + '">' + esc(itemName(ITEMS[id])) + (q > 1 ? "<i>×" + q + "</i>" : "") + "</span>";
+      return '<span class="sp' + (E.rows[id] && E.rows[id].over ? " ov" : "") + '"' + (ITEMS[id].custom ? " data-notr" : "") + ">" + esc(itemName(ITEMS[id])) + (q > 1 ? "<i>×" + q + "</i>" : "") + "</span>";
     }
     PACK_GROUPS.concat([["away", "Other possessions"]]).forEach(function (g) {
       var list = ids.filter(function (id) { return g[0] === "away" ? state.gear[id].away : ITEMS[id].pack === g[0] && !state.gear[id].away; });
@@ -1644,7 +1804,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     persist();
     el("back-home").addEventListener("click", goHome);
     el("back-det").addEventListener("click", function () { state.detailsDone = false; state.view = "s4"; layout(true); });
-    el("edit-gear").addEventListener("click", function () { state.view = "s6"; layout(true); });
+    el("edit-gear").addEventListener("click", function () { state.view = "inv"; layout(true); });
     var b = el("body5");
     b.querySelectorAll("[data-stab]").forEach(function (x) {
       x.addEventListener("click", function () {
@@ -1787,7 +1947,15 @@ html[lang="ru"] h1 { font-weight: 500; }
     "Elves can't cast spells when more than Heavily Encumbered.": "Эльфы не могут колдовать, если нагружены сильнее, чем сильно.",
     "Specialists take −1 to movement skills per encumbrance level.": "Специалисты получают −1 к навыкам движения за каждый уровень нагрузки.",
     "Dwarfs carry 5 more items before the first point.": "Дворфы несут на 5 предметов больше до первого очка нагрузки.",
-    "Every 5 different items past the 5th add a point.": "Каждые 5 разных предметов сверх пятого добавляют очко нагрузки.",
+    "Every 5 items past the 5th add a point.": "Каждые 5 предметов сверх пятого добавляют очко нагрузки.",
+    /* inventory in play */
+    "← Sheet": "← Лист", "Buy": "Купить", "Add": "Добавить", "Done": "Готово", "Money": "Деньги", "Money in silver pieces": "Деньги в серебряных монетах",
+    "Prices": "Цены", "Town": "Город", "Rural": "Деревня", "Owned": "Есть", "Not sold here": "Здесь не продаётся", "Custom": "Своё",
+    "Town: a settlement of 1,000 or more. Rural: a day or more away from one.": "Город: поселение от 1000 жителей. Деревня: день пути от него и дальше.",
+    "This rules data has one price per item, so Town and Rural prices are the same.": "В данных правил у предмета одна цена, поэтому городские и сельские цены совпадают.",
+    "Search items to add": "Поиск предметов", "Found or were given something? Search for it to add it without paying, or describe it below.": "Нашли или получили что-то? Найдите предмет, чтобы добавить его бесплатно, или опишите его ниже.",
+    "Describe your own item": "Свой предмет", "Name": "Название", "Quantity": "Количество", "Encumbering": "Утяжеляет", "Description": "Описание",
+    "Add to inventory": "Добавить в снаряжение", "In powder holders": "В пороховницах",
     "Item count maxed": "Предметы больше не добавляют очков",
     "Traveling Clothes": "Дорожная одежда", "Arrows": "Стрелы", "Crossbow Bolts": "Арбалетные болты", "Sling Bullets": "Пули для пращи",
     "Pistol": "Пистолет", "Arquebus": "Аркебуза", "Musket": "Мушкет",
@@ -1876,7 +2044,9 @@ html[lang="ru"] h1 { font-weight: 500; }
     [/^(.+) \((Matchlock|Wheellock|Flintlock)(, rifled)?\)$/, function (m, n, l, r) { return (trOne(n) || n) + " (" + RU[l].toLowerCase() + (r ? ", нарезной" : "") + ")"; }],
     [/^\+(\d) AC, \+(\d) vs missiles$/, "+$1 КБ, +$2 против снарядов"],
     [/^\+(\d+) vs missiles$/, "+$1 против снарядов"],
-    [/^(Buy|Remove) (.+)$/, function (m, a, n) { return (a === "Buy" ? "Купить: " : "Убрать: ") + (trOne(n) || n); }],
+    [/^(Buy|Remove|Remove one|Add) (.+)$/, function (m, a, n) { return { "Buy": "Купить: ", "Remove": "Убрать: ", "Remove one": "Убрать одно: ", "Add": "Добавить: " }[a] + (trOne(n) || n); }],
+    [/^(\d+) items? \((\d+) per item\)$/, function (m, n, k) { return n + " " + ruN(+n, RU_ITEM) + " (" + k + " на предмет)"; }],
+    [/^(In quiver|In powder holders) (\d+)$/, function (m, w, n) { return RU[w] + " " + n; }],
     [/^Encumbrance points: (.+)$/, function (m, l) { return "Очки нагрузки: " + l.replace("Armor", "доспех").replace("Items", "предметы").replace("Oversized", "негабарит"); }]
   ];
 
@@ -1987,7 +2157,7 @@ html[lang="ru"] h1 { font-weight: 500; }
   function openChar(c) {
     state = Object.assign(freshState(), JSON.parse(JSON.stringify(c.state)));
     if (state.pts && state.pts.Tinkering !== undefined) { state.pts.Tinker = state.pts.Tinkering; delete state.pts.Tinkering; }
-    state.id = c.id; state.view = "s5"; syncChar(); layout(true);
+    state.id = c.id; state.view = "s5"; registerVariants(); syncChar(); layout(true);
   }
   function goHome() { state = freshState(); state.view = "home"; layout(true); }
   function importText(txt) {
@@ -2046,24 +2216,28 @@ html[lang="ru"] h1 { font-weight: 500; }
 
   /* which card is visible */
   function layout(scroll) {
-    var v = state.view;
+    var v = state.view, sheetish = v === "s5" || v === "inv";
+    MODE = v === "inv" ? "play" : "create";
+    if (v === "inv") el("body6").innerHTML = ""; else el("body7").innerHTML = "";
     el("home").hidden = v !== "home"; el("hometip").hidden = v !== "home"; el("sheettip").hidden = v !== "s5";
-    el("rail").hidden = v === "home" || v === "s5";
-    el("title").hidden = v === "s5"; el("kicker").hidden = v === "s5";
+    el("rail").hidden = v === "home" || sheetish;
+    el("title").hidden = sheetish; el("kicker").hidden = sheetish;
     el("title").textContent = v === "home" ? "Your adventurers" : "Create your adventurer";
-    el("restart").hidden = v === "home" || v === "s5";
+    el("restart").hidden = v === "home" || sheetish;
     el("step1").hidden = !(v === "s1" || v === "recap");
     el("step2").hidden = v !== "s2";
     el("step3").hidden = v !== "s3";
     el("step4").hidden = v !== "s4";
     el("step5").hidden = v !== "s5";
     el("step6").hidden = v !== "s6";
+    el("step7").hidden = v !== "inv";
     el("banner").hidden = !(v === "s2" || v === "s3" || v === "s4");
     if (v === "recap") renderRecap();
     if (v === "s2") { renderBanner(); renderClass(); }
     if (v === "s3") { renderBanner(); renderLevelAlign(); }
     if (v === "s4") { renderBanner(); renderDetails(); }
     if (v === "s6") renderGear();
+    if (v === "inv") renderInventory();
     if (v === "s5") renderSheet();
     if (v === "home") renderHome();
     renderRail();
