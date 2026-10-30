@@ -505,6 +505,14 @@ html[lang="ru"] h1 { font-weight: 500; }
 .ihead { padding: 14px 0 4px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--fg); }
 .ihead:first-child { padding-top: 0; }
 .need { border: 1px solid var(--accent); padding: 8px 12px 0; margin-bottom: 14px; }
+.kithead { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
+.kithead .tip { margin: 0; font-size: 15px; }
+.kitline { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 14px; margin: 0; font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+.kitline b { color: var(--fg); font-weight: 600; }
+.kitline .neg b { color: var(--accent); }
+.kitline b.eb-lvl { font-size: 15px; }
+.kitsum { display: flex; flex-direction: column; gap: 6px; margin-top: 18px; padding-top: 10px; border-top: 1px solid var(--fg); }
+.kitsum .tip, .kitsum .eb-warn { margin: 0; }
 .need p { font-size: 15px; color: var(--accent); }
 .need .it:last-child { border-bottom: 0; }
 .pgroup { display: flex; flex-direction: column; margin-top: 18px; }
@@ -699,7 +707,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     klass: null, classDone: false, view: "s1",
     level: 1, align: null, alignDone: false,
     detailsDone: false, detSig: null, hp: null, spells: null, conInput: null, pts: {}, custom: [], extraLv: [],
-    money: null, gear: null, gearSig: null, gearDone: false, shopTab: "combat", shopSub: {}, shopQ: "", gearView: "pack", gunOpt: {},
+    money: null, gear: null, gearSig: null, gearDone: false, shopTab: "combat", shopSub: {}, shopQ: "", gearView: "kit", gunOpt: {},
     purse: null, homebrew: {}, invView: "pack", market: "city", addQ: "", id: null, sheet: { name: "", player: "", age: "", sex: "", curhp: null, maxhp: "", notes: "", used: {} }
    }; }
   var state = freshState();
@@ -1474,8 +1482,6 @@ html[lang="ru"] h1 { font-weight: 500; }
       return h || '<p class="sub none">No items match.</p>';
     }
     var tab = state.shopTab, sub = state.shopSub[tab] || SHOP_TABS.filter(function (t) { return t.k === tab; })[0].subs[0][0];
-    var need = CLASS_NEEDS[state.klass];
-    if (need && !need.ids.some(owned)) h += '<div class="need"><p>' + need.text + "</p>" + need.ids.map(function (id) { return shopRow(ITEMS[id], left); }).join("") + "</div>";
     h += rowsOf(GAME.equipment.filter(function (it) { return it.shop === tab + "." + sub; }), left);
     return h;
   }
@@ -1526,15 +1532,109 @@ html[lang="ru"] h1 { font-weight: 500; }
     return (bought || MODE === "play" ? "" : '<p class="sub none">Nothing bought yet.</p>') + h;
   }
 
+  /* ---------- starting packs: class presets, shown only at character creation ----------
+     a minor pack for a 1st level budget (3d6 × 10 sp, about 105) and a major one for 3rd level and up (180 sp + 6d6 × 10, about
+     390 and never under 240). Each has food, light and some travel gear and stays at most Lightly Encumbered, counting the
+     silver likely left over (100 coins are an item). Pack animals are left to the player. */
+  var KIT_BASE = {
+    minor: [["backpack", 1], ["sack", 1], ["waterskin", 1], ["rations-iron-day", 3], ["torch", 2], ["candle", 2], ["tinderbox", 1]],
+    major: [["backpack", 1], ["sack", 1], ["waterskin", 1], ["rations-iron-day", 2], ["lantern", 1], ["flask-of-lamp-oil", 1], ["tinderbox", 1],
+            ["candle", 4], ["chalk", 1], ["spike-iron", 6], ["bedroll", 1]]
+  };
+  /* [id, quantity]; a class entry for an id already in the base replaces it (quantity 0 drops it) */
+  var KITS = {
+    "Cleric": {
+      minor: [["holy-symbol-wood", 1], ["armor-leather", 1], ["shield", 1], ["weapon-medium", 1], ["garlic", 1], ["rope-50", 1]],
+      major: [["holy-symbol-silver", 1], ["armor-chain", 1], ["weapon-medium", 1], ["sling", 1], ["garlic", 1], ["wolvesbane", 1]] },
+    "Fighter": {
+      minor: [["armor-leather", 1], ["shield", 1], ["weapon-medium", 1], ["spear", 1], ["rope-50", 1]],
+      major: [["armor-chain", 1], ["weapon-medium", 1], ["sling", 1]] },
+    "Magic-User": {
+      minor: [["armor-leather", 1], ["staff", 1], ["weapon-minor", 1], ["ink", 1], ["paper", 2], ["rope-50", 1]],
+      major: [["armor-leather", 1], ["staff", 1], ["weapon-minor", 1], ["sling", 1], ["sling-bullets", 10], ["ink", 1], ["paper", 4], ["map-local", 1], ["rope-50", 1]] },
+    "Specialist": {
+      minor: [["specialists-tools", 1], ["weapon-small", 1], ["rope-50", 1]],
+      major: [["specialists-tools", 1], ["armor-leather", 1], ["weapon-small", 1], ["crossbow-light", 1], ["quiver", 1], ["bolts", 20], ["mirror-steel", 1],
+              ["rope-50", 1], ["crowbar", 1]] },
+    "Dwarf": {
+      minor: [["armor-leather", 1], ["shield", 1], ["weapon-medium", 1], ["spear", 1], ["rope-50", 1], ["crowbar", 1]],
+      major: [["armor-chain", 1], ["weapon-medium", 1], ["crossbow-light", 1], ["quiver", 1], ["bolts", 20], ["rope-50", 1], ["crowbar", 1]] },
+    "Elf": {
+      minor: [["armor-leather", 1], ["weapon-medium", 1], ["sling", 1], ["sling-bullets", 10], ["rope-50", 1]],
+      major: [["armor-leather", 1], ["weapon-medium", 1], ["bow-short", 1], ["quiver", 1], ["arrows", 20], ["rope-50", 1]] },
+    "Halfling": {
+      minor: [["armor-leather", 1], ["shield", 1], ["weapon-small", 1], ["sling", 1], ["sling-bullets", 10], ["rope-50", 1]],
+      major: [["armor-leather", 1], ["weapon-small", 1], ["sling", 1], ["sling-bullets", 20], ["rope-50", 1]] }
+  };
+  var KIT_LBL = { minor: "Minor starting pack", major: "Major starting pack" };
+  function kitSize() { return state.level >= 3 ? "major" : "minor"; }
+  function kitPreset() {
+    var size = kitSize(), list = [], at = {};
+    KIT_BASE[size].concat((KITS[state.klass] || {})[size] || []).forEach(function (e) {
+      if (!ITEMS[e[0]]) return;
+      if (e[0] in at) list[at[e[0]]] = e;
+      else { at[e[0]] = list.length; list.push(e); }
+    });
+    return list.filter(function (e) { return e[1] > 0; });
+  }
+  /* the draft is the preset as the player has changed it; a new class or level starts it over */
+  function ensureKit(reset) {
+    if (!reset && state.kit && state.kit.sig === gearSig()) return state.kit;
+    var k = state.kit = { sig: gearSig(), ids: [], q: {} };
+    kitPreset().forEach(function (e) { k.ids.push(e[0]); k.q[e[0]] = e[1]; });
+    return k;
+  }
+  function kitCp() { var k = ensureKit(); return k.ids.reduce(function (t, id) { return t + cpOf(ITEMS[id]) * (k.q[id] || 0); }, 0); }
+  /* the inventory the pack makes: the free items plus the pack, in place of anything bought */
+  function kitGear() {
+    var k = ensureKit(), g = {};
+    Object.keys(state.gear).forEach(function (id) { if (ITEMS[id] && ITEMS[id].free) g[id] = state.gear[id]; });
+    k.ids.forEach(function (id) { if (k.q[id] > 0) g[id] = { q: k.q[id], away: !!ITEMS[id].away }; });
+    return g;
+  }
+  function withKitGear(fn) { var saved = state.gear; state.gear = kitGear(); try { return fn(); } finally { state.gear = saved; } }
+  function expectedMoney() { return (state.level > 1 ? SM.base : 0) + moneyDice() * 3.5 * SM.mult; }
+  function kitRow(id) {
+    var k = state.kit, it = ITEMS[id], q = k.q[id] || 0, n = esc(itemName(it)), tags = tagsOf(it);
+    return '<div class="it' + (it.enc === "o" ? " ov" : "") + (q ? " own" : " dim") + '"><div class="it-l"><div class="it-h"><span class="it-n">' + n + tags + '</span><span class="it-p">' + priceOf(it) + "</span></div>" +
+      lineTwo(it, it.desc) + '</div><span class="stp"><button type="button" data-kminus="' + id + '" aria-label="Remove ' + n + '"' + (q ? "" : " disabled") + ">−</button><i>" + q +
+      '</i><button type="button" data-kplus="' + id + '" aria-label="Add ' + n + '">+</button></span></div>';
+  }
+  function kitHTML() {
+    var k = ensureKit(), cost = kitCp(), total = state.money ? state.money.total * 10 : null, h = "";
+    var E = withKitGear(encInfo), L = ENC.levels[E.lvl];
+    h += '<div class="kithead"><div class="group">' + KIT_LBL[kitSize()] + "</div>" +
+      '<p class="tip">A preset, not a purchase: change anything, then fill your inventory with it. It keeps food, light and travel gear, and stays at most Lightly Encumbered.</p>' +
+      '<p class="kitline"><span><span>Expected starting money</span> <b>' + money(Math.round(expectedMoney() * 10)) + "</b></span></p></div>";
+    /* class needs show here, not in the shop: a pack without them gets a warning and the choices to add */
+    var need = CLASS_NEEDS[state.klass], missing = need && !need.ids.some(function (id) { return k.q[id] > 0; });
+    if (missing) {
+      need.ids.forEach(function (id) { if (k.ids.indexOf(id) < 0) { k.ids.push(id); k.q[id] = 0; } });
+      h += '<div class="need"><p>' + need.text + "</p>" + need.ids.map(kitRow).join("") + "</div>";
+    }
+    PACK_GROUPS.forEach(function (g) {
+      var list = k.ids.filter(function (id) { return ITEMS[id].pack === g[0] && !(missing && need.ids.indexOf(id) > -1); });
+      if (list.length) h += '<section class="pgroup"><div class="group">' + g[1] + "</div>" + list.map(kitRow).join("") + "</section>";
+    });
+    var over = total !== null && cost > total, bought = Object.keys(state.gear).some(function (id) { return ITEMS[id] && !ITEMS[id].free && state.gear[id].q > 0; });
+    h += '<div class="kitsum"><div class="kitline"><span><span>Pack cost</span> <b>' + money(cost) + "</b></span>" +
+      (total !== null ? '<span class="' + (over ? "neg" : "") + '"><span>Money left</span> <b>' + money(total - cost) + "</b></span>" : "") + "</div>" +
+      '<div class="kitline"><span><span>With this pack</span> <b class="eb-lvl l' + E.lvl + '">' + L.en + "</b></span><span>" + itemsLbl(E.items) + "</span>" +
+      (E.over ? "<span>" + E.over + " oversized</span>" : "") + "</div>" +
+      (over ? '<p class="eb-warn">Costs more than your starting money.</p>' : bought ? "<p class=\"tip\">Replaces what you've bought so far.</p>" : "") + "</div>" +
+      '<div class="actions"><button class="btn" type="button" data-kfill="1"' + (over ? " disabled" : "") + '>Fill inventory</button><button class="btn ghost" type="button" data-kreset="1">Reset pack</button></div>';
+    return h;
+  }
   function packCount() { return Object.keys(state.gear).filter(function (id) { return state.gear[id].q > 0 && !ITEMS[id].free; }).length; }
   function gearBody() { return el(MODE === "play" ? "body7" : "body6"); }
   function gearView() { return MODE === "play" ? state.invView : state.gearView; }
   function refreshGear() {
     var E = encInfo(), f = document.activeElement, key = null, v = gearView();
-    if (f && f.dataset) ["add", "sub", "drop", "found", "stow", "carry", "lock", "rifle"].some(function (k) { if (f.dataset[k]) { key = "[data-" + k + '="' + f.dataset[k] + '"]'; return true; } });
+    if (f && f.dataset) ["add", "sub", "drop", "found", "stow", "carry", "lock", "rifle", "kplus", "kminus"].some(function (k) { if (f.dataset[k]) { key = "[data-" + k + '="' + f.dataset[k] + '"]'; return true; } });
     el("encbar").innerHTML = encBar(E);
     el("seg-pack").innerHTML = 'Pack <i>' + packCount() + "</i>";
-    if (v === "shop") { el("gtabs").hidden = !!state.shopQ.trim(); el("gtabs").innerHTML = shopTabs(); el("glist").innerHTML = shopList(); }
+    if (v === "kit") el("gkit").innerHTML = kitHTML();
+    else if (v === "shop") { el("gtabs").hidden = !!state.shopQ.trim(); el("gtabs").innerHTML = shopTabs(); el("glist").innerHTML = shopList(); }
     else if (v === "add") el("glist").innerHTML = foundList();
     else el("gpack").innerHTML = packHTML(E);
     if (key) { var t = gearBody().querySelector(key); if (t && !t.disabled) t.focus(); }
@@ -1549,10 +1649,13 @@ html[lang="ru"] h1 { font-weight: 500; }
   }
   function renderGear() {
     ensureDetails();
-    var shop = state.gearView === "shop";
+    var v = state.gearView = ["kit", "pack", "shop"].indexOf(state.gearView) > -1 ? state.gearView : "kit";
+    var segs = [["kit", "Starting pack"], ["pack", ""], ["shop", "Shop"]];
     el("body6").innerHTML = '<div class="gearhead" id="encbar"></div>' +
-      '<div class="seg" role="tablist"><button type="button" role="tab" id="seg-pack" data-view="pack" aria-selected="' + !shop + '"></button><button type="button" role="tab" data-view="shop" aria-selected="' + shop + '">Shop</button></div>' +
-      (shop ? shopHTML() : '<div class="ilist" id="gpack"></div>') +
+      '<div class="seg" role="tablist" style="--n:' + segs.length + '">' + segs.map(function (x) {
+        return '<button type="button" role="tab"' + (x[0] === "pack" ? ' id="seg-pack"' : "") + ' data-view="' + x[0] + '" aria-selected="' + (v === x[0]) + '">' + x[1] + "</button>";
+      }).join("") + "</div>" +
+      (v === "shop" ? shopHTML() : v === "kit" ? '<div class="ilist" id="gkit"></div>' : '<div class="ilist" id="gpack"></div>') +
       '<div class="actions"><button class="btn" id="gear-ok" type="button">Continue</button><button class="btn ghost" id="gear-back" type="button">Back</button></div>';
     refreshGear();
     bindSearch();
@@ -1635,7 +1738,13 @@ html[lang="ru"] h1 { font-weight: 500; }
     if (d.view) { if (play) { state.invView = d.view; renderInventory(); } else { state.gearView = d.view; renderGear(); } return; }
     if (d.market) { state.market = d.market; renderInventory(); return; }
     if (d.newenc) { NEW_ENC = d.newenc; b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
-    if (d.tab) { state.shopTab = d.tab; }
+    if (d.kfill) { state.gear = kitGear(); state.gearView = "pack"; renderGear(); return; }
+    if (d.kreset) { ensureKit(true); }
+    else if (d.kplus || d.kminus) {
+      var kid = d.kplus || d.kminus, k = ensureKit(), st = stepOf(ITEMS[kid]);
+      k.q[kid] = Math.max(0, (k.q[kid] || 0) + (d.kplus ? st : -st));
+    }
+    else if (d.tab) { state.shopTab = d.tab; }
     else if (d.subtab) { state.shopSub[state.shopTab] = d.subtab; }
     else if (d.add) {
       var it = ITEMS[d.add];
@@ -1939,7 +2048,13 @@ html[lang="ru"] h1 { font-weight: 500; }
     "Free": "Бесплатно", "Oversized": "Негабаритный", "Non-encumbering": "Не утяжеляет", "Not carried": "Не при себе", "Firearms rules": "Правила огнестрела",
     "Halflings can't use": "Недоступно Полуросликам", "Two-handed for Halflings": "Полурослики держат двумя руками",
     "Worn": "Надето", "In quiver": "В колчане", "Stow": "Оставить", "Carry": "Взять", "Coins": "Монеты", "1 item per 100 coins": "1 предмет за 100 монет",
-    "Nothing bought yet.": "Пока ничего не куплено.", "No items match.": "Ничего не найдено.",
+    "Nothing bought yet.": "Пока ничего не куплено.",
+    "Starting pack": "Стартовый набор", "Minor starting pack": "Малый стартовый набор", "Major starting pack": "Большой стартовый набор",
+    "A preset, not a purchase: change anything, then fill your inventory with it. It keeps food, light and travel gear, and stays at most Lightly Encumbered.":
+      "Заготовка, а не покупка: измените что угодно и заполните ею снаряжение. В наборе есть еда, свет и походное снаряжение, а нагрузка не выше лёгкой.",
+    "Expected starting money": "Ожидаемые стартовые деньги", "Pack cost": "Стоимость набора", "Money left": "Останется денег", "With this pack": "С этим набором",
+    "Fill inventory": "Заполнить снаряжение", "Reset pack": "Сбросить набор",
+    "Costs more than your starting money.": "Стоит больше стартовых денег.", "Replaces what you've bought so far.": "Заменит уже купленное.", "No items match.": "Ничего не найдено.",
     "Firearms are an optional rule. Ask your Referee.": "Огнестрельное оружие — дополнительное правило. Спросите Рефери.",
     "Clerics need a holy symbol to cast spells.": "Клирикам для колдовства нужен святой символ.",
     "Specialists need Specialist's Tools to find traps and open locks.": "Специалистам нужны инструменты специалиста, чтобы искать ловушки и вскрывать замки.",
