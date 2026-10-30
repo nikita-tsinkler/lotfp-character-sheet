@@ -504,6 +504,13 @@ html[lang="ru"] h1 { font-weight: 500; }
 .it .mv:hover { color: var(--fg); }
 .ihead { padding: 14px 0 4px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--fg); }
 .ihead:first-child { padding-top: 0; }
+#body8 { display: flex; flex-direction: column; gap: 22px; }
+#body8 .lbl { display: flex; flex-direction: column; gap: 6px; }
+#body8 .lbl > span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+#body8 .actions { margin: 0; }
+.nrolls { display: flex; flex-wrap: wrap; gap: 6px; }
+.nroll { background: transparent; color: var(--fg); border: 1px solid var(--line); padding: 4px 10px; font: 17px var(--font-body); cursor: pointer; }
+.nroll:hover { border-color: var(--fg); }
 .need { border: 1px solid var(--accent); padding: 8px 12px 0; margin-bottom: 14px; }
 .kithead { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
 .kithead .tip { margin: 0; font-size: 15px; }
@@ -629,6 +636,13 @@ html[lang="ru"] h1 { font-weight: 500; }
     <div id="body6"></div>
   </section>
 
+  <section class="card" id="step8" aria-labelledby="s8t" hidden>
+    <header>
+      <h2 id="s8t">Name</h2>
+    </header>
+    <div id="body8"></div>
+  </section>
+
   <section class="card" id="step7" aria-labelledby="s7t" hidden>
     <header>
       <div class="sheethead"><button class="link" id="inv-back" type="button">&larr; Sheet</button></div>
@@ -688,7 +702,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     c.human = g.human;
     c.hp = g.hp.d1 === g.hp.d ? "d" + g.hp.d : "d" + g.hp.d1 + ", then d" + g.hp.d;
   });
-  var STEPS = ["Ability scores", "Class", "Level & alignment", "Character details", "Equipment"];
+  var STEPS = ["Ability scores", "Class", "Level & alignment", "Character details", "Equipment", "Name"];
   var PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
 
   function modOf(s) { for (var i = 0; i < MOD_TABLE.length; i++) if (s >= MOD_TABLE[i].lo && s <= MOD_TABLE[i].hi) return MOD_TABLE[i].mod; return null; }
@@ -720,9 +734,9 @@ html[lang="ru"] h1 { font-weight: 500; }
   ];
   var FORCED = {};
   Object.keys(GAME.classes).forEach(function (k) { if (GAME.classes[k].alignment) FORCED[k] = GAME.classes[k].alignment; });
-  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s6: 4, s5: 4, inv: 4 };
+  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s6: 4, s8: 5, s5: 5, inv: 5 };
   function renderRail() {
-    var cur = VIEW_IDX[state.view], done = [state.confirmed, state.classDone, state.alignDone, state.detailsDone, state.gearDone];
+    var cur = VIEW_IDX[state.view], done = [state.confirmed, state.classDone, state.alignDone, state.detailsDone, state.gearDone, state.nameDone];
     el("rail").innerHTML = STEPS.map(function (s, i) {
       var c = i === cur ? "on" : done[i] ? "done" : "";
       return '<li class="' + c + '">' + s + "</li>";
@@ -1659,7 +1673,7 @@ html[lang="ru"] h1 { font-weight: 500; }
       '<div class="actions"><button class="btn" id="gear-ok" type="button">Continue</button><button class="btn ghost" id="gear-back" type="button">Back</button></div>';
     refreshGear();
     bindSearch();
-    el("gear-ok").addEventListener("click", function () { state.gearDone = true; syncChar(); state.view = "s5"; layout(true); });
+    el("gear-ok").addEventListener("click", function () { state.gearDone = true; syncChar(); state.view = "s8"; layout(true); });
     el("gear-back").addEventListener("click", function () { state.detailsDone = false; state.view = "s4"; layout(true); });
   }
 
@@ -1689,7 +1703,7 @@ html[lang="ru"] h1 { font-weight: 500; }
   }
   function newItemHTML() {
     return '<form class="newit" id="newit" autocomplete="off"><div class="group">Describe your own item</div>' +
-      '<div class="row2"><label>Name<input id="ni-name" type="text" maxlength="60"></label><label>Quantity<input id="ni-q" type="text" inputmode="numeric" maxlength="4" value="1"></label></div>' +
+      '<div class="row2"><label>Item name<input id="ni-name" type="text" maxlength="60"></label><label>Quantity<input id="ni-q" type="text" inputmode="numeric" maxlength="4" value="1"></label></div>' +
       '<div class="lbl"><span>Encumbrance</span><div class="encpick" role="group" aria-label="Encumbrance">' +
       [["n", "Non-encumbering"], ["s", "Encumbering"], ["o", "Oversized"]].map(function (e) { return '<button type="button" data-newenc="' + e[0] + '" aria-pressed="' + (NEW_ENC === e[0]) + '">' + e[1] + "</button>"; }).join("") + "</div></div>" +
       '<label>Description<textarea id="ni-desc" rows="2" maxlength="300"></textarea></label>' +
@@ -1769,6 +1783,124 @@ html[lang="ru"] h1 { font-weight: 500; }
   }
   el("body6").addEventListener("click", gearClick);
   el("body7").addEventListener("click", gearClick);
+
+  /* ---------- step 7: name ---------- */
+  /* 50 given names per sex and 50 surnames per culture, as used in the 17th century. Scandinavian commoners went by
+     patronymics, so surnames are Swedish -son names and women take the -dotter form. Khmer had no hereditary surnames
+     until the 20th century: the "surnames" are names of the kind later taken as family names, written first as in Khmer. */
+  var NAMES = {
+    "English": {
+      m: ["John", "Thomas", "William", "Richard", "Robert", "Henry", "Edward", "George", "James", "Charles", "Francis", "Nicholas", "Edmund",
+          "Walter", "Hugh", "Ralph", "Roger", "Humphrey", "Christopher", "Anthony", "Matthew", "Samuel", "Nathaniel", "Jeremiah", "Josiah",
+          "Benjamin", "Daniel", "Peter", "Stephen", "Simon", "Lawrence", "Gilbert", "Giles", "Miles", "Ambrose", "Bartholomew", "Tobias",
+          "Abraham", "Isaac", "Philip", "Michael", "Andrew", "Martin", "Owen", "Arthur", "Jasper", "Gervase", "Valentine", "Zachary", "Launcelot"],
+      f: ["Mary", "Elizabeth", "Anne", "Margaret", "Jane", "Joan", "Alice", "Agnes", "Katherine", "Sarah", "Susanna", "Frances", "Dorothy",
+          "Ellen", "Grace", "Bridget", "Judith", "Martha", "Rebecca", "Rachel", "Hester", "Prudence", "Mercy", "Patience", "Temperance",
+          "Joyce", "Isabel", "Cecily", "Margery", "Lettice", "Winifred", "Rose", "Amy", "Barbara", "Christian", "Eleanor", "Gillian",
+          "Honor", "Mildred", "Priscilla", "Penelope", "Ursula", "Philippa", "Abigail", "Hannah", "Lydia", "Deborah", "Thomasin", "Audrey", "Constance"],
+      s: ["Smith", "Taylor", "Wright", "Turner", "Cooper", "Baker", "Fletcher", "Fowler", "Carter", "Mason", "Thatcher", "Walker", "Webb",
+          "Harris", "Hughes", "Clarke", "Fisher", "Parker", "Ward", "Woodward", "Shepherd", "Hawkins", "Ashby", "Blackwood", "Bradshaw",
+          "Cartwright", "Dawson", "Ellis", "Fenwick", "Gage", "Goodwin", "Hale", "Holloway", "Kemp", "Lambert", "Marlowe", "Nash", "Osborne",
+          "Pickering", "Radcliffe", "Stokes", "Thorne", "Underhill", "Vane", "Whitlock", "Yardley", "Atkins", "Brewster", "Cotton", "Dymoke"]
+    },
+    "German": {
+      m: ["Johann", "Hans", "Georg", "Heinrich", "Friedrich", "Wilhelm", "Christoph", "Caspar", "Balthasar", "Melchior", "Andreas", "Jakob",
+          "Michael", "Martin", "Matthias", "Peter", "Paul", "Philipp", "Sebastian", "Wolfgang", "Konrad", "Ulrich", "Dietrich", "Joachim",
+          "Bernhard", "Lorenz", "Valentin", "Veit", "Kilian", "Leonhard", "Sigmund", "Ernst", "Albrecht", "Gottfried", "Adam", "Daniel",
+          "Tobias", "Nikolaus", "Bartholomäus", "Erasmus", "Ruprecht", "Ludwig", "Otto", "Simon", "Stephan", "Thomas", "Urban", "Wendel", "Jobst", "Hieronymus"],
+      f: ["Anna", "Maria", "Margaretha", "Catharina", "Barbara", "Elisabeth", "Magdalena", "Ursula", "Dorothea", "Sophia", "Christina", "Regina",
+          "Agnes", "Apollonia", "Walburga", "Kunigunde", "Gertrud", "Susanna", "Sibylla", "Juliana", "Helena", "Eva", "Clara", "Veronica",
+          "Rosina", "Justina", "Benigna", "Felicitas", "Salome", "Ottilia", "Brigitta", "Martha", "Afra", "Amalia", "Hedwig", "Euphrosyne",
+          "Esther", "Judith", "Lucia", "Agatha", "Scholastica", "Anna Maria", "Maria Magdalena", "Eleonora", "Johanna", "Christiana", "Ludovica",
+          "Philippina", "Elsa", "Kordula"],
+      s: ["Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker", "Schulz", "Hoffmann", "Koch", "Richter", "Klein",
+          "Wolf", "Schröder", "Neumann", "Schwarz", "Zimmermann", "Braun", "Krüger", "Hartmann", "Lange", "Werner", "Krause", "Lehmann",
+          "Köhler", "Herrmann", "König", "Walter", "Mayer", "Huber", "Kaiser", "Fuchs", "Peters", "Lang", "Scholz", "Möller", "Weiß", "Jung",
+          "Hahn", "Vogel", "Keller", "Günther", "Frank", "Berger", "Winkler", "Roth", "Beck", "Lorenz", "Haller"]
+    },
+    "French": {
+      m: ["Jean", "Pierre", "Jacques", "François", "Louis", "Nicolas", "Antoine", "Claude", "Charles", "Guillaume", "Étienne", "Michel",
+          "Philippe", "Henri", "René", "Gilles", "Denis", "Mathieu", "Simon", "Laurent", "Martin", "Jérôme", "Guy", "Olivier", "Benoît",
+          "Blaise", "Barthélemy", "Sébastien", "Thibault", "Gaspard", "Jean-Baptiste", "Honoré", "Gabriel", "Germain", "Hugues", "Adrien",
+          "Bernard", "Clément", "Edmé", "Fiacre", "Hercule", "Jérémie", "Josse", "Léonard", "Marin", "Noël", "Robert", "Toussaint", "Vincent", "Yves"],
+      f: ["Marie", "Jeanne", "Catherine", "Anne", "Marguerite", "Françoise", "Madeleine", "Louise", "Élisabeth", "Claude", "Geneviève",
+          "Marthe", "Isabelle", "Suzanne", "Antoinette", "Charlotte", "Gabrielle", "Nicole", "Perrine", "Denise", "Barbe", "Jacqueline",
+          "Michelle", "Renée", "Simone", "Agnès", "Angélique", "Claudine", "Edmée", "Étiennette", "Guillemette", "Hélène", "Henriette",
+          "Jacquette", "Laurence", "Lucrèce", "Martine", "Philippine", "Radegonde", "Rose", "Toinette", "Ursule", "Cécile", "Colette",
+          "Diane", "Marie-Anne", "Madeleine-Thérèse", "Huguette", "Perette", "Benoîte"],
+      s: ["Martin", "Bernard", "Dubois", "Thomas", "Robert", "Richard", "Petit", "Durand", "Leroy", "Moreau", "Simon", "Laurent", "Lefebvre",
+          "Michel", "Garnier", "Rousseau", "Fournier", "Girard", "Bonnet", "Dupont", "Lambert", "Fontaine", "Roussel", "Vincent", "Chevalier",
+          "Mercier", "Blanc", "Guérin", "Boyer", "Gauthier", "Perrin", "Morel", "Clément", "Masson", "Marchand", "Duval", "Denis", "Lemoine",
+          "Picard", "Renaud", "Barbier", "Brun", "Caron", "Colin", "Arnaud", "Leclerc", "Royer", "Charpentier", "Bertrand", "Tessier"]
+    },
+    "Scandinavian": {
+      m: ["Lars", "Nils", "Olof", "Anders", "Erik", "Per", "Jöns", "Måns", "Sven", "Jon", "Johan", "Karl", "Gustaf", "Magnus", "Mats",
+          "Mikael", "Hans", "Jakob", "Göran", "Gunnar", "Håkan", "Ingemar", "Ivar", "Knut", "Mårten", "Peder", "Pål", "Sten", "Ture", "Ulf",
+          "Tord", "Åke", "Bengt", "Bertil", "Björn", "Daniel", "Elof", "Esbjörn", "Gudmund", "Halvard", "Hemming", "Isak", "Jesper", "Klas",
+          "Rasmus", "Simon", "Staffan", "Tore", "Torsten", "Arvid"],
+      f: ["Karin", "Kerstin", "Brita", "Ingrid", "Margareta", "Anna", "Elin", "Gertrud", "Gunilla", "Maria", "Kristina", "Märta", "Sigrid",
+          "Ingeborg", "Ingegerd", "Elsa", "Elisabet", "Barbro", "Cecilia", "Dorotea", "Ebba", "Estrid", "Gunhild", "Helena", "Johanna",
+          "Katarina", "Lisbet", "Magdalena", "Malin", "Ragnhild", "Sara", "Signe", "Sofia", "Valborg", "Agneta", "Beata", "Botild", "Gölin",
+          "Ingela", "Kajsa", "Karna", "Lucia", "Märit", "Annika", "Gundla", "Hedvig", "Ingrid Maria", "Ölegård", "Sissela", "Ulrika"],
+      s: ["Andersson", "Larsson", "Nilsson", "Olofsson", "Eriksson", "Persson", "Jönsson", "Månsson", "Svensson", "Jonsson", "Johansson",
+          "Karlsson", "Gustafsson", "Magnusson", "Mattsson", "Mikaelsson", "Hansson", "Jakobsson", "Göransson", "Gunnarsson", "Håkansson",
+          "Ivarsson", "Knutsson", "Mårtensson", "Pedersson", "Pålsson", "Stensson", "Tordsson", "Åkesson", "Bengtsson", "Björnsson",
+          "Danielsson", "Isaksson", "Jespersson", "Klasson", "Rasmusson", "Simonsson", "Staffansson", "Arvidsson", "Axelsson", "Ingemarsson",
+          "Gudmundsson", "Halvardsson", "Hemmingsson", "Torstensson", "Toresson", "Ulfsson", "Esbjörnsson", "Elofsson", "Bertilsson"]
+    },
+    "Sajavedran": {
+      m: ["Chan", "Sok", "Vann", "Chea", "Keo", "Nhem", "Pech", "Prak", "Sam", "Som", "Thong", "Yos", "Mao", "Meas", "Nuon", "Pen", "Phal",
+          "Ros", "Sar", "Sin", "Sorn", "Tep", "Ung", "Vong", "Yim", "Chey", "Chuon", "Dara", "Kong", "Kosal", "Mok", "Nhim", "Oum", "Pang",
+          "Rith", "Sambath", "Sarin", "Seng", "Chhay", "Chhun", "Hem", "Khiev", "Krasang", "Moeun", "Pou", "Ruos", "Soth", "Than", "Touch", "Uch"],
+      f: ["Srey", "Chanthou", "Kolab", "Mealea", "Phalla", "Sophea", "Sokha", "Bopha", "Chenda", "Kanha", "Leakena", "Malis", "Mony", "Neary",
+          "Pisey", "Rachana", "Sotheary", "Sreyleak", "Thida", "Vanna", "Chantrea", "Champa", "Davy", "Kesor", "Kunthea", "Lina", "Makara",
+          "Maly", "Nary", "Navy", "Peou", "Phanna", "Rany", "Romduol", "Roath", "Sameth", "Sitha", "Sokhom", "Somaly", "Sopheap", "Soriya",
+          "Sreymom", "Tevy", "Thyda", "Vathana", "Yan", "Bopharath", "Chhorvy", "Mealy", "Tola"],
+      s: ["Chea", "Chan", "Sok", "Keo", "Kim", "Heng", "Ly", "Lim", "Seng", "Hun", "Sam", "Meas", "Mao", "Nhem", "Ouk", "Pen", "Prak", "Pich",
+          "Ros", "Sar", "Sin", "Tep", "Touch", "Ung", "Vann", "Yim", "Yos", "Chhim", "Chhun", "Duong", "Eng", "Hem", "Hor", "Im", "Khiev",
+          "Kong", "Long", "Mok", "Nget", "Nuon", "Oum", "Phan", "Ry", "Sao", "Sim", "Sorn", "Thach", "Tith", "Uch", "Var"]
+    }
+  };
+  var CULTURES = Object.keys(NAMES), SEXES = [["m", "Male"], ["f", "Female"]];
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function rollName(c, sex) {
+    var n = NAMES[c], given = pick(n[sex]), sur = pick(n.s);
+    if (c === "Scandinavian" && sex === "f") sur = sur.replace(/son$/, "dotter");
+    return c === "Sajavedran" ? sur + " " + given : given + " " + sur;
+  }
+  function nameGen() { return state.nameGen = state.nameGen || { culture: CULTURES[0], sex: "m", rolls: [] }; }
+  function renderName() {
+    var g = nameGen(), b = el("body8");
+    b.innerHTML = '<input class="namein" id="nm-in" type="text" maxlength="40" placeholder="Character name" aria-label="Character name" value="' + esc(state.sheet.name) + '">' +
+      '<section class="panel"><div class="group">Name generator</div>' +
+      '<div class="lbl"><span>Culture</span><div class="subs" role="group" aria-label="Culture">' + CULTURES.map(function (c) {
+        return '<button type="button" data-cult="' + c + '" aria-selected="' + (g.culture === c) + '">' + c + "</button>";
+      }).join("") + "</div></div>" +
+      '<div class="lbl"><span>Sex</span><div class="subs" role="group" aria-label="Sex">' + SEXES.map(function (s) {
+        return '<button type="button" data-nsex="' + s[0] + '" aria-selected="' + (g.sex === s[0]) + '">' + s[1] + "</button>";
+      }).join("") + "</div></div>" +
+      '<div class="actions"><button class="btn" id="nm-roll" type="button">Roll name</button></div>' +
+      (g.rolls.length ? '<div class="nrolls">' + g.rolls.map(function (n) { return '<button type="button" class="nroll" data-nm="' + esc(n) + '" data-notr>' + esc(n) + "</button>"; }).join("") + "</div>" +
+        '<p class="tip">Pick an earlier roll to use it again.</p>' : "") + "</section>" +
+      '<div class="actions"><button class="btn" id="nm-ok" type="button">Continue</button><button class="btn ghost" id="nm-back" type="button">Back</button></div>';
+    var inp = el("nm-in");
+    inp.addEventListener("input", function () { state.sheet.name = inp.value; });
+    el("nm-roll").addEventListener("click", function () {
+      var n = rollName(g.culture, g.sex);
+      g.rolls = [n].concat(g.rolls.filter(function (x) { return x !== n; })).slice(0, 8);
+      state.sheet.name = n; renderName();
+    });
+    el("nm-ok").addEventListener("click", function () { state.nameDone = true; syncChar(); state.view = "s5"; layout(true); });
+    el("nm-back").addEventListener("click", function () { state.gearDone = false; state.view = "s6"; layout(true); });
+  }
+  el("body8").addEventListener("click", function (ev) {
+    var x = ev.target.closest("button");
+    if (!x) return;
+    var g = nameGen();
+    if (x.dataset.cult) { g.culture = x.dataset.cult; renderName(); }
+    else if (x.dataset.nsex) { g.sex = x.dataset.nsex; renderName(); }
+    else if (x.dataset.nm) { state.sheet.name = x.dataset.nm; renderName(); }
+  });
 
   /* ---------- step 5: character sheet ---------- */
   function xpFor(k, lv) { return lvRow(k, lv).xp; }
@@ -2049,6 +2181,9 @@ html[lang="ru"] h1 { font-weight: 500; }
     "Halflings can't use": "Недоступно Полуросликам", "Two-handed for Halflings": "Полурослики держат двумя руками",
     "Worn": "Надето", "In quiver": "В колчане", "Stow": "Оставить", "Carry": "Взять", "Coins": "Монеты", "1 item per 100 coins": "1 предмет за 100 монет",
     "Nothing bought yet.": "Пока ничего не куплено.",
+    "Name": "Имя", "Name generator": "Генератор имён", "Culture": "Культура", "Sex": "Пол", "Male": "Мужской", "Female": "Женский",
+    "Roll name": "Бросить имя", "Pick an earlier roll to use it again.": "Выберите прошлый бросок, чтобы взять его снова.",
+    "English": "Английская", "German": "Немецкая", "French": "Французская", "Scandinavian": "Скандинавская", "Sajavedran": "Саджаведранская",
     "Starting pack": "Стартовый набор", "Minor starting pack": "Малый стартовый набор", "Major starting pack": "Большой стартовый набор",
     "A preset, not a purchase: change anything, then fill your inventory with it. It keeps food, light and travel gear, and stays at most Lightly Encumbered.":
       "Заготовка, а не покупка: измените что угодно и заполните ею снаряжение. В наборе есть еда, свет и походное снаряжение, а нагрузка не выше лёгкой.",
@@ -2069,7 +2204,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     "Town: a settlement of 1,000 or more. Rural: a day or more away from one.": "Город: поселение от 1000 жителей. Деревня: день пути от него и дальше.",
     "This rules data has one price per item, so Town and Rural prices are the same.": "В данных правил у предмета одна цена, поэтому городские и сельские цены совпадают.",
     "Search items to add": "Поиск предметов", "Found or were given something? Search for it to add it without paying, or describe it below.": "Нашли или получили что-то? Найдите предмет, чтобы добавить его бесплатно, или опишите его ниже.",
-    "Describe your own item": "Свой предмет", "Name": "Название", "Quantity": "Количество", "Encumbering": "Утяжеляет", "Description": "Описание",
+    "Describe your own item": "Свой предмет", "Item name": "Название", "Quantity": "Количество", "Encumbering": "Утяжеляет", "Description": "Описание",
     "Add to inventory": "Добавить в снаряжение", "In powder holders": "В пороховницах",
     "Item count maxed": "Предметы больше не добавляют очков",
     "Traveling Clothes": "Дорожная одежда", "Arrows": "Стрелы", "Crossbow Bolts": "Арбалетные болты", "Sling Bullets": "Пули для пращи",
@@ -2346,6 +2481,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     el("step5").hidden = v !== "s5";
     el("step6").hidden = v !== "s6";
     el("step7").hidden = v !== "inv";
+    el("step8").hidden = v !== "s8";
     el("banner").hidden = !(v === "s2" || v === "s3" || v === "s4");
     if (v === "recap") renderRecap();
     if (v === "s2") { renderBanner(); renderClass(); }
@@ -2353,6 +2489,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     if (v === "s4") { renderBanner(); renderDetails(); }
     if (v === "s6") renderGear();
     if (v === "inv") renderInventory();
+    if (v === "s8") renderName();
     if (v === "s5") renderSheet();
     if (v === "home") renderHome();
     renderRail();
