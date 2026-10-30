@@ -14,6 +14,7 @@
   --accent: #a3141f;
   --accent-fg: #f6f1e8;
   --good: #2c6b58;
+  --coin: #9a6f0e;
   --die: #fbfaf6;
   --die-pip: #171515;
   --font-display: "IM Fell English SC", "Times New Roman", serif;
@@ -23,13 +24,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #110f10; --surface: #1a1718; --fg: #e8e2d6; --muted: #9a9286; --line: #3a3436;
-    --accent: #e0454f; --accent-fg: #130e0f; --good: #6cc2a3; --die: #e8e2d6; --die-pip: #131011;
+    --accent: #e0454f; --accent-fg: #130e0f; --good: #6cc2a3; --coin: #d9ae4c; --die: #e8e2d6; --die-pip: #131011;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #110f10; --surface: #1a1718; --fg: #e8e2d6; --muted: #9a9286; --line: #3a3436;
-  --accent: #e0454f; --accent-fg: #130e0f; --good: #6cc2a3; --die: #e8e2d6; --die-pip: #131011;
+  --accent: #e0454f; --accent-fg: #130e0f; --good: #6cc2a3; --coin: #d9ae4c; --die: #e8e2d6; --die-pip: #131011;
   color-scheme: dark;
 }
 
@@ -435,6 +436,111 @@ html[lang="ru"] h1 { font-weight: 500; }
 @media (max-width: 760px) { .glance { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 560px) { .glance { grid-template-columns: repeat(2, 1fr); } .tip.outside { margin-top: -16px; } }
 #h-io:empty, #s-io:empty { display: none; }
+
+/* character sheet pages */
+.stabs { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); background: var(--surface); border-bottom: 1px solid var(--fg); margin: -12px -22px 0; padding: 0 22px; }
+.stabs button { background: none; color: var(--muted); border: 0; border-bottom: 3px solid transparent; margin-bottom: -1px; padding: 12px 2px 9px; font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stabs button:hover { color: var(--fg); }
+.stabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); font-weight: 600; }
+.spage { display: flex; flex-direction: column; gap: 30px; }
+@media (max-width: 560px) {
+  .stabs { background: var(--bg); margin: -12px -16px 0; padding: 0 16px; }
+  .stabs button { font-size: 11px; letter-spacing: .04em; }
+}
+
+/* equipment: a sticky money/encumbrance bar over a shop and a pack view */
+#body6 { display: flex; flex-direction: column; gap: 16px; }
+#body6:empty { display: none; }
+.gearhead { position: sticky; top: 0; z-index: 3; background: var(--surface); margin: -4px -22px 0; padding: 10px 22px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
+.eb-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.eb-money { font-family: var(--font-mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
+.eb-money b { font-size: 20px; font-weight: 600; color: var(--fg); }
+.eb-money.neg b { color: var(--accent); }
+.eb-lvl { font-family: var(--font-display); font-size: 19px; line-height: 1.15; text-align: right; }
+.eb-lvl.l0 { color: var(--good); }
+.eb-lvl.l3, .eb-lvl.l4 { color: var(--accent); }
+.meter { display: flex; gap: 2px; }
+.meter i { flex: 1; height: 8px; background: color-mix(in srgb, var(--fg) 13%, transparent); }
+.meter i.on { background: var(--fg); }
+.meter i.st { margin-left: 5px; }
+.meter i.st.on { background: var(--accent); }
+.eb-bot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2px 12px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.eb-mv { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.eb-warn { margin: 0; font-family: var(--font-mono); font-size: 12px; color: var(--accent); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--fg); }
+.seg button { background: transparent; color: var(--fg); border: 0; padding: 9px 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; }
+.seg button[aria-selected="true"] { background: var(--fg); color: var(--bg); }
+.seg button i { font-style: normal; opacity: .7; margin-left: 4px; }
+.gshop { display: flex; flex-direction: column; gap: 12px; }
+.gsearch { width: 100%; font: 17px var(--font-body); padding: 9px 12px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 0; }
+#gtabs { display: flex; flex-direction: column; gap: 10px; }
+.cats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
+.cats button { background: none; color: var(--muted); border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 6px 2px; font-family: var(--font-display); font-size: 18px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; }
+.cats button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.subs { display: flex; flex-wrap: wrap; gap: 6px; }
+.subs button { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 4px 10px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+.subs button[aria-selected="true"] { color: var(--fg); border-color: var(--fg); }
+.ilist { display: flex; flex-direction: column; }
+.ilist > .tip { padding: 4px 0 8px; }
+.it { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.it.pk { grid-template-columns: minmax(0, 1fr) auto auto; }
+.it-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.it.ov { border-left: 3px solid var(--accent); padding-left: 9px; }
+.it.dim .it-l { opacity: .45; }
+.it-l { display: flex; flex-direction: column; min-width: 0; }
+.it-n { font-size: 17px; line-height: 1.25; }
+.it-n b { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--muted); }
+.it-m { font-family: var(--font-mono); font-size: 11px; line-height: 1.35; color: var(--muted); }
+.it.ov .it-m { color: var(--accent); }
+.it-p { font-family: var(--font-mono); font-size: 13px; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.it .stp { width: 92px; justify-content: space-between; }
+.it .stp.buy { width: auto; }
+.it .stp.buy { border-color: transparent; justify-content: flex-end; }
+.it .stp.buy button { border: 1px solid var(--line); }
+.it .stp.buy button:hover:not(:disabled) { border-color: var(--fg); }
+.it .tag { width: 98px; text-align: center; }
+.it.own .it-n { color: var(--fg); font-weight: 600; }
+.it .mv { background: none; border: 0; padding: 4px 0; color: var(--muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; text-decoration: underline; cursor: pointer; }
+.it .mv:hover { color: var(--fg); }
+.ihead { padding: 14px 0 4px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--fg); }
+.ihead:first-child { padding-top: 0; }
+.need { border: 1px solid var(--accent); padding: 8px 12px 0; margin-bottom: 14px; }
+.need p { font-size: 15px; color: var(--accent); }
+.need .it:last-child { border-bottom: 0; }
+.pgroup { display: flex; flex-direction: column; margin-top: 18px; }
+.pgroup:first-of-type { margin-top: 6px; }
+.pgroup .group { border-bottom: 1px solid var(--fg); }
+.gcount { text-transform: none; letter-spacing: 0; }
+.nc { padding: 10px 0 2px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.nc ~ .it .it-n { color: var(--muted); }
+.pgroup.away .tip { padding: 6px 0 2px; font-size: 14px; }
+.encline { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+.encline .eb-lvl { text-align: left; font-size: 20px; }
+.kit { display: flex; flex-direction: column; }
+.kitrow { display: grid; grid-template-columns: 9.5em minmax(0, 1fr); gap: 6px 14px; padding: 8px 0; border-bottom: 1px solid var(--line); align-items: start; }
+.sp.ov { border-color: var(--accent); }
+.it-d { font-family: "EB Garamond", Georgia, serif; font-size: 15px; line-height: 1.3; color: var(--muted); }
+.it-d .st { font-family: var(--font-mono); font-size: 12px; color: var(--fg); white-space: nowrap; }
+.tg { display: inline-block; margin-left: 6px; padding: 0 5px; border: 1px solid var(--line); font-family: var(--font-mono); font-size: 10px; line-height: 16px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); vertical-align: 2px; white-space: nowrap; }
+.tg.o { border-color: var(--accent); color: var(--accent); }
+.eb-ov { white-space: nowrap; padding: 0 6px; border: 1px solid var(--line); }
+.eb-ov b { font-weight: 600; }
+.eb-ov.has { border-color: var(--accent); color: var(--accent); }
+.meter i.coin { background: var(--coin); }
+.eb-bot .coin, .it.coins .it-m, .it.coins .it-n b { color: var(--coin); }
+.gopts { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.gopts .gl { display: contents; }
+.gopts button { display: flex; flex-direction: column; align-items: center; gap: 1px; background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 4px 2px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; min-width: 0; }
+.gopts button i { font-style: normal; font-size: 11px; text-transform: none; letter-spacing: 0; }
+.gopts > button { grid-column: 4; border-style: dashed; }
+.gopts button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); border-style: solid; }
+.gdesc { grid-column: 1 / -1; margin: 0; max-width: none; }
+@media (max-width: 560px) {
+  .kitrow { grid-template-columns: 1fr; }
+  .it-n { font-size: 16px; }
+  .it { gap: 4px 8px; }
+}
+@media (max-width: 480px) { .gearhead { margin: -4px -16px 0; padding: 10px 16px; } }
 </style>
 
 <main>
@@ -489,6 +595,13 @@ html[lang="ru"] h1 { font-weight: 500; }
     <div id="body4"></div>
   </section>
 
+  <section class="card" id="step6" aria-labelledby="s6t" hidden>
+    <header>
+      <h2 id="s6t">Equipment</h2>
+    </header>
+    <div id="body6"></div>
+  </section>
+
   <section class="card" id="step5" aria-label="Character sheet" hidden>
     <div id="body5"></div>
   </section>
@@ -498,7 +611,7 @@ html[lang="ru"] h1 { font-weight: 500; }
 <script>
 (function () {
   /* BEGIN GAME DATA */
-  var GAME = {"source":"Generated from data/lotfp.json by tools/build_page.py. Do not edit by hand.","abilityMods":[{"lo":3,"hi":3,"mod":-3},{"lo":4,"hi":5,"mod":-2},{"lo":6,"hi":8,"mod":-1},{"lo":9,"hi":12,"mod":0},{"lo":13,"hi":15,"mod":1},{"lo":16,"hi":17,"mod":2},{"lo":18,"hi":18,"mod":3}],"abilities":{"CHA":{"en":"Charisma","ru":"Харизма"},"CON":{"en":"Constitution","ru":"Телосложение"},"DEX":{"en":"Dexterity","ru":"Ловкость"},"INT":{"en":"Intelligence","ru":"Интеллект"},"STR":{"en":"Strength","ru":"Сила"},"WIS":{"en":"Wisdom","ru":"Мудрость"}},"saves":[{"en":"Paralyzation","ru":"Паралич"},{"en":"Poison","ru":"Яд"},{"en":"Breath Weapon","ru":"Детонация"},{"en":"Magical Device","ru":"Магические устройства"},{"en":"Magic","ru":"Магия"}],"alignments":{"Lawful":"Законопослушный","Neutral":"Нейтральный","Chaotic":"Хаотичный"},"skills":[{"en":"Architecture","ru":"Архитектура","base":1},{"en":"Bushcraft","ru":"Выживание в лесу","base":1},{"en":"Climb","ru":"Лазание","base":1},{"en":"Languages","ru":"Владение языками","base":1},{"en":"Open Doors","ru":"Открытие дверей","base":1},{"en":"Search","ru":"Поиск","base":1},{"en":"Sleight of Hand","ru":"Ловкость рук","base":1},{"en":"Sneak Attack","ru":"Скрытая атака","base":1},{"en":"Stealth","ru":"Скрытность","base":1},{"en":"Tinker","ru":"Механика","base":1}],"classes":{"Cleric":{"ru":"Клирик","human":true,"minHp":4,"alignment":"Lawful","hp":{"d1":6,"d":6,"fixed":2,"conAlways":false},"levels":[{"xp":0,"saves":[14,11,16,12,15],"ab":1,"slots":[1]},{"xp":1750,"saves":[14,11,16,12,15],"ab":1,"slots":[2]},{"xp":3500,"saves":[14,11,16,12,15],"ab":1,"slots":[3]},{"xp":7000,"saves":[14,11,16,12,15],"ab":1,"slots":[3,1]},{"xp":14000,"saves":[12,9,14,10,12],"ab":1,"slots":[3,2,1]},{"xp":28000,"saves":[12,9,14,10,12],"ab":1,"slots":[3,3,2]},{"xp":56000,"saves":[12,9,14,10,12],"ab":1,"slots":[4,3,3,1]},{"xp":112000,"saves":[12,9,14,10,12],"ab":1,"slots":[4,3,3,2]},{"xp":224000,"saves":[10,7,12,8,9],"ab":1,"slots":[4,3,3,3,1]},{"xp":336000,"saves":[10,7,12,8,9],"ab":1,"slots":[4,4,3,3,2]},{"xp":448000,"saves":[10,7,12,8,9],"ab":1,"slots":[5,4,4,3,3,1]},{"xp":560000,"saves":[10,7,12,8,9],"ab":1,"slots":[5,4,4,3,3,2]},{"xp":672000,"saves":[8,3,8,4,6],"ab":1,"slots":[5,4,4,4,3,3,1]},{"xp":784000,"saves":[8,3,8,4,6],"ab":1,"slots":[5,5,4,4,3,3,2]},{"xp":896000,"saves":[8,3,8,4,6],"ab":1,"slots":[6,5,5,4,4,3,3]},{"xp":1008000,"saves":[8,3,8,4,6],"ab":1,"slots":[6,5,5,4,4,3,3]},{"xp":1120000,"saves":[6,2,6,4,5],"ab":1,"slots":[6,5,5,5,4,4,3]},{"xp":1232000,"saves":[6,2,6,4,5],"ab":1,"slots":[6,6,5,5,4,4,3]},{"xp":1344000,"saves":[6,2,6,4,5],"ab":1,"slots":[7,6,6,5,5,4,4]},{"xp":1456000,"saves":[6,2,6,4,5],"ab":1,"slots":[8,7,7,6,5,5,4]},{"xp":1568000,"saves":[6,2,6,4,5],"ab":1,"slots":[8,7,7,6,5,5,4]}]},"Fighter":{"ru":"Воин","human":true,"minHp":8,"alignment":null,"hp":{"d1":8,"d":8,"fixed":3,"conAlways":false},"levels":[{"xp":0,"saves":[14,12,15,13,16],"ab":2},{"xp":2000,"saves":[14,12,15,13,16],"ab":3},{"xp":4000,"saves":[14,12,15,13,16],"ab":4},{"xp":8000,"saves":[12,10,13,11,14],"ab":5},{"xp":16000,"saves":[12,10,13,11,14],"ab":6},{"xp":32000,"saves":[12,10,13,11,14],"ab":7},{"xp":64000,"saves":[10,8,9,9,12],"ab":8},{"xp":128000,"saves":[10,8,9,9,12],"ab":9},{"xp":256000,"saves":[10,8,9,9,12],"ab":10},{"xp":384000,"saves":[8,6,7,7,10],"ab":10},{"xp":512000,"saves":[8,6,7,7,10],"ab":10},{"xp":640000,"saves":[8,6,7,7,10],"ab":10},{"xp":768000,"saves":[6,4,5,5,8],"ab":10},{"xp":896000,"saves":[6,4,5,5,8],"ab":10},{"xp":1024000,"saves":[6,4,5,5,8],"ab":10},{"xp":1152000,"saves":[6,4,5,5,8],"ab":10},{"xp":1280000,"saves":[6,4,5,5,8],"ab":10},{"xp":1408000,"saves":[6,4,5,5,8],"ab":10},{"xp":1536000,"saves":[6,4,5,5,8],"ab":10},{"xp":1664000,"saves":[6,4,5,5,8],"ab":10},{"xp":1792000,"saves":[6,4,5,5,8],"ab":10}]},"Magic-User":{"ru":"Маг","human":true,"minHp":3,"alignment":"Chaotic","hp":{"d1":6,"d":4,"fixed":1,"conAlways":false},"levels":[{"xp":0,"saves":[13,13,16,13,14],"ab":1,"slots":[1]},{"xp":2250,"saves":[13,13,16,13,14],"ab":1,"slots":[2]},{"xp":4500,"saves":[13,13,16,13,14],"ab":1,"slots":[2,1]},{"xp":9000,"saves":[13,13,16,13,14],"ab":1,"slots":[2,2]},{"xp":18000,"saves":[13,13,16,13,14],"ab":1,"slots":[3,2,1]},{"xp":36000,"saves":[11,11,14,11,12],"ab":1,"slots":[3,2,2]},{"xp":72000,"saves":[11,11,14,11,12],"ab":1,"slots":[3,3,2,1]},{"xp":144000,"saves":[11,11,14,11,12],"ab":1,"slots":[4,3,2,2]},{"xp":288000,"saves":[11,11,14,11,12],"ab":1,"slots":[4,3,3,2,1]},{"xp":432000,"saves":[11,11,14,11,12],"ab":1,"slots":[4,4,3,2,2]},{"xp":576000,"saves":[9,9,12,9,8],"ab":1,"slots":[5,4,3,3,2,1]},{"xp":720000,"saves":[9,9,12,9,8],"ab":1,"slots":[5,4,4,3,2,2]},{"xp":864000,"saves":[9,9,12,9,8],"ab":1,"slots":[5,5,4,3,3,2,1]},{"xp":1008000,"saves":[9,9,12,9,8],"ab":1,"slots":[6,5,4,4,3,2,2]},{"xp":1152000,"saves":[9,9,12,9,8],"ab":1,"slots":[6,5,5,4,3,3,2,1]},{"xp":1296000,"saves":[6,7,8,5,6],"ab":1,"slots":[6,6,5,4,4,3,2,2]},{"xp":1440000,"saves":[6,7,8,5,6],"ab":1,"slots":[7,6,5,5,4,3,3,2,1]},{"xp":1584000,"saves":[6,7,8,5,6],"ab":1,"slots":[7,6,6,5,4,4,3,2,2]},{"xp":1728000,"saves":[5,6,7,4,4],"ab":1,"slots":[7,7,6,5,5,4,3,3,2]},{"xp":1872000,"saves":[5,6,7,4,4],"ab":1,"slots":[8,7,6,6,5,4,4,3,2]},{"xp":2016000,"saves":[5,6,7,4,4],"ab":1,"slots":[8,7,6,6,5,4,4,3,2]}]},"Specialist":{"ru":"Специалист","human":true,"minHp":4,"alignment":null,"hp":{"d1":6,"d":6,"fixed":2,"conAlways":false},"levels":[{"xp":0,"saves":[14,16,15,14,14],"ab":1,"skillPoints":4},{"xp":1500,"saves":[14,16,15,14,14],"ab":1,"skillPoints":6},{"xp":3000,"saves":[14,16,15,14,14],"ab":1,"skillPoints":8},{"xp":6000,"saves":[14,16,15,14,14],"ab":1,"skillPoints":10},{"xp":12000,"saves":[11,12,14,13,12],"ab":1,"skillPoints":12},{"xp":24000,"saves":[11,12,14,13,12],"ab":1,"skillPoints":14},{"xp":48000,"saves":[11,12,14,13,12],"ab":1,"skillPoints":16},{"xp":96000,"saves":[11,12,14,13,12],"ab":1,"skillPoints":18},{"xp":192000,"saves":[9,10,12,11,10],"ab":1,"skillPoints":20},{"xp":288000,"saves":[9,10,12,11,10],"ab":1,"skillPoints":22},{"xp":384000,"saves":[9,10,12,11,10],"ab":1,"skillPoints":24},{"xp":480000,"saves":[9,10,12,11,10],"ab":1,"skillPoints":26},{"xp":576000,"saves":[7,8,10,9,8],"ab":1,"skillPoints":28},{"xp":672000,"saves":[7,8,10,9,8],"ab":1,"skillPoints":30},{"xp":768000,"saves":[7,8,10,9,8],"ab":1,"skillPoints":32},{"xp":864000,"saves":[7,8,10,9,8],"ab":1,"skillPoints":34},{"xp":960000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":36},{"xp":1056000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":38},{"xp":1152000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":40},{"xp":1248000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":42},{"xp":1344000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":44}]},"Dwarf":{"ru":"Дворф","human":false,"minHp":6,"alignment":null,"hp":{"d1":10,"d":10,"fixed":3,"conAlways":true},"levels":[{"xp":0,"saves":[10,8,13,9,12],"ab":1,"architecture":3},{"xp":2200,"saves":[10,8,13,9,12],"ab":1,"architecture":3},{"xp":4400,"saves":[10,8,13,9,12],"ab":1,"architecture":3},{"xp":8800,"saves":[8,6,10,7,10],"ab":1,"architecture":4},{"xp":17600,"saves":[8,6,10,7,10],"ab":1,"architecture":4},{"xp":35200,"saves":[8,6,10,7,10],"ab":1,"architecture":4},{"xp":70400,"saves":[6,4,7,5,8],"ab":1,"architecture":5},{"xp":140800,"saves":[6,4,7,5,8],"ab":1,"architecture":5},{"xp":281600,"saves":[6,4,7,5,8],"ab":1,"architecture":5},{"xp":422400,"saves":[4,2,4,3,6],"ab":1,"architecture":6},{"xp":563200,"saves":[4,2,4,3,6],"ab":1,"architecture":6},{"xp":704000,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":844800,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":985600,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1126400,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1267200,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1408000,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1548800,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1689600,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1830400,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1971200,"saves":[2,2,2,2,4],"ab":1,"architecture":6}]},"Elf":{"ru":"Эльф","human":false,"minHp":4,"alignment":"Chaotic","hp":{"d1":6,"d":6,"fixed":2,"conAlways":false},"levels":[{"xp":0,"saves":[13,12,15,13,15],"ab":1,"slots":[1],"search":2},{"xp":3000,"saves":[13,12,15,13,15],"ab":1,"slots":[2],"search":2},{"xp":6000,"saves":[13,12,15,13,15],"ab":1,"slots":[2,1],"search":2},{"xp":12000,"saves":[11,10,13,11,13],"ab":1,"slots":[2,2],"search":3},{"xp":24000,"saves":[11,10,13,11,13],"ab":1,"slots":[3,2,1],"search":3},{"xp":48000,"saves":[11,10,13,11,13],"ab":1,"slots":[3,2,2],"search":3},{"xp":96000,"saves":[9,8,9,9,11],"ab":1,"slots":[3,3,2,1],"search":4},{"xp":192000,"saves":[9,8,9,9,11],"ab":1,"slots":[4,3,2,2],"search":4},{"xp":384000,"saves":[9,8,9,9,11],"ab":1,"slots":[4,3,3,2,1],"search":4},{"xp":576000,"saves":[7,6,7,7,9],"ab":1,"slots":[4,4,3,2,2],"search":5},{"xp":768000,"saves":[7,6,7,7,9],"ab":1,"slots":[5,4,3,3,2,1],"search":5},{"xp":960000,"saves":[7,6,7,7,9],"ab":1,"slots":[5,5,4,3,3,2,1],"search":5},{"xp":1152000,"saves":[5,4,5,5,7],"ab":1,"slots":[5,5,4,3,3,2,1],"search":6},{"xp":1344000,"saves":[5,4,5,5,7],"ab":1,"slots":[6,5,4,4,3,2,2],"search":6},{"xp":1536000,"saves":[5,4,5,5,7],"ab":1,"slots":[6,5,5,4,3,3,2,1],"search":6},{"xp":1728000,"saves":[5,4,5,5,7],"ab":1,"slots":[6,6,5,4,4,3,2,2],"search":6},{"xp":1920000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6},{"xp":2112000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6},{"xp":2304000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6},{"xp":2496000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6},{"xp":2688000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6}]},"Halfling":{"ru":"Полурослик","human":false,"minHp":4,"alignment":null,"hp":{"d1":6,"d":6,"fixed":2,"conAlways":false},"levels":[{"xp":0,"saves":[10,8,13,9,12],"ab":1,"bushcraft":3},{"xp":2000,"saves":[8,6,10,7,10],"ab":1,"bushcraft":3},{"xp":4000,"saves":[8,6,10,7,10],"ab":1,"bushcraft":3},{"xp":8000,"saves":[6,4,7,5,8],"ab":1,"bushcraft":4},{"xp":16000,"saves":[6,4,7,5,8],"ab":1,"bushcraft":4},{"xp":32000,"saves":[4,2,4,3,6],"ab":1,"bushcraft":4},{"xp":64000,"saves":[4,2,4,3,6],"ab":1,"bushcraft":5},{"xp":128000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":5},{"xp":256000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":5},{"xp":384000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":512000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":640000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":768000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":896000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1024000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1152000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1280000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1408000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1536000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1664000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1792000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6}]}},"spellLists":{"cleric":[[{"en":"Bless","ru":"Благословение"},{"en":"Command","ru":"Команда"},{"en":"Cure Light Wounds","ru":"Вылечить легкие раны"},{"en":"Detect Evil","ru":"Найти зло"},{"en":"Invisibility to Undead","ru":"Невидимость против нежити"},{"en":"Protection from Evil","ru":"Защита от зла"},{"en":"Purify Food and Drink","ru":"Очистить еду и воду"},{"en":"Remove Fear","ru":"Убрать страх"},{"en":"Sanctuary","ru":"Убежище"},{"en":"Turn Undead","ru":"Отпугнуть нежить"}],[{"en":"Augury","ru":"Гадание"},{"en":"Delay Poison","ru":"Отсрочить яд"},{"en":"Enthrall","ru":"Порабощение"},{"en":"Heat Metal","ru":"Раскаленный металл"},{"en":"Heroism","ru":"Героизм"},{"en":"Resist Cold","ru":"Сопротивление холоду"},{"en":"Resist Fire","ru":"Сопротивление огню"},{"en":"Silence 15' Radius","ru":"Молчание, радиус 15 футов"}],[{"en":"Cure Disease","ru":"Вылечить болезнь"},{"en":"Dispel Magic","ru":"Рассеять чары"},{"en":"Magic Vestment","ru":"Магическое облачение"},{"en":"Remove Curse","ru":"Снять проклятие"},{"en":"Sacrifice","ru":"Жертвоприношение"},{"en":"Water Walk","ru":"Ходить по воде"}],[{"en":"Cure Serious Wounds","ru":"Вылечить серьезные раны"},{"en":"Detect Lie","ru":"Обнаружить ложь"},{"en":"Divination","ru":"Ворожба"},{"en":"Neutralize Poison","ru":"Противоядие"},{"en":"Protection from Evil, 10' Radius","ru":"Защита от зла, радиус 10 футов"},{"en":"Spell Immunity","ru":"Иммунитет к заклинаниям"}],[{"en":"Commune","ru":"Единение с богом"},{"en":"Cure Critical Wounds","ru":"Вылечить критические раны"},{"en":"Dispel Evil","ru":"Рассеять зло"},{"en":"Insect Plague","ru":"Посеять чуму"},{"en":"Quest","ru":"Задание"},{"en":"True Seeing","ru":"Увидеть истину"}],[{"en":"Anti-Magic Shell","ru":"Антимагическая оболочка"},{"en":"Find the Path","ru":"Найти путь"},{"en":"Forbiddance","ru":"Запрет"},{"en":"Heal","ru":"Исцелить"},{"en":"Tongues","ru":"Языки"},{"en":"Word of Recall","ru":"Слово возврата"}],[{"en":"Control Weather","ru":"Управление погодой"},{"en":"Earthquake","ru":"Землетрясение"},{"en":"Holy Word","ru":"Святое слово"},{"en":"Part Water","ru":"Раздвинуть воду"}]],"magicUser":[[{"en":"Bookspeak","ru":"Разговор с книгой"},{"en":"Charm Person","ru":"Очаровать человека"},{"en":"Comprehend Languages","ru":"Понять язык"},{"en":"Detect Magic","ru":"Обнаружить магию"},{"en":"Enlarge","ru":"Увеличить"},{"en":"Faerie Fire","ru":"Колдовской огонь"},{"en":"Feather Fall","ru":"Падение пера"},{"en":"Floating Disc","ru":"Левитирующий диск"},{"en":"Hold Portal","ru":"Закрыть проход"},{"en":"Identify","ru":"Идентифицировать"},{"en":"Light","ru":"Свет"},{"en":"Magic Aura","ru":"Волшебная аура"},{"en":"Magic Missile","ru":"Волшебный снаряд"},{"en":"Mending","ru":"Починка"},{"en":"Message","ru":"Сообщение"},{"en":"Shield","ru":"Щит"},{"en":"Sleep","ru":"Сон"},{"en":"Spider Climb","ru":"Лезть как паук"},{"en":"Summon","ru":"Призыв"},{"en":"Unseen Servant","ru":"Невидимый слуга"}],[{"en":"Audible Glamour","ru":"Звуковые чары"},{"en":"Change Self","ru":"Изменить себя"},{"en":"Detect Invisible","ru":"Обнаружить невидимое"},{"en":"ESP","ru":"Услышать мысли"},{"en":"Force of Forbidment","ru":"Силовой запрет"},{"en":"Forget","ru":"Забыть"},{"en":"Invisibility","ru":"Невидимость"},{"en":"Knock","ru":"Стук"},{"en":"Levitate","ru":"Левитация"},{"en":"Light, Continual","ru":"Свет, длящийся"},{"en":"Locate Object","ru":"Найти предмет"},{"en":"Magic Mouth","ru":"Магический рот"},{"en":"Mirror Image","ru":"Зеркальное отражение"},{"en":"Phantasmal Force","ru":"Призрачная сила"},{"en":"Ray of Enfeeblement","ru":"Луч слабости"},{"en":"Speak with Animals","ru":"Разговор с животными"},{"en":"Stinking Cloud","ru":"Зловонное облако"},{"en":"Wall of Fog","ru":"Стена тумана"},{"en":"Web","ru":"Паутина"},{"en":"Wizard Lock","ru":"Волшебный замок"}],[{"en":"Army of One","ru":"Армия из одного"},{"en":"Clairvoyance","ru":"Ясновидение"},{"en":"Detect Illusion","ru":"Определить иллюзию"},{"en":"Dispel Magic","ru":"Рассеять чары"},{"en":"Explosive Runes","ru":"Взрывающиеся руны"},{"en":"False Alignment","ru":"Ложное мировоззрение"},{"en":"Fly","ru":"Полет"},{"en":"Gaseous Form","ru":"Газообразная форма"},{"en":"Gust of Wind","ru":"Сильный ветер"},{"en":"Haste","ru":"Спешка"},{"en":"Hold Person","ru":"Удержать существо"},{"en":"Howl of the Moon","ru":"Лунный рев"},{"en":"Invisibility 10' Radius","ru":"Невидимость, радиус 10 футов"},{"en":"Phantasmal Psychedelia","ru":"Призрачная психоделия"},{"en":"Protection from Normal Missiles","ru":"Защита от обычных снарядов"},{"en":"Secret Page","ru":"Секретная страница"},{"en":"Speak with Dead","ru":"Разговор с мертвыми"},{"en":"Strange Waters II","ru":"Странные воды II"},{"en":"Suggestion","ru":"Предложение"},{"en":"Water Breathing","ru":"Дыхание под водой"}],[{"en":"Charm Monster","ru":"Очаровать монстра"},{"en":"Confusion","ru":"Смущение"},{"en":"Creation, Minor","ru":"Создать (малое)"},{"en":"Dig","ru":"Копать"},{"en":"Dimension Door","ru":"Дверь перемещения"},{"en":"Extension","ru":"Расширение"},{"en":"Globe of Invulnerability, Minor","ru":"Сфера неуязвимости, малая"},{"en":"Hallucinatory Terrain","ru":"Земля галлюцинаций"},{"en":"Invisibility, Improved","ru":"Невидимость, улучшенная"},{"en":"Mnemonic Enhancer","ru":"Улучшить мнемонику"},{"en":"Plant Growth","ru":"Рост растений"},{"en":"Polymorph Others","ru":"Преобразовать других"},{"en":"Polymorph Self","ru":"Преобразовать себя"},{"en":"Protection from Normal Weapons","ru":"Защита от обычного оружия"},{"en":"Seven Gates","ru":"Семь врат"},{"en":"Shadow Monsters","ru":"Чудовища теней"},{"en":"Speak with Plants","ru":"Разговор с растениями"},{"en":"Wall of Fire","ru":"Стена огня"},{"en":"Wall of Ice","ru":"Стена льда"},{"en":"Wizard Eye","ru":"Взгляд мага"}],[{"en":"Airy Water","ru":"Воздушный пузырь"},{"en":"Animate Dead","ru":"Оживить мёртвых"},{"en":"Chaos","ru":"Хаос"},{"en":"Cloudkill","ru":"Облако-убийца"},{"en":"Contact Outer Sphere","ru":"Вопрос к звездам"},{"en":"Creation, Major","ru":"Создать (большое)"},{"en":"Faithful Hound","ru":"Верный пес"},{"en":"Feeblemind","ru":"Слабоумие"},{"en":"Hold Monster","ru":"Удержать чудовище"},{"en":"Interposing Hand","ru":"Подставить руку"},{"en":"Magic Jar","ru":"Волшебная банка"},{"en":"Passwall","ru":"Пройти сквозь стены"},{"en":"Secret Chest","ru":"Секретный сундук"},{"en":"Stone Shape","ru":"Форма камня"},{"en":"Telekinesis","ru":"Телекинез"},{"en":"Teleport","ru":"Телепортация"},{"en":"Transmute Rock to Mud","ru":"Превратить камень в грязь"},{"en":"Wall of Force","ru":"Стена силы"},{"en":"Wall of Iron","ru":"Стена железа"},{"en":"Wall of Stone","ru":"Стена камня"}],[{"en":"Animate Dead Monsters","ru":"Оживить мертвых чудовищ"},{"en":"Barrier","ru":"Барьер"},{"en":"Contingency","ru":"Непрерывность"},{"en":"Death Spell","ru":"Заклинание смерти"},{"en":"Disintegrate","ru":"Расщепить"},{"en":"Geas","ru":"Подчинение"},{"en":"Glass Eye","ru":"Всевидящий взгляд"},{"en":"Globe of Invulnerability, Major","ru":"Сфера неуязвимости, большая"},{"en":"Legend Lore","ru":"Легендарная мудрость"},{"en":"Lucubration","ru":"Размышления"},{"en":"Mind Switch","ru":"Обмен разумов"},{"en":"Move Earth","ru":"Сдвинуть землю"},{"en":"Phantasmal Supergoria","ru":"Призрачная сверхсила"},{"en":"Projected Image","ru":"Проекция"},{"en":"Shades","ru":"Тени"},{"en":"Speak with Monsters","ru":"Разговор с чудовищами"},{"en":"Stone to Flesh","ru":"Камень в плоть"},{"en":"Suggestion, Mass","ru":"Предположение, массовое"},{"en":"Veil","ru":"Пелена"},{"en":"Weird Vortex","ru":"Странная воронка"}],[{"en":"Animated Artwork","ru":"Оживший шедевр"},{"en":"Bestow Spell Ability","ru":"Возможность волшебства"},{"en":"Duo-Dimension","ru":"Двухмерность"},{"en":"Grasping Hand","ru":"Хватающая рука"},{"en":"Instant Summons","ru":"Немедленный призыв"},{"en":"Invisibility, Mass","ru":"Невидимость, массовая"},{"en":"Magic Sword","ru":"Магический меч"},{"en":"Phase Door","ru":"Волшебная дверь"},{"en":"Power Word Stun","ru":"Слово силы: оглушить"},{"en":"Prismatic Sphere","ru":"Призматическая сфера"},{"en":"Prismatic Spray","ru":"Призматический луч"},{"en":"Prismatic Wall","ru":"Призматическая стена"},{"en":"Remote Surveillance","ru":"Удаленное наблюдение"},{"en":"Reverse Gravity","ru":"Обратить притяжение"},{"en":"Simulacrum","ru":"Имитация"},{"en":"Spell Turning","ru":"Обратить заклинание"},{"en":"Statue","ru":"Статуя"},{"en":"Vanish","ru":"Исчезнуть"},{"en":"Vision","ru":"Видение"},{"en":"Witchlamp Aura","ru":"Колдовская лампа"}],[{"en":"Antipathy/Sympathy","ru":"Симпатия/антипатия"},{"en":"Charm Person, Mass","ru":"Очаровать, массово"},{"en":"Clone","ru":"Клон"},{"en":"Demand","ru":"Требование"},{"en":"Maze","ru":"Лабиринт"},{"en":"Mind Blank","ru":"Закрыть разум"},{"en":"Permanency","ru":"Постоянство"},{"en":"Polymorph Any Object","ru":"Преобразовать любой объект"},{"en":"Symbol","ru":"Символ"},{"en":"Trap the Soul","ru":"Поймать душу"}],[{"en":"Imprisonment","ru":"Заточение"},{"en":"Lost Dweomer","ru":null},{"en":"Power Word Kill","ru":"Слово силы: убить"},{"en":"Shape Change","ru":"Сменить форму"},{"en":"Temporal Stasis","ru":"Темпоральный стазис"},{"en":"Time Stop","ru":"Остановка времени"}]]}};
+  var GAME = {"source":"Generated from data/lotfp.json by tools/build_page.py. Do not edit by hand.","abilityMods":[{"lo":3,"hi":3,"mod":-3},{"lo":4,"hi":5,"mod":-2},{"lo":6,"hi":8,"mod":-1},{"lo":9,"hi":12,"mod":0},{"lo":13,"hi":15,"mod":1},{"lo":16,"hi":17,"mod":2},{"lo":18,"hi":18,"mod":3}],"abilities":{"CHA":{"en":"Charisma","ru":"Харизма"},"CON":{"en":"Constitution","ru":"Телосложение"},"DEX":{"en":"Dexterity","ru":"Ловкость"},"INT":{"en":"Intelligence","ru":"Интеллект"},"STR":{"en":"Strength","ru":"Сила"},"WIS":{"en":"Wisdom","ru":"Мудрость"}},"saves":[{"en":"Paralyzation","ru":"Паралич"},{"en":"Poison","ru":"Яд"},{"en":"Breath Weapon","ru":"Детонация"},{"en":"Magical Device","ru":"Магические устройства"},{"en":"Magic","ru":"Магия"}],"alignments":{"Lawful":"Законопослушный","Neutral":"Нейтральный","Chaotic":"Хаотичный"},"skills":[{"en":"Architecture","ru":"Архитектура","base":1},{"en":"Bushcraft","ru":"Выживание в лесу","base":1},{"en":"Climb","ru":"Лазание","base":1},{"en":"Languages","ru":"Владение языками","base":1},{"en":"Open Doors","ru":"Открытие дверей","base":1},{"en":"Search","ru":"Поиск","base":1},{"en":"Sleight of Hand","ru":"Ловкость рук","base":1},{"en":"Sneak Attack","ru":"Скрытая атака","base":1},{"en":"Stealth","ru":"Скрытность","base":1},{"en":"Tinker","ru":"Механика","base":1}],"classes":{"Cleric":{"ru":"Клирик","human":true,"minHp":4,"alignment":"Lawful","hp":{"d1":6,"d":6,"fixed":2,"conAlways":false},"levels":[{"xp":0,"saves":[14,11,16,12,15],"ab":1,"slots":[1]},{"xp":1750,"saves":[14,11,16,12,15],"ab":1,"slots":[2]},{"xp":3500,"saves":[14,11,16,12,15],"ab":1,"slots":[3]},{"xp":7000,"saves":[14,11,16,12,15],"ab":1,"slots":[3,1]},{"xp":14000,"saves":[12,9,14,10,12],"ab":1,"slots":[3,2,1]},{"xp":28000,"saves":[12,9,14,10,12],"ab":1,"slots":[3,3,2]},{"xp":56000,"saves":[12,9,14,10,12],"ab":1,"slots":[4,3,3,1]},{"xp":112000,"saves":[12,9,14,10,12],"ab":1,"slots":[4,3,3,2]},{"xp":224000,"saves":[10,7,12,8,9],"ab":1,"slots":[4,3,3,3,1]},{"xp":336000,"saves":[10,7,12,8,9],"ab":1,"slots":[4,4,3,3,2]},{"xp":448000,"saves":[10,7,12,8,9],"ab":1,"slots":[5,4,4,3,3,1]},{"xp":560000,"saves":[10,7,12,8,9],"ab":1,"slots":[5,4,4,3,3,2]},{"xp":672000,"saves":[8,3,8,4,6],"ab":1,"slots":[5,4,4,4,3,3,1]},{"xp":784000,"saves":[8,3,8,4,6],"ab":1,"slots":[5,5,4,4,3,3,2]},{"xp":896000,"saves":[8,3,8,4,6],"ab":1,"slots":[6,5,5,4,4,3,3]},{"xp":1008000,"saves":[8,3,8,4,6],"ab":1,"slots":[6,5,5,4,4,3,3]},{"xp":1120000,"saves":[6,2,6,4,5],"ab":1,"slots":[6,5,5,5,4,4,3]},{"xp":1232000,"saves":[6,2,6,4,5],"ab":1,"slots":[6,6,5,5,4,4,3]},{"xp":1344000,"saves":[6,2,6,4,5],"ab":1,"slots":[7,6,6,5,5,4,4]},{"xp":1456000,"saves":[6,2,6,4,5],"ab":1,"slots":[8,7,7,6,5,5,4]},{"xp":1568000,"saves":[6,2,6,4,5],"ab":1,"slots":[8,7,7,6,5,5,4]}]},"Fighter":{"ru":"Воин","human":true,"minHp":8,"alignment":null,"hp":{"d1":8,"d":8,"fixed":3,"conAlways":false},"levels":[{"xp":0,"saves":[14,12,15,13,16],"ab":2},{"xp":2000,"saves":[14,12,15,13,16],"ab":3},{"xp":4000,"saves":[14,12,15,13,16],"ab":4},{"xp":8000,"saves":[12,10,13,11,14],"ab":5},{"xp":16000,"saves":[12,10,13,11,14],"ab":6},{"xp":32000,"saves":[12,10,13,11,14],"ab":7},{"xp":64000,"saves":[10,8,9,9,12],"ab":8},{"xp":128000,"saves":[10,8,9,9,12],"ab":9},{"xp":256000,"saves":[10,8,9,9,12],"ab":10},{"xp":384000,"saves":[8,6,7,7,10],"ab":10},{"xp":512000,"saves":[8,6,7,7,10],"ab":10},{"xp":640000,"saves":[8,6,7,7,10],"ab":10},{"xp":768000,"saves":[6,4,5,5,8],"ab":10},{"xp":896000,"saves":[6,4,5,5,8],"ab":10},{"xp":1024000,"saves":[6,4,5,5,8],"ab":10},{"xp":1152000,"saves":[6,4,5,5,8],"ab":10},{"xp":1280000,"saves":[6,4,5,5,8],"ab":10},{"xp":1408000,"saves":[6,4,5,5,8],"ab":10},{"xp":1536000,"saves":[6,4,5,5,8],"ab":10},{"xp":1664000,"saves":[6,4,5,5,8],"ab":10},{"xp":1792000,"saves":[6,4,5,5,8],"ab":10}]},"Magic-User":{"ru":"Маг","human":true,"minHp":3,"alignment":"Chaotic","hp":{"d1":6,"d":4,"fixed":1,"conAlways":false},"levels":[{"xp":0,"saves":[13,13,16,13,14],"ab":1,"slots":[1]},{"xp":2250,"saves":[13,13,16,13,14],"ab":1,"slots":[2]},{"xp":4500,"saves":[13,13,16,13,14],"ab":1,"slots":[2,1]},{"xp":9000,"saves":[13,13,16,13,14],"ab":1,"slots":[2,2]},{"xp":18000,"saves":[13,13,16,13,14],"ab":1,"slots":[3,2,1]},{"xp":36000,"saves":[11,11,14,11,12],"ab":1,"slots":[3,2,2]},{"xp":72000,"saves":[11,11,14,11,12],"ab":1,"slots":[3,3,2,1]},{"xp":144000,"saves":[11,11,14,11,12],"ab":1,"slots":[4,3,2,2]},{"xp":288000,"saves":[11,11,14,11,12],"ab":1,"slots":[4,3,3,2,1]},{"xp":432000,"saves":[11,11,14,11,12],"ab":1,"slots":[4,4,3,2,2]},{"xp":576000,"saves":[9,9,12,9,8],"ab":1,"slots":[5,4,3,3,2,1]},{"xp":720000,"saves":[9,9,12,9,8],"ab":1,"slots":[5,4,4,3,2,2]},{"xp":864000,"saves":[9,9,12,9,8],"ab":1,"slots":[5,5,4,3,3,2,1]},{"xp":1008000,"saves":[9,9,12,9,8],"ab":1,"slots":[6,5,4,4,3,2,2]},{"xp":1152000,"saves":[9,9,12,9,8],"ab":1,"slots":[6,5,5,4,3,3,2,1]},{"xp":1296000,"saves":[6,7,8,5,6],"ab":1,"slots":[6,6,5,4,4,3,2,2]},{"xp":1440000,"saves":[6,7,8,5,6],"ab":1,"slots":[7,6,5,5,4,3,3,2,1]},{"xp":1584000,"saves":[6,7,8,5,6],"ab":1,"slots":[7,6,6,5,4,4,3,2,2]},{"xp":1728000,"saves":[5,6,7,4,4],"ab":1,"slots":[7,7,6,5,5,4,3,3,2]},{"xp":1872000,"saves":[5,6,7,4,4],"ab":1,"slots":[8,7,6,6,5,4,4,3,2]},{"xp":2016000,"saves":[5,6,7,4,4],"ab":1,"slots":[8,7,6,6,5,4,4,3,2]}]},"Specialist":{"ru":"Специалист","human":true,"minHp":4,"alignment":null,"hp":{"d1":6,"d":6,"fixed":2,"conAlways":false},"levels":[{"xp":0,"saves":[14,16,15,14,14],"ab":1,"skillPoints":4},{"xp":1500,"saves":[14,16,15,14,14],"ab":1,"skillPoints":6},{"xp":3000,"saves":[14,16,15,14,14],"ab":1,"skillPoints":8},{"xp":6000,"saves":[14,16,15,14,14],"ab":1,"skillPoints":10},{"xp":12000,"saves":[11,12,14,13,12],"ab":1,"skillPoints":12},{"xp":24000,"saves":[11,12,14,13,12],"ab":1,"skillPoints":14},{"xp":48000,"saves":[11,12,14,13,12],"ab":1,"skillPoints":16},{"xp":96000,"saves":[11,12,14,13,12],"ab":1,"skillPoints":18},{"xp":192000,"saves":[9,10,12,11,10],"ab":1,"skillPoints":20},{"xp":288000,"saves":[9,10,12,11,10],"ab":1,"skillPoints":22},{"xp":384000,"saves":[9,10,12,11,10],"ab":1,"skillPoints":24},{"xp":480000,"saves":[9,10,12,11,10],"ab":1,"skillPoints":26},{"xp":576000,"saves":[7,8,10,9,8],"ab":1,"skillPoints":28},{"xp":672000,"saves":[7,8,10,9,8],"ab":1,"skillPoints":30},{"xp":768000,"saves":[7,8,10,9,8],"ab":1,"skillPoints":32},{"xp":864000,"saves":[7,8,10,9,8],"ab":1,"skillPoints":34},{"xp":960000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":36},{"xp":1056000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":38},{"xp":1152000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":40},{"xp":1248000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":42},{"xp":1344000,"saves":[5,6,8,7,6],"ab":1,"skillPoints":44}]},"Dwarf":{"ru":"Дворф","human":false,"minHp":6,"alignment":null,"hp":{"d1":10,"d":10,"fixed":3,"conAlways":true},"levels":[{"xp":0,"saves":[10,8,13,9,12],"ab":1,"architecture":3},{"xp":2200,"saves":[10,8,13,9,12],"ab":1,"architecture":3},{"xp":4400,"saves":[10,8,13,9,12],"ab":1,"architecture":3},{"xp":8800,"saves":[8,6,10,7,10],"ab":1,"architecture":4},{"xp":17600,"saves":[8,6,10,7,10],"ab":1,"architecture":4},{"xp":35200,"saves":[8,6,10,7,10],"ab":1,"architecture":4},{"xp":70400,"saves":[6,4,7,5,8],"ab":1,"architecture":5},{"xp":140800,"saves":[6,4,7,5,8],"ab":1,"architecture":5},{"xp":281600,"saves":[6,4,7,5,8],"ab":1,"architecture":5},{"xp":422400,"saves":[4,2,4,3,6],"ab":1,"architecture":6},{"xp":563200,"saves":[4,2,4,3,6],"ab":1,"architecture":6},{"xp":704000,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":844800,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":985600,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1126400,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1267200,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1408000,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1548800,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1689600,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1830400,"saves":[2,2,2,2,4],"ab":1,"architecture":6},{"xp":1971200,"saves":[2,2,2,2,4],"ab":1,"architecture":6}]},"Elf":{"ru":"Эльф","human":false,"minHp":4,"alignment":"Chaotic","hp":{"d1":6,"d":6,"fixed":2,"conAlways":false},"levels":[{"xp":0,"saves":[13,12,15,13,15],"ab":1,"slots":[1],"search":2},{"xp":3000,"saves":[13,12,15,13,15],"ab":1,"slots":[2],"search":2},{"xp":6000,"saves":[13,12,15,13,15],"ab":1,"slots":[2,1],"search":2},{"xp":12000,"saves":[11,10,13,11,13],"ab":1,"slots":[2,2],"search":3},{"xp":24000,"saves":[11,10,13,11,13],"ab":1,"slots":[3,2,1],"search":3},{"xp":48000,"saves":[11,10,13,11,13],"ab":1,"slots":[3,2,2],"search":3},{"xp":96000,"saves":[9,8,9,9,11],"ab":1,"slots":[3,3,2,1],"search":4},{"xp":192000,"saves":[9,8,9,9,11],"ab":1,"slots":[4,3,2,2],"search":4},{"xp":384000,"saves":[9,8,9,9,11],"ab":1,"slots":[4,3,3,2,1],"search":4},{"xp":576000,"saves":[7,6,7,7,9],"ab":1,"slots":[4,4,3,2,2],"search":5},{"xp":768000,"saves":[7,6,7,7,9],"ab":1,"slots":[5,4,3,3,2,1],"search":5},{"xp":960000,"saves":[7,6,7,7,9],"ab":1,"slots":[5,5,4,3,3,2,1],"search":5},{"xp":1152000,"saves":[5,4,5,5,7],"ab":1,"slots":[5,5,4,3,3,2,1],"search":6},{"xp":1344000,"saves":[5,4,5,5,7],"ab":1,"slots":[6,5,4,4,3,2,2],"search":6},{"xp":1536000,"saves":[5,4,5,5,7],"ab":1,"slots":[6,5,5,4,3,3,2,1],"search":6},{"xp":1728000,"saves":[5,4,5,5,7],"ab":1,"slots":[6,6,5,4,4,3,2,2],"search":6},{"xp":1920000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6},{"xp":2112000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6},{"xp":2304000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6},{"xp":2496000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6},{"xp":2688000,"saves":[3,3,3,3,5],"ab":1,"slots":[7,6,5,5,4,3,3,2,1],"search":6}]},"Halfling":{"ru":"Полурослик","human":false,"minHp":4,"alignment":null,"hp":{"d1":6,"d":6,"fixed":2,"conAlways":false},"levels":[{"xp":0,"saves":[10,8,13,9,12],"ab":1,"bushcraft":3},{"xp":2000,"saves":[8,6,10,7,10],"ab":1,"bushcraft":3},{"xp":4000,"saves":[8,6,10,7,10],"ab":1,"bushcraft":3},{"xp":8000,"saves":[6,4,7,5,8],"ab":1,"bushcraft":4},{"xp":16000,"saves":[6,4,7,5,8],"ab":1,"bushcraft":4},{"xp":32000,"saves":[4,2,4,3,6],"ab":1,"bushcraft":4},{"xp":64000,"saves":[4,2,4,3,6],"ab":1,"bushcraft":5},{"xp":128000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":5},{"xp":256000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":5},{"xp":384000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":512000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":640000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":768000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":896000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1024000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1152000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1280000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1408000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1536000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1664000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6},{"xp":1792000,"saves":[2,2,2,2,4],"ab":1,"bushcraft":6}]}},"spellLists":{"cleric":[[{"en":"Bless","ru":"Благословение"},{"en":"Command","ru":"Команда"},{"en":"Cure Light Wounds","ru":"Вылечить легкие раны"},{"en":"Detect Evil","ru":"Найти зло"},{"en":"Invisibility to Undead","ru":"Невидимость против нежити"},{"en":"Protection from Evil","ru":"Защита от зла"},{"en":"Purify Food and Drink","ru":"Очистить еду и воду"},{"en":"Remove Fear","ru":"Убрать страх"},{"en":"Sanctuary","ru":"Убежище"},{"en":"Turn Undead","ru":"Отпугнуть нежить"}],[{"en":"Augury","ru":"Гадание"},{"en":"Delay Poison","ru":"Отсрочить яд"},{"en":"Enthrall","ru":"Порабощение"},{"en":"Heat Metal","ru":"Раскаленный металл"},{"en":"Heroism","ru":"Героизм"},{"en":"Resist Cold","ru":"Сопротивление холоду"},{"en":"Resist Fire","ru":"Сопротивление огню"},{"en":"Silence 15' Radius","ru":"Молчание, радиус 15 футов"}],[{"en":"Cure Disease","ru":"Вылечить болезнь"},{"en":"Dispel Magic","ru":"Рассеять чары"},{"en":"Magic Vestment","ru":"Магическое облачение"},{"en":"Remove Curse","ru":"Снять проклятие"},{"en":"Sacrifice","ru":"Жертвоприношение"},{"en":"Water Walk","ru":"Ходить по воде"}],[{"en":"Cure Serious Wounds","ru":"Вылечить серьезные раны"},{"en":"Detect Lie","ru":"Обнаружить ложь"},{"en":"Divination","ru":"Ворожба"},{"en":"Neutralize Poison","ru":"Противоядие"},{"en":"Protection from Evil, 10' Radius","ru":"Защита от зла, радиус 10 футов"},{"en":"Spell Immunity","ru":"Иммунитет к заклинаниям"}],[{"en":"Commune","ru":"Единение с богом"},{"en":"Cure Critical Wounds","ru":"Вылечить критические раны"},{"en":"Dispel Evil","ru":"Рассеять зло"},{"en":"Insect Plague","ru":"Посеять чуму"},{"en":"Quest","ru":"Задание"},{"en":"True Seeing","ru":"Увидеть истину"}],[{"en":"Anti-Magic Shell","ru":"Антимагическая оболочка"},{"en":"Find the Path","ru":"Найти путь"},{"en":"Forbiddance","ru":"Запрет"},{"en":"Heal","ru":"Исцелить"},{"en":"Tongues","ru":"Языки"},{"en":"Word of Recall","ru":"Слово возврата"}],[{"en":"Control Weather","ru":"Управление погодой"},{"en":"Earthquake","ru":"Землетрясение"},{"en":"Holy Word","ru":"Святое слово"},{"en":"Part Water","ru":"Раздвинуть воду"}]],"magicUser":[[{"en":"Bookspeak","ru":"Разговор с книгой"},{"en":"Charm Person","ru":"Очаровать человека"},{"en":"Comprehend Languages","ru":"Понять язык"},{"en":"Detect Magic","ru":"Обнаружить магию"},{"en":"Enlarge","ru":"Увеличить"},{"en":"Faerie Fire","ru":"Колдовской огонь"},{"en":"Feather Fall","ru":"Падение пера"},{"en":"Floating Disc","ru":"Левитирующий диск"},{"en":"Hold Portal","ru":"Закрыть проход"},{"en":"Identify","ru":"Идентифицировать"},{"en":"Light","ru":"Свет"},{"en":"Magic Aura","ru":"Волшебная аура"},{"en":"Magic Missile","ru":"Волшебный снаряд"},{"en":"Mending","ru":"Починка"},{"en":"Message","ru":"Сообщение"},{"en":"Shield","ru":"Щит"},{"en":"Sleep","ru":"Сон"},{"en":"Spider Climb","ru":"Лезть как паук"},{"en":"Summon","ru":"Призыв"},{"en":"Unseen Servant","ru":"Невидимый слуга"}],[{"en":"Audible Glamour","ru":"Звуковые чары"},{"en":"Change Self","ru":"Изменить себя"},{"en":"Detect Invisible","ru":"Обнаружить невидимое"},{"en":"ESP","ru":"Услышать мысли"},{"en":"Force of Forbidment","ru":"Силовой запрет"},{"en":"Forget","ru":"Забыть"},{"en":"Invisibility","ru":"Невидимость"},{"en":"Knock","ru":"Стук"},{"en":"Levitate","ru":"Левитация"},{"en":"Light, Continual","ru":"Свет, длящийся"},{"en":"Locate Object","ru":"Найти предмет"},{"en":"Magic Mouth","ru":"Магический рот"},{"en":"Mirror Image","ru":"Зеркальное отражение"},{"en":"Phantasmal Force","ru":"Призрачная сила"},{"en":"Ray of Enfeeblement","ru":"Луч слабости"},{"en":"Speak with Animals","ru":"Разговор с животными"},{"en":"Stinking Cloud","ru":"Зловонное облако"},{"en":"Wall of Fog","ru":"Стена тумана"},{"en":"Web","ru":"Паутина"},{"en":"Wizard Lock","ru":"Волшебный замок"}],[{"en":"Army of One","ru":"Армия из одного"},{"en":"Clairvoyance","ru":"Ясновидение"},{"en":"Detect Illusion","ru":"Определить иллюзию"},{"en":"Dispel Magic","ru":"Рассеять чары"},{"en":"Explosive Runes","ru":"Взрывающиеся руны"},{"en":"False Alignment","ru":"Ложное мировоззрение"},{"en":"Fly","ru":"Полет"},{"en":"Gaseous Form","ru":"Газообразная форма"},{"en":"Gust of Wind","ru":"Сильный ветер"},{"en":"Haste","ru":"Спешка"},{"en":"Hold Person","ru":"Удержать существо"},{"en":"Howl of the Moon","ru":"Лунный рев"},{"en":"Invisibility 10' Radius","ru":"Невидимость, радиус 10 футов"},{"en":"Phantasmal Psychedelia","ru":"Призрачная психоделия"},{"en":"Protection from Normal Missiles","ru":"Защита от обычных снарядов"},{"en":"Secret Page","ru":"Секретная страница"},{"en":"Speak with Dead","ru":"Разговор с мертвыми"},{"en":"Strange Waters II","ru":"Странные воды II"},{"en":"Suggestion","ru":"Предложение"},{"en":"Water Breathing","ru":"Дыхание под водой"}],[{"en":"Charm Monster","ru":"Очаровать монстра"},{"en":"Confusion","ru":"Смущение"},{"en":"Creation, Minor","ru":"Создать (малое)"},{"en":"Dig","ru":"Копать"},{"en":"Dimension Door","ru":"Дверь перемещения"},{"en":"Extension","ru":"Расширение"},{"en":"Globe of Invulnerability, Minor","ru":"Сфера неуязвимости, малая"},{"en":"Hallucinatory Terrain","ru":"Земля галлюцинаций"},{"en":"Invisibility, Improved","ru":"Невидимость, улучшенная"},{"en":"Mnemonic Enhancer","ru":"Улучшить мнемонику"},{"en":"Plant Growth","ru":"Рост растений"},{"en":"Polymorph Others","ru":"Преобразовать других"},{"en":"Polymorph Self","ru":"Преобразовать себя"},{"en":"Protection from Normal Weapons","ru":"Защита от обычного оружия"},{"en":"Seven Gates","ru":"Семь врат"},{"en":"Shadow Monsters","ru":"Чудовища теней"},{"en":"Speak with Plants","ru":"Разговор с растениями"},{"en":"Wall of Fire","ru":"Стена огня"},{"en":"Wall of Ice","ru":"Стена льда"},{"en":"Wizard Eye","ru":"Взгляд мага"}],[{"en":"Airy Water","ru":"Воздушный пузырь"},{"en":"Animate Dead","ru":"Оживить мёртвых"},{"en":"Chaos","ru":"Хаос"},{"en":"Cloudkill","ru":"Облако-убийца"},{"en":"Contact Outer Sphere","ru":"Вопрос к звездам"},{"en":"Creation, Major","ru":"Создать (большое)"},{"en":"Faithful Hound","ru":"Верный пес"},{"en":"Feeblemind","ru":"Слабоумие"},{"en":"Hold Monster","ru":"Удержать чудовище"},{"en":"Interposing Hand","ru":"Подставить руку"},{"en":"Magic Jar","ru":"Волшебная банка"},{"en":"Passwall","ru":"Пройти сквозь стены"},{"en":"Secret Chest","ru":"Секретный сундук"},{"en":"Stone Shape","ru":"Форма камня"},{"en":"Telekinesis","ru":"Телекинез"},{"en":"Teleport","ru":"Телепортация"},{"en":"Transmute Rock to Mud","ru":"Превратить камень в грязь"},{"en":"Wall of Force","ru":"Стена силы"},{"en":"Wall of Iron","ru":"Стена железа"},{"en":"Wall of Stone","ru":"Стена камня"}],[{"en":"Animate Dead Monsters","ru":"Оживить мертвых чудовищ"},{"en":"Barrier","ru":"Барьер"},{"en":"Contingency","ru":"Непрерывность"},{"en":"Death Spell","ru":"Заклинание смерти"},{"en":"Disintegrate","ru":"Расщепить"},{"en":"Geas","ru":"Подчинение"},{"en":"Glass Eye","ru":"Всевидящий взгляд"},{"en":"Globe of Invulnerability, Major","ru":"Сфера неуязвимости, большая"},{"en":"Legend Lore","ru":"Легендарная мудрость"},{"en":"Lucubration","ru":"Размышления"},{"en":"Mind Switch","ru":"Обмен разумов"},{"en":"Move Earth","ru":"Сдвинуть землю"},{"en":"Phantasmal Supergoria","ru":"Призрачная сверхсила"},{"en":"Projected Image","ru":"Проекция"},{"en":"Shades","ru":"Тени"},{"en":"Speak with Monsters","ru":"Разговор с чудовищами"},{"en":"Stone to Flesh","ru":"Камень в плоть"},{"en":"Suggestion, Mass","ru":"Предположение, массовое"},{"en":"Veil","ru":"Пелена"},{"en":"Weird Vortex","ru":"Странная воронка"}],[{"en":"Animated Artwork","ru":"Оживший шедевр"},{"en":"Bestow Spell Ability","ru":"Возможность волшебства"},{"en":"Duo-Dimension","ru":"Двухмерность"},{"en":"Grasping Hand","ru":"Хватающая рука"},{"en":"Instant Summons","ru":"Немедленный призыв"},{"en":"Invisibility, Mass","ru":"Невидимость, массовая"},{"en":"Magic Sword","ru":"Магический меч"},{"en":"Phase Door","ru":"Волшебная дверь"},{"en":"Power Word Stun","ru":"Слово силы: оглушить"},{"en":"Prismatic Sphere","ru":"Призматическая сфера"},{"en":"Prismatic Spray","ru":"Призматический луч"},{"en":"Prismatic Wall","ru":"Призматическая стена"},{"en":"Remote Surveillance","ru":"Удаленное наблюдение"},{"en":"Reverse Gravity","ru":"Обратить притяжение"},{"en":"Simulacrum","ru":"Имитация"},{"en":"Spell Turning","ru":"Обратить заклинание"},{"en":"Statue","ru":"Статуя"},{"en":"Vanish","ru":"Исчезнуть"},{"en":"Vision","ru":"Видение"},{"en":"Witchlamp Aura","ru":"Колдовская лампа"}],[{"en":"Antipathy/Sympathy","ru":"Симпатия/антипатия"},{"en":"Charm Person, Mass","ru":"Очаровать, массово"},{"en":"Clone","ru":"Клон"},{"en":"Demand","ru":"Требование"},{"en":"Maze","ru":"Лабиринт"},{"en":"Mind Blank","ru":"Закрыть разум"},{"en":"Permanency","ru":"Постоянство"},{"en":"Polymorph Any Object","ru":"Преобразовать любой объект"},{"en":"Symbol","ru":"Символ"},{"en":"Trap the Soul","ru":"Поймать душу"}],[{"en":"Imprisonment","ru":"Заточение"},{"en":"Lost Dweomer","ru":null},{"en":"Power Word Kill","ru":"Слово силы: убить"},{"en":"Shape Change","ru":"Сменить форму"},{"en":"Temporal Stasis","ru":"Темпоральный стазис"},{"en":"Time Stop","ru":"Остановка времени"}]]},"equipment":[{"id":"armor-leather","en":"Armor, Leather","ru":"Доспех, кожаный","sp":25,"shop":"combat.armor","enc":"n","pack":"combat","ac":14},{"id":"armor-chain","en":"Armor, Chain","ru":"Доспех, кольчуга","sp":100,"shop":"combat.armor","enc":"s","pack":"combat","ac":16},{"id":"armor-plate","en":"Armor, Plate","ru":"Доспех, кираса","sp":1000,"shop":"combat.armor","enc":"s","pack":"combat","ac":18},{"id":"shield","en":"Shield","ru":"Щит","sp":10,"shop":"combat.armor","enc":"o","pack":"combat"},{"id":"fa-pistol","en":"Pistol","ru":null,"sp":25,"shop":"combat.firearms","enc":"s","pack":"combat","dam":"1d8","rng":["< 25'","< 50'","< 100'"],"weapon":true,"firearm":true,"grp":"Weapons","desc":"One hand; 1d4 in melee; a brace is one item"},{"id":"fa-arquebus","en":"Arquebus","ru":null,"sp":30,"shop":"combat.firearms","enc":"s","pack":"combat","dam":"1d8","rng":["< 50'","< 100'","< 600'"],"weapon":true,"firearm":true,"grp":"Weapons","desc":"Two hands; 1d6 in melee"},{"id":"fa-musket","en":"Musket","ru":null,"sp":40,"shop":"combat.firearms","enc":"o","pack":"combat","dam":"1d8","rng":["< 50'","< 100'","< 600'"],"weapon":true,"firearm":true,"grp":"Weapons","desc":"Needs a rest (−2 without); 1d6 in melee"},{"id":"fa-gunpowder","en":"Gunpowder","ru":null,"sp":0.3,"shop":"combat.firearms","enc":"s","pack":"combat","firearm":true,"desc":"One shot of powder","grp":"Ammunition"},{"id":"fa-shot-bag","en":"Shot Bag","ru":null,"sp":2,"shop":"combat.firearms","enc":"s","pack":"combat","firearm":true,"desc":"Bag of 100 round shot","grp":"Ammunition"},{"id":"fa-scattershot","en":"Scattershot","ru":null,"sp":1,"shop":"combat.firearms","enc":"s","pack":"combat","firearm":true,"desc":"Half range; 1d6 in a 45° area, Breath save for half","grp":"Ammunition"},{"id":"fa-fire-bomb","en":"Fire Bomb","ru":null,"sp":5,"shop":"combat.firearms","enc":"s","pack":"combat","firearm":true,"desc":"1d4, ignites flammables; a misfire blows up","grp":"Ammunition"},{"id":"fa-match-cord","en":"Match Cord","ru":null,"sp":1,"shop":"combat.firearms","enc":"n","pack":"combat","firearm":true,"desc":"Per meter; burns 10 cm a turn","grp":"Ammunition"},{"id":"fa-powder-horn","en":"Powder Horn","ru":null,"sp":1,"shop":"combat.firearms","enc":"s","pack":"combat","firearm":true,"desc":"Holds 50 shots of powder","grp":"Ammo holders"},{"id":"fa-12-apostles","en":"12 Apostles","ru":null,"sp":5,"shop":"combat.firearms","enc":"s","pack":"combat","firearm":true,"desc":"12 measured shots; each loads a round faster","grp":"Ammo holders"},{"id":"fa-gunpowder-barrel","en":"Gunpowder, Barrel","ru":null,"sp":150,"shop":"combat.firearms","enc":"o","over":4,"pack":"combat","firearm":true,"desc":"2500 shots of powder","grp":"Ammo holders"},{"id":"weapon-minor","en":"Weapon, Minor","ru":"Оружие, небольшое","sp":5,"shop":"combat.melee","enc":"s","pack":"combat","dam":"1d4","weapon":true,"grp":"Generic weapons","desc":"Daggers, clubs; −2 to hit AC 15+"},{"id":"weapon-small","en":"Weapon, Small","ru":"Оружие, маленькое","sp":10,"shop":"combat.melee","enc":"s","pack":"combat","dam":"1d6","weapon":true,"grp":"Generic weapons","desc":"Short swords, hand axes"},{"id":"weapon-medium","en":"Weapon, Medium","ru":"Оружие, нормальное","sp":20,"shop":"combat.melee","enc":"s","pack":"combat","dam":"1d8","weapon":true,"grp":"Generic weapons","desc":"Swords, battle axes, maces"},{"id":"weapon-great","en":"Weapon, Great","ru":"Оружие, большое","sp":50,"shop":"combat.melee","enc":"o","pack":"combat","dam":"1d10","weapon":true,"grp":"Generic weapons","desc":"Two-handed: greatswords, mauls"},{"id":"mancatcher","en":"Mancatcher","ru":"Боевой ухват","sp":20,"shop":"combat.melee","enc":"o","pack":"combat","weapon":true,"grp":"Special weapons","desc":"Two-handed; holds on a failed Paralysis save"},{"id":"cestus","en":"Cestus","ru":"Обмотки","sp":10,"shop":"combat.melee","enc":"n","pack":"combat","dam":"1d3","weapon":true,"grp":"Special weapons","desc":"Fist wrappings; −2 to hit AC 15+"},{"id":"whip","en":"Whip","ru":"Кнут","sp":10,"shop":"combat.melee","enc":"s","pack":"combat","dam":"1d3","weapon":true,"grp":"Special weapons","desc":"Reaches 10'; useless against AC 14+"},{"id":"staff","en":"Staff","ru":"Посох","sp":3,"shop":"combat.melee","enc":"s","pack":"combat","dam":"1d4","weapon":true,"grp":"Special weapons","desc":"Two-handed"},{"id":"spear","en":"Spear","ru":"Копье","sp":3,"shop":"combat.melee","enc":"s","pack":"combat","dam":"1d6","weapon":true,"grp":"Special weapons","desc":"Second rank, receives charges, thrown"},{"id":"garrote","en":"Garrote","ru":"Удавка","sp":5,"shop":"combat.melee","enc":"n","pack":"combat","dam":"1d6","weapon":true,"grp":"Special weapons","desc":"Needs surprise or a grapple; 1d6/round"},{"id":"rapier","en":"Rapier","ru":"Рапира","sp":15,"shop":"combat.melee","enc":"s","pack":"combat","dam":"1d8","weapon":true,"grp":"Special weapons","desc":"−2 to hit AC 15+"},{"id":"polearm","en":"Polearm","ru":"Алебарда","sp":30,"shop":"combat.melee","enc":"o","pack":"combat","dam":"1d8","weapon":true,"grp":"Special weapons","desc":"Two-handed, second rank; +1 vs AC 16+"},{"id":"lance","en":"Lance","ru":"Копье (пика)","sp":30,"shop":"combat.melee","enc":"o","pack":"combat","dam":"1d10","weapon":true,"grp":"Special weapons","desc":"One-handed in a mounted charge"},{"id":"rock","en":"Rock","ru":"Камень","sp":null,"shop":"combat.ranged","enc":"n","pack":"combat","dam":"1d2","rng":["< 10'","< 20'","< 30'"],"weapon":true,"grp":"Weapons"},{"id":"dart","en":"Dart","ru":"Дротик","sp":1,"shop":"combat.ranged","enc":"s","pack":"combat","dam":"1d4","rng":["< 10'","< 20'","< 30'"],"grp":"Weapons"},{"id":"sling","en":"Sling","ru":"Праща","sp":0.5,"shop":"combat.ranged","enc":"n","pack":"combat","dam":"1d4","rng":["< 50'","< 300'","< 450'"],"weapon":true,"grp":"Weapons","desc":"Half range with stones"},{"id":"blowgun","en":"Blowgun","ru":"Духовая трубка","sp":5,"shop":"combat.ranged","enc":"s","pack":"combat","rng":["< 20'","< 50'","< 80'"],"weapon":true,"grp":"Weapons"},{"id":"bow-short","en":"Bow, Short","ru":"Лук, короткий","sp":25,"shop":"combat.ranged","enc":"s","pack":"combat","dam":"1d6","rng":["< 50'","< 300'","< 450'"],"weapon":true,"grp":"Weapons"},{"id":"bow-long","en":"Bow, Long","ru":"Лук, длинный","sp":45,"shop":"combat.ranged","enc":"o","pack":"combat","dam":"1d6","rng":["< 50'","< 600'","< 900'"],"weapon":true,"grp":"Weapons"},{"id":"crossbow-light","en":"Crossbow, Light","ru":"Арбалет, легкий","sp":25,"shop":"combat.ranged","enc":"s","pack":"combat","dam":"1d6","rng":["< 50'","< 150'","< 400'"],"weapon":true,"grp":"Weapons","desc":"Every other round; ignores 2 AC"},{"id":"crossbow-heavy","en":"Crossbow, Heavy","ru":"Арбалет, тяжелый","sp":30,"shop":"combat.ranged","enc":"o","pack":"combat","dam":"1d8","rng":["< 50'","< 200'","< 600'"],"weapon":true,"grp":"Weapons","desc":"Every third round; ignores 4 AC"},{"id":"arrows","en":"Arrows","ru":null,"sp":0.5,"shop":"combat.ranged","enc":"s","pack":"combat","step":20,"ammo":true,"grp":"Ammunition","desc":"Comes with a quiver if you have none"},{"id":"bolts","en":"Crossbow Bolts","ru":null,"sp":0.5,"shop":"combat.ranged","enc":"s","pack":"combat","step":20,"ammo":true,"grp":"Ammunition","desc":"Comes with a quiver if you have none"},{"id":"sling-bullets","en":"Sling Bullets","ru":null,"sp":0.2,"shop":"combat.ranged","enc":"s","pack":"combat","step":10,"ammo":true,"grp":"Ammunition"},{"id":"quiver","en":"Quiver","ru":"Колчан","sp":5,"shop":"combat.ranged","enc":"s","pack":"combat","grp":"Ammo holders","desc":"Holds 20 shafts; one item with them"},{"id":"clothing-extravagant","en":"Clothing, Extravagant","ru":"Одежда, экстравагантая","sp":20,"shop":"misc.clothing","enc":"s","min":true,"pack":"combat"},{"id":"clothing-normal","en":"Clothing, Normal","ru":"Одежда, нормальная","sp":2,"shop":"misc.clothing","enc":"n","pack":"combat"},{"id":"clothing-poor","en":"Clothing, Poor","ru":"Одежда, плохая","sp":0.5,"shop":"misc.clothing","enc":"n","pack":"combat"},{"id":"clothing-winter-travel","en":"Clothing, Winter Travel","ru":"Одежда, для зимних путешествий","sp":5,"shop":"misc.clothing","enc":"s","pack":"combat"},{"id":"gem","en":"Gem","ru":"Драгоценный камень","sp":5,"shop":"misc.clothing","enc":"n","min":true,"pack":"misc"},{"id":"jewelry","en":"Jewelry","ru":"Ювелирные изделия","sp":10,"shop":"misc.clothing","enc":"n","min":true,"pack":"combat"},{"id":"backpack","en":"Backpack","ru":"Рюкзак","sp":1,"shop":"misc.containers","enc":"n","pack":"misc"},{"id":"barrel","en":"Barrel","ru":"Бочка","sp":1,"shop":"misc.containers","enc":"o","pack":"misc"},{"id":"chest","en":"Chest","ru":"Сундук","sp":5,"shop":"misc.containers","enc":"o","pack":"misc"},{"id":"pouch","en":"Pouch","ru":"Кошелек","sp":0.1,"shop":"misc.containers","enc":"s","pack":"misc"},{"id":"sack","en":"Sack","ru":"Мешок","sp":0.2,"shop":"misc.containers","enc":"n","pack":"misc"},{"id":"garlic","en":"Garlic","ru":"Чеснок","sp":0.1,"shop":"misc.holy","enc":"n","pack":"misc"},{"id":"holy-symbol-silver","en":"Holy Symbol, Silver","ru":"Святой знак, серебро","sp":25,"shop":"misc.holy","enc":"n","pack":"misc"},{"id":"holy-symbol-steel","en":"Holy Symbol, Steel","ru":"Святой знак, сталь","sp":10,"shop":"misc.holy","enc":"n","pack":"misc"},{"id":"holy-symbol-wood","en":"Holy Symbol, Wood","ru":"Святой знак, дерево","sp":0.1,"shop":"misc.holy","enc":"n","pack":"misc"},{"id":"holy-water","en":"Holy Water","ru":"Святая вода","sp":25,"shop":"misc.holy","enc":"s","pack":"misc"},{"id":"wolvesbane","en":"Wolvesbane","ru":"Аконит (Яд. растение)","sp":0.1,"shop":"misc.holy","enc":"n","pack":"misc"},{"id":"air-bladder","en":"Air Bladder","ru":"Воздушный пузырь","sp":1,"shop":"misc.other","enc":"n","pack":"misc"},{"id":"chalk","en":"Chalk","ru":"Мел","sp":0.1,"shop":"misc.other","enc":"n","pack":"misc"},{"id":"hourglass","en":"Hourglass","ru":"Песочные часы","sp":100,"shop":"misc.other","enc":"s","pack":"misc"},{"id":"instrument","en":"Instrument","ru":"Инструменты","sp":1,"shop":"misc.other","enc":"s","min":true,"pack":"misc"},{"id":"lard","en":"Lard","ru":"Сало","sp":0.1,"shop":"misc.other","enc":"s","pack":"misc"},{"id":"mirror-glass","en":"Mirror, Glass","ru":"Зеркало, стекло","sp":10,"shop":"misc.other","enc":"s","pack":"misc"},{"id":"mirror-silver","en":"Mirror, Silver","ru":"Зеркало, серебро","sp":30,"shop":"misc.other","enc":"n","pack":"misc"},{"id":"mirror-steel","en":"Mirror, Steel","ru":"Зеркало, сталь","sp":1,"shop":"misc.other","enc":"n","pack":"misc"},{"id":"pipe","en":"Pipe","ru":"Трубка","sp":0.5,"shop":"misc.other","enc":"n","pack":"misc"},{"id":"soap","en":"Soap","ru":"Мыло","sp":0.1,"shop":"misc.other","enc":"n","pack":"misc"},{"id":"spyglass","en":"Spyglass","ru":"Подзорная труба","sp":250,"shop":"misc.other","enc":"s","pack":"misc"},{"id":"tobacco","en":"Tobacco","ru":"Табак","sp":0.5,"shop":"misc.other","enc":"s","pack":"misc"},{"id":"vial-or-bottle-empty","en":"Vial or Bottle, Empty","ru":"Сосуд или бутылка, пустые","sp":0.5,"shop":"misc.other","enc":"n","pack":"misc"},{"id":"whistle","en":"Whistle","ru":"Свисток","sp":1,"shop":"misc.other","enc":"n","pack":"misc"},{"id":"block-and-tackle","en":"Block and Tackle","ru":"Блок с крюком","sp":2,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"caltrop","en":"Caltrop","ru":"Шип","sp":0.5,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"chain-per-foot","en":"Chain, per foot","ru":"Цепь, за фут","sp":1,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"crampons","en":"Crampons","ru":"Кошки (для обуви)","sp":5,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"crowbar","en":"Crowbar","ru":"Лом","sp":2,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"drill","en":"Drill","ru":"Сверло","sp":5,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"grappling-hook","en":"Grappling Hook","ru":"Крюк для захвата","sp":5,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"ladder-10","en":"Ladder, 10'","ru":"Лестница, 10 футов","sp":7,"shop":"misc.tools","enc":"o","pack":"misc"},{"id":"lock","en":"Lock","ru":"Замок","sp":7,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"mallet","en":"Mallet","ru":"Деревянный молоток","sp":0.3,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"manacles","en":"Manacles","ru":"Кандалы","sp":10,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"nails","en":"Nails","ru":"Гвозди","sp":0.1,"shop":"misc.tools","enc":"n","pack":"misc"},{"id":"pick-miners","en":"Pick, Miner’s","ru":"Кирка шахтерская","sp":6,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"pole-10","en":"Pole, 10'","ru":"Шест, 10 футов","sp":0.5,"shop":"misc.tools","enc":"o","pack":"misc"},{"id":"rope-50","en":"Rope, 50'","ru":"Веревка, 50 футов","sp":3,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"shovel","en":"Shovel","ru":"Лопата","sp":3,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"specialists-tools","en":"Specialist’s Tools","ru":"Инструменты специалиста","sp":50,"shop":"misc.tools","enc":"s","pack":"misc"},{"id":"spike-iron","en":"Spike, Iron","ru":"Костыль (инстр.), железный","sp":0.3,"shop":"misc.tools","enc":"n","pack":"misc"},{"id":"spike-wooden","en":"Spike, Wooden","ru":"Костыль (инстр.), деревянный","sp":0.1,"shop":"misc.tools","enc":"n","pack":"misc"},{"id":"book-blank","en":"Book, Blank","ru":"Книга, чистая","sp":5,"shop":"misc.writing","enc":"s","pack":"misc"},{"id":"book-reading","en":"Book, Reading","ru":"Книга, для чтения","sp":10,"shop":"misc.writing","enc":"s","pack":"misc"},{"id":"book-spell-blank","en":"Book, Spell (Blank)","ru":"Книга, для заклинаний (чистая)","sp":100,"shop":"misc.writing","enc":"s","pack":"misc"},{"id":"ink","en":"Ink","ru":"Чернила","sp":0.1,"shop":"misc.writing","enc":"n","pack":"misc"},{"id":"map-kingdom","en":"Map, Kingdom","ru":"Карта, Королевства","sp":10,"shop":"misc.writing","enc":"n","pack":"misc"},{"id":"map-local","en":"Map, Local","ru":"Карта, местная","sp":1,"shop":"misc.writing","enc":"n","pack":"misc"},{"id":"paper","en":"Paper","ru":"Бумага","sp":0.2,"shop":"misc.writing","enc":"n","pack":"misc"},{"id":"scroll-case","en":"Scroll Case","ru":"Футляр для свитков","sp":1,"shop":"misc.writing","enc":"s","pack":"misc"},{"id":"bedroll","en":"Bedroll","ru":"Спальный мешок","sp":1,"shop":"survival.camping","enc":"s","pack":"misc"},{"id":"cooking-pots","en":"Cooking Pots","ru":"Кастрюли","sp":0.5,"shop":"survival.camping","enc":"s","pack":"misc"},{"id":"fishing-gear","en":"Fishing Gear","ru":"Снасти для рыбалки","sp":1,"shop":"survival.camping","enc":"s","pack":"misc"},{"id":"tent-grand","en":"Tent, Grand","ru":"Шатер, большой","sp":25,"shop":"survival.camping","enc":"o","pack":"misc"},{"id":"tent-pavilion","en":"Tent, Pavilion","ru":"Шатер, беседка","sp":50,"shop":"survival.camping","enc":"o","pack":"misc"},{"id":"tent-personal","en":"Tent, Personal","ru":"Шатер, личный","sp":5,"shop":"survival.camping","enc":"o","pack":"misc"},{"id":"tent-regular","en":"Tent, Regular","ru":"Шатер, обычный","sp":10,"shop":"survival.camping","enc":"o","pack":"misc"},{"id":"rations-iron-day","en":"Rations, Iron/Day","ru":"Рацион, железный/день","sp":1,"shop":"survival.food","enc":"s","pack":"food"},{"id":"rations-standard-day","en":"Rations, Standard/Day","ru":"Рацион, стандартный/день","sp":0.5,"shop":"survival.food","enc":"s","pack":"food"},{"id":"waterskin","en":"Waterskin","ru":"Бурдюк","sp":1,"shop":"survival.food","enc":"s","pack":"food"},{"id":"bottle-of-wine-liquor-poor","en":"Bottle of Wine/Liquor, Poor","ru":"Вино/ликер, плохого к.","sp":0.2,"shop":"survival.food","enc":"s","pack":"food"},{"id":"bottle-of-wine-liquor-decent","en":"Bottle of Wine/Liquor, Decent","ru":"Вино/ликер, хорошего","sp":1,"shop":"survival.food","enc":"s","min":true,"pack":"food"},{"id":"bottle-of-wine-liquor-rich","en":"Bottle of Wine/Liquor, Rich","ru":"Вино/ликер, отличного","sp":10,"shop":"survival.food","enc":"s","min":true,"pack":"food"},{"id":"torch","en":"Torch","ru":"Факел","sp":0.1,"shop":"survival.light","enc":"s","pack":"light","desc":"30' radius; 6 turns"},{"id":"lantern","en":"Lantern","ru":"Фонарь","sp":3,"shop":"survival.light","enc":"s","pack":"light","desc":"30' radius; 24 turns per flask of oil"},{"id":"candle","en":"Candle","ru":"Свеча","sp":0.1,"shop":"survival.light","enc":"n","pack":"light","desc":"10' radius; 12 turns"},{"id":"flask-of-lamp-oil","en":"Flask of Lamp Oil","ru":"Фляжка лампового масла","sp":0.5,"shop":"survival.light","enc":"s","pack":"light","desc":"Keeps a lantern lit for 24 turns"},{"id":"tinderbox","en":"Tinderbox","ru":"Трутница","sp":1,"shop":"survival.light","enc":"s","pack":"light"},{"id":"dog","en":"Dog","ru":"Собака","sp":1,"shop":"travel.animals","enc":"s","pack":"misc","away":true,"grp":"Animals"},{"id":"livestock","en":"Livestock","ru":"Домашний скот","sp":5,"shop":"travel.animals","enc":"s","pack":"misc","away":true,"grp":"Animals"},{"id":"mule","en":"Mule","ru":"Мул","sp":25,"shop":"travel.animals","enc":"s","pack":"misc","away":true,"grp":"Animals"},{"id":"pony","en":"Pony","ru":"Пони","sp":50,"shop":"travel.animals","enc":"s","pack":"misc","away":true,"grp":"Animals"},{"id":"horse-riding","en":"Horse, Riding","ru":"Лошадь, ездовая","sp":100,"shop":"travel.animals","enc":"s","pack":"misc","away":true,"grp":"Animals"},{"id":"horse-war","en":"Horse, War","ru":"Лошадь, боевая","sp":500,"shop":"travel.animals","enc":"s","pack":"misc","away":true,"grp":"Animals"},{"id":"carrier-pigeon","en":"Carrier Pigeon","ru":"Почтовый Голубь","sp":100,"shop":"travel.animals","enc":"s","pack":"misc","away":true,"grp":"Animals"},{"id":"saddlebag","en":"Saddlebag","ru":"Седельная сумка","sp":0.5,"shop":"travel.animals","enc":"n","pack":"misc","grp":"Gear and barding"},{"id":"feed-animal-day","en":"Feed, Animal/Day","ru":"Корм животным/день","sp":0.5,"shop":"travel.animals","enc":"s","pack":"food","grp":"Gear and barding"},{"id":"riding-gear","en":"Riding Gear","ru":"Сбруя","sp":10,"shop":"travel.animals","enc":"o","pack":"misc","grp":"Gear and barding"},{"id":"barding-leather","en":"Barding, Leather","ru":"Конный доспех, кожа","sp":250,"shop":"travel.animals","enc":"s","pack":"misc","away":true,"ac":14,"grp":"Gear and barding"},{"id":"barding-chain","en":"Barding, Chain","ru":"Конный доспех, кольчуга","sp":500,"shop":"travel.animals","enc":"s","pack":"misc","away":true,"ac":16,"grp":"Gear and barding"},{"id":"barding-plate","en":"Barding, Plate","ru":"Конный доспех, кираса","sp":1000,"shop":"travel.animals","enc":"s","pack":"misc","away":true,"ac":18,"grp":"Gear and barding"},{"id":"cart","en":"Cart","ru":"Тележка","sp":25,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"coach","en":"Coach","ru":"Повозка","sp":500,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"wagon","en":"Wagon","ru":"Фургон","sp":75,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"chariot","en":"Chariot","ru":"Колесница","sp":250,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"boat-raft","en":"Boat, Raft","ru":"Лодка, плот","sp":5,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"boat-canoe","en":"Boat, Canoe","ru":"Лодка, каноэ","sp":25,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"boat-lifeboat","en":"Boat, Lifeboat","ru":"Лодка, шлюпка","sp":100,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-trireme","en":"Ship, Trireme","ru":"Корабль, Трирема","sp":10000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-quadrireme","en":"Ship, Quadrireme","ru":"Корабль, квадрирема","sp":50000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-longship","en":"Ship, Longship","ru":"Корабль, ладья","sp":30000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-river-galley","en":"Ship, River Galley","ru":"Корабль, речная галера","sp":4000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-riverboat","en":"Ship, Riverboat","ru":"Корабль, речная лодка","sp":1000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-sailboat","en":"Ship, Sailboat","ru":"Корабль, парусная лодка","sp":6000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-cog","en":"Ship, Cog","ru":"Корабль, когг","sp":15000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-caravel","en":"Ship, Caravel","ru":"Корабль, каравелла","sp":39000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-carrack","en":"Ship, Carrack","ru":"Корабль, каракка","sp":48000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-galleon","en":"Ship, Galleon","ru":"Корабль, галеон","sp":60000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-cutter","en":"Ship, Cutter","ru":"Корабль, куттер","sp":45000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-brig","en":"Ship, Brig","ru":"Корабль, бриг","sp":90000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-corvette","en":"Ship, Corvette","ru":"Корабль, корвет","sp":135000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true},{"id":"ship-frigate","en":"Ship, Frigate","ru":"Корабль, фрегат","sp":180000,"shop":"travel.vehicles","enc":"s","pack":"misc","away":true}],"firearmOptions":{"locks":[{"id":"matchlock","en":"Matchlock","mult":1,"desc":"Needs a lit match; misfires 2 in 10, more when damp or wet"},{"id":"wheellock","en":"Wheellock","mult":7,"desc":"No extra misfires when damp or wet; may break if used as a club"},{"id":"flintlock","en":"Flintlock","mult":2,"desc":"Misfires 1 in 10; half the reload time"}],"rifled":{"en":"Rifled","mult":2,"desc":"No doubled range penalties; reloads 1.5 × slower"},"noMatchlock":["fa-pistol"]},"encumbrance":{"levels":[{"en":"Unencumbered","ru":"Не нагружен","max":1,"explore":"120'","combat":"40'","miles":24},{"en":"Lightly Encumbered","ru":"Слегка нагружен","max":2,"explore":"90'","combat":"30'","miles":18},{"en":"Heavily Encumbered","ru":"Сильно нагружен","max":3,"explore":"60'","combat":"20'","miles":12},{"en":"Severely Encumbered","ru":"Очень сильно нагружен","max":4,"explore":"30'","combat":"10'","miles":6},{"en":"Over Encumbered","ru":"Перегружен","max":null,"explore":"0'","combat":"0'","miles":0}],"itemSteps":[6,11,16,21],"armor":{"armor-chain":1,"armor-plate":2},"dwarfExtra":5},"startingMoney":{"dice":3,"mult":10,"base":180},"ac":{"base":12,"shield":{"melee":1,"missile":2}}};
   /* END GAME DATA */
 
   var ABILITIES = [
@@ -540,7 +653,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     c.human = g.human;
     c.hp = g.hp.d1 === g.hp.d ? "d" + g.hp.d : "d" + g.hp.d1 + ", then d" + g.hp.d;
   });
-  var STEPS = ["Ability scores", "Class", "Level & alignment", "Character details"];
+  var STEPS = ["Ability scores", "Class", "Level & alignment", "Character details", "Equipment"];
   var PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
 
   function modOf(s) { for (var i = 0; i < MOD_TABLE.length; i++) if (s >= MOD_TABLE[i].lo && s <= MOD_TABLE[i].hi) return MOD_TABLE[i].mod; return null; }
@@ -558,7 +671,8 @@ html[lang="ru"] h1 { font-weight: 500; }
     confirmed: false,
     klass: null, classDone: false, view: "s1",
     level: 1, align: null, alignDone: false,
-    detailsDone: false, detSig: null, hp: null, spells: null, conInput: null, pts: {}, custom: [], extraLv: [], id: null, sheet: { name: "", player: "", age: "", sex: "", curhp: null, maxhp: "", notes: "", used: {} }
+    detailsDone: false, detSig: null, hp: null, spells: null, conInput: null, pts: {}, custom: [], extraLv: [],
+    money: null, gear: null, gearSig: null, gearDone: false, shopTab: "combat", shopSub: {}, shopQ: "", gearView: "pack", gunOpt: {}, id: null, sheet: { name: "", player: "", age: "", sex: "", curhp: null, maxhp: "", notes: "", used: {} }
    }; }
   var state = freshState();
 
@@ -570,9 +684,9 @@ html[lang="ru"] h1 { font-weight: 500; }
   ];
   var FORCED = {};
   Object.keys(GAME.classes).forEach(function (k) { if (GAME.classes[k].alignment) FORCED[k] = GAME.classes[k].alignment; });
-  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s5: 3 };
+  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s6: 4, s5: 4 };
   function renderRail() {
-    var cur = VIEW_IDX[state.view], done = [state.confirmed, state.classDone, state.alignDone, state.detailsDone];
+    var cur = VIEW_IDX[state.view], done = [state.confirmed, state.classDone, state.alignDone, state.detailsDone, state.gearDone];
     el("rail").innerHTML = STEPS.map(function (s, i) {
       var c = i === cur ? "on" : done[i] ? "done" : "";
       return '<li class="' + c + '">' + s + "</li>";
@@ -697,6 +811,14 @@ html[lang="ru"] h1 { font-weight: 500; }
       SKILLS.concat(["Open Doors"]).forEach(function (n) { ch.skills[n] = n === "Open Doors" ? (function () { var m = effMod("STR"), p = state.pts["Open Doors"] || 0; return m === null ? (1 + p) + " in 6 + STR mod" : Math.max(0, Math.min(6, 1 + m + p)) + " in 6"; })() : skillValue(n); });
       state.custom.forEach(function (c) { if (c.name) ch.skills[c.name] = (1 + c.pts) + " in 6"; });
       if (state.spells) ch.spellbook = ["Read Magic"].concat(flatSpells());
+      if (state.money) ch.startingMoney = state.money.total;
+    }
+    if (state.gearDone) {
+      var E = encInfo(), left = leftCp();
+      ch.equipment = Object.keys(state.gear).map(function (id) { return { item: ITEMS[id].en, qty: state.gear[id].q, carried: !state.gear[id].away }; });
+      ch.encumbrance = ENC.levels[E.lvl].en;
+      if (left !== null) ch.moneyLeft = money(left);
+      ch.ac = acInfo().ac;
     }
     window.lotfpCharacter = ch;
   }
@@ -853,6 +975,7 @@ html[lang="ru"] h1 { font-weight: 500; }
 
   function sig() { return JSON.stringify([state.method, state.rolls ? autoScores() : null, state.klass, state.level, state.align]); }
   function ensureDetails() {
+    ensureGear();
     if (state.detSig === sig()) return;
     state.detSig = sig(); state.hp = null; state.spells = null; state.detailsDone = false; state.conInput = null;
     state.pts = {}; state.custom = [{ name: "", pts: 0 }, { name: "", pts: 0 }];
@@ -1027,13 +1150,18 @@ html[lang="ru"] h1 { font-weight: 500; }
     if (state.detailsDone) {
       b.innerHTML = '<div class="chosen">Character details recorded</div>' +
         '<ul class="plain">' + (state.hp ? "<li>Hit points: <b>" + state.hp.total + "</b></li>" : "<li>Hit points: rolled at the table</li>") +
-        (state.spells ? "<li>Spellbook: Read Magic, " + flatSpells().map(esc).join(", ") + "</li>" : "") + "</ul>" +
+        (state.spells ? "<li>Spellbook: Read Magic, " + flatSpells().map(esc).join(", ") + "</li>" : "") +
+        (state.money ? "<li>Starting money: <b>" + money(state.money.total * 10) + "</b></li>" : "") + "</ul>" +
         '<p class="next">Next step: possessions.</p><div class="actions"><button class="btn ghost" id="edit-det" type="button">Edit details</button></div>';
       el("edit-det").addEventListener("click", function () { state.detailsDone = false; renderDetails(); renderRail(); });
       return;
     }
-    b.innerHTML = hpSection() + (state.klass === "Specialist" ? skillsSection() : "") + spellSection() +
+    b.innerHTML = hpSection() + moneySection() + (state.klass === "Specialist" ? skillsSection() : "") + spellSection() +
       '<div class="actions"><button class="btn" id="det-ok" type="button">Continue</button></div>';
+    var rm = el("roll-money");
+    if (rm) rm.addEventListener("click", function () { rollMoney(); renderDetails(); });
+    var mi = el("money-in");
+    if (mi) mi.addEventListener("input", function () { var v = parseInt(mi.value.replace(/[^\d]/g, ""), 10); state.money = isNaN(v) ? null : { total: v }; });
     var rh = el("roll-hp");
     if (rh) rh.addEventListener("click", function () {
       var ci = el("con-in");
@@ -1051,8 +1179,327 @@ html[lang="ru"] h1 { font-weight: 500; }
     b.querySelectorAll(".cname").forEach(function (x) {
       x.addEventListener("input", function () { state.custom[+x.dataset.ci].name = x.value; });
     });
-    el("det-ok").addEventListener("click", function () { state.detailsDone = true; syncChar(); state.view = "s5"; layout(true); });
+    el("det-ok").addEventListener("click", function () { state.detailsDone = true; syncChar(); state.view = "s6"; layout(true); });
   }
+
+  /* ---------- starting money ---------- */
+  var SM = GAME.startingMoney;
+  function moneyDice() { return SM.dice * Math.max(1, state.level - 1); }
+  function moneyFormula() { return (state.level > 1 ? SM.base + " sp + " : "") + moneyDice() + "d6 × " + SM.mult + " sp"; }
+  function rollMoney() {
+    var dice = [], s = 0;
+    for (var i = 0; i < moneyDice(); i++) { dice.push(d6()); s += dice[i]; }
+    state.money = { total: (state.level > 1 ? SM.base : 0) + s * SM.mult, dice: dice };
+    state.moneyAnim = true;
+  }
+  function moneySection() {
+    var m = state.money, right, dice = "";
+    if (m && m.dice) {
+      right = '<div class="result"><span class="big">' + num(m.total) + "</span><span>sp</span></div>";
+      if (m.dice.length <= 12) dice = '<div class="hp-dice">' + m.dice.map(function (d) { return dieHTML(d, state.moneyAnim); }).join("") + "</div>";
+      state.moneyAnim = false;
+    } else right = '<div class="hp-roll"><label class="inl"><input id="money-in" type="text" inputmode="numeric" maxlength="5" aria-label="Starting money in silver pieces" value="' + (m ? m.total : "") + '"> sp</label>' +
+      '<button class="btn" id="roll-money" type="button">Roll money</button></div>';
+    return '<section class="panel"><div class="group">Starting money</div><div class="hp-row"><div class="formula">' + moneyFormula() + "</div>" + right + "</div>" + dice +
+      (m && m.dice ? "" : '<p class="tip">Rolled at the table? Type the total instead.</p>') + "</section>";
+  }
+
+  /* ---------- step 6: equipment ---------- */
+  var ITEMS = {}, ENC = GAME.encumbrance;
+  GAME.equipment.forEach(function (e) { ITEMS[e.id] = e; });
+  /* free at character creation (p. 13): travelling clothes for everyone, a spellbook for Magic-Users and Elves */
+  ITEMS["travel-clothes"] = { id: "travel-clothes", en: "Traveling Clothes", sp: 0, enc: "n", pack: "combat", free: true, worn: true };
+  ITEMS.spellbook = { id: "spellbook", en: "Spellbook", sp: 0, enc: "s", pack: "misc", free: true };
+  var SHOP_TABS = [
+    { k: "combat", en: "Combat", subs: [["armor", "Armor"], ["melee", "Melee"], ["ranged", "Ranged"], ["firearms", "Firearms"]] },
+    { k: "survival", en: "Survival", subs: [["food", "Food"], ["light", "Light"], ["camping", "Camping"]] },
+    { k: "travel", en: "Travel", subs: [["animals", "Animals"], ["vehicles", "Vehicles"]] },
+    { k: "misc", en: "Misc", subs: [["containers", "Containers"], ["tools", "Tools"], ["clothing", "Clothing & valuables"], ["holy", "Holy & herbs"], ["writing", "Books & writing"], ["other", "Other"]] }
+  ];
+  var PACK_GROUPS = [["food", "Food"], ["light", "Light"], ["combat", "Combat & clothing"], ["misc", "Misc"]];
+  var CLASS_NEEDS = { "Cleric": { ids: ["holy-symbol-wood", "holy-symbol-steel", "holy-symbol-silver"], text: "Clerics need a holy symbol to cast spells." },
+    "Specialist": { ids: ["specialists-tools"], text: "Specialists need Specialist's Tools to find traps and open locks." } };
+  var CASTER_LIMIT = { "Magic-User": [1, "Magic-Users can't cast spells when more than Lightly Encumbered."], "Elf": [2, "Elves can't cast spells when more than Heavily Encumbered."] };
+
+  /* guns are bought as variants: base gun × firing mechanism × rifling, each multiplying the cost (p. 161) */
+  var FO = GAME.firearmOptions;
+  function lockOf(id) { return FO.locks.filter(function (l) { return l.id === id; })[0]; }
+  function gunLocks(base) { return FO.locks.filter(function (l) { return FO.noMatchlock.indexOf(base) < 0 || l.id !== "matchlock"; }); }
+  function gunOpt(base) {
+    var o = state.gunOpt[base];
+    if (!o) o = state.gunOpt[base] = { lock: gunLocks(base).slice().sort(function (a, b) { return a.mult - b.mult; })[0].id, rifled: false };
+    return o;
+  }
+  function variant(base, lock, rifled) {
+    var id = base + "~" + lock + (rifled ? "~r" : ""), b = ITEMS[base], L = lockOf(lock);
+    if (!ITEMS[id]) ITEMS[id] = Object.assign({}, b, { id: id, base: base, en: b.en + " (" + L.en + (rifled ? ", rifled" : "") + ")", sp: b.sp * L.mult * (rifled ? FO.rifled.mult : 1), desc: null });
+    return ITEMS[id];
+  }
+  function registerVariants() {
+    Object.keys(state.gear).forEach(function (id) { var p = id.split("~"); if (p.length > 1) variant(p[0], p[1], p[2] === "r"); });
+  }
+
+  function gearSig() { return JSON.stringify([state.klass, state.level]); }
+  function ensureGear() {
+    state.gunOpt = state.gunOpt || {};
+    if (state.gear && state.gearSig === gearSig()) { registerVariants(); return; }
+    state.gearSig = gearSig(); state.money = null; state.gearDone = false;
+    state.gear = { "travel-clothes": { q: 1 } };
+    if (state.klass === "Magic-User" || state.klass === "Elf") state.gear.spellbook = { q: 1 };
+  }
+  function cpOf(it) { return Math.round((it.sp || 0) * 10); }
+  function stepOf(it) { return it.step || 1; }
+  function money(cp) {
+    var neg = cp < 0, s, c;
+    cp = Math.abs(cp); s = Math.floor(cp / 10); c = cp % 10;
+    return (neg ? "−" : "") + num(s) + (c ? "." + c : "") + " sp";
+  }
+  function spentCp() {
+    var t = 0;
+    Object.keys(state.gear).forEach(function (id) { var it = ITEMS[id]; if (it && !it.free) t += cpOf(it) * state.gear[id].q; });
+    return t;
+  }
+  function leftCp() { return state.money ? state.money.total * 10 - spentCp() : null; }
+  function owned(id) { var x = state.gear[id]; return x ? x.q : 0; }
+  function carried(id) { var x = state.gear[id]; return x && !x.away ? x.q : 0; }
+  function itemName(it) { return it.en; }
+
+  /* the best body armor carried is the one worn */
+  function bodyArmor() {
+    var best = null;
+    Object.keys(state.gear).forEach(function (id) {
+      var it = ITEMS[id];
+      if (carried(id) && typeof it.ac === "number" && id.indexOf("barding") !== 0 && (!best || it.ac > ITEMS[best].ac)) best = id;
+    });
+    return best;
+  }
+  function acInfo() {
+    var body = bodyArmor(), ac = body ? ITEMS[body].ac : GAME.ac.base;
+    var sh = carried("shield") ? GAME.ac.shield : null;
+    return { body: body, ac: ac + (sh ? sh.melee : 0), missile: ac + (sh ? sh.missile : 0) };
+  }
+
+  /* encumbrance (p. 42): chain/plate add points, then every 5 different items past the 5th, then each oversized item */
+  function encInfo() {
+    var g = state.gear, body = bodyArmor(), rows = {}, items = 0, over = 0, armor = 0;
+    var quiver = carried("quiver") * 20, shafts = carried("arrows") + carried("bolts");
+    Object.keys(g).forEach(function (id) {
+      var it = ITEMS[id], q = carried(id), r = { items: 0, over: 0, armor: 0 };
+      rows[id] = r;
+      if (!it || !q) return;
+      if (id === body || it.worn) { r.worn = true; if (ENC.armor[id]) { r.armor = ENC.armor[id]; q--; } }
+      if (it.worn || it.enc === "n" || !q) { /* not counted */ }
+      else if (it.enc === "o") r.over = q * (it.over || 1);
+      else if ((id === "arrows" || id === "bolts") && quiver && shafts <= quiver) r.quiver = true;  // a quiver and up to 20 shafts are one item
+      else r.items = it.weapon ? q : 1;
+      items += r.items; over += r.over; armor += r.armor;
+    });
+    var left = leftCp(), coins = left > 0 ? Math.floor(left / 10) + left % 10 : 0, coinItems = Math.floor(coins / 100);
+    items += coinItems;
+    var extra = state.klass === "Dwarf" ? ENC.dwarfExtra : 0, steps = ENC.itemSteps.map(function (s) { return s + extra; });
+    function at(n) {
+      var p = armor + over + steps.filter(function (s) { return n >= s; }).length;
+      for (var i = 0; i < ENC.levels.length; i++) if (ENC.levels[i].max === null || p <= ENC.levels[i].max) return { lvl: i, pts: p };
+    }
+    var cur = at(items), next = null;
+    for (var n = items + 1; n <= steps[steps.length - 1]; n++) if (at(n).lvl > cur.lvl) { next = { n: n - items, lvl: at(n).lvl }; break; }
+    return { items: items, over: over, armor: armor, coins: coins, coinItems: coinItems, steps: steps, pts: cur.pts, lvl: cur.lvl, next: next, rows: rows };
+  }
+  function itemsLbl(n) { return n + (n === 1 ? " item" : " items"); }
+  function ptsLbl(n) { return "+" + n + (n === 1 ? " point" : " points"); }
+
+  function encBar(E) {
+    var L = ENC.levels[E.lvl], left = leftCp(), last = E.steps[E.steps.length - 1], cells = "";
+    for (var i = 1; i <= last; i++) {
+      var c = [];
+      if (E.steps.indexOf(i) > -1) c.push("st");
+      if (i <= E.items) c.push(i > E.items - E.coinItems ? "coin" : "on");
+      cells += "<i" + (c.length ? ' class="' + c.join(" ") + '"' : "") + "></i>";
+    }
+    var nxt = E.next ? E.next.n + " more to " + ENC.levels[E.next.lvl].en : E.lvl < ENC.levels.length - 1 && E.items >= last ? "Item count maxed" : "";
+    var warn = CASTER_LIMIT[state.klass] && E.lvl > CASTER_LIMIT[state.klass][0] ? CASTER_LIMIT[state.klass][1] :
+      state.klass === "Specialist" && E.lvl > 0 ? "Specialists take −1 to movement skills per encumbrance level." : "";
+    return '<div class="eb-top"><span class="eb-money' + (left !== null && left < 0 ? " neg" : "") + '">' +
+      (left === null ? "<span>Money not rolled</span>" : "<b>" + money(left) + "</b> <span>left</span>") + "</span>" +
+      '<span class="eb-lvl l' + E.lvl + '" title="Encumbrance">' + L.en + "</span></div>" +
+      '<div class="meter' + (E.items > last ? " full" : "") + '" aria-hidden="true">' + cells + "</div>" +
+      '<div class="eb-bot"><span><span>' + itemsLbl(E.items) + "</span>" + (E.coinItems ? ' · <span class="coin">' + E.coinItems + " in coins</span>" : "") + (nxt ? " · <span>" + nxt + "</span>" : "") + "</span></div>" +
+      '<div class="eb-bot"><span class="eb-mv">' + moveLbl(L) + '</span><span class="eb-ov' + (E.over ? " has" : "") + '"><span>Oversized</span> <b>' + E.over + "</b></span></div>" +
+      (warn ? '<p class="eb-warn">' + warn + "</p>" : "");
+  }
+  function moveLbl(L) { return '<span title="Movement per turn">Explore ' + L.explore + '</span> · <span title="Movement per round">Combat ' + L.combat + "</span>"; }
+
+  /* an item row is two lines: name with tags, then stats and a short description */
+  function tagsOf(it) {
+    var t = [];
+    if (it.enc === "o") t.push(["o", it.over > 1 ? "Oversized ×" + it.over : "Oversized"]);
+    else if (it.enc === "n") t.push(["n", "Non-encumbering"]);
+    if (it.away) t.push(["n", "Not carried"]);
+    if (state.klass === "Halfling" && it.id === "weapon-great") t.push(["o", "Halflings can't use"]);
+    if (state.klass === "Halfling" && it.id === "weapon-medium") t.push(["n", "Two-handed for Halflings"]);
+    return t.map(function (x) { return '<span class="tg ' + x[0] + '">' + x[1] + "</span>"; }).join("");
+  }
+  function statsOf(it) {
+    var m = [];
+    if (it.dam) m.push(it.dam);
+    if (typeof it.ac === "number") m.push("AC " + it.ac);
+    if (it.id === "shield") m.push("+" + GAME.ac.shield.melee + " AC, +" + GAME.ac.shield.missile + " vs missiles");
+    if (it.rng) m.push(it.rng.map(function (r) { return r.replace("< ", ""); }).join("/"));
+    return m.join(" · ");
+  }
+  function lineTwo(it, desc) {
+    var st = statsOf(it);
+    return st || desc ? '<span class="it-d">' + (st ? '<span class="st">' + esc(st) + "</span>" : "") + (st && desc ? " " : "") + (desc ? "<span>" + esc(desc) + "</span>" : "") + "</span>" : "";
+  }
+  function priceOf(it) {
+    if (it.free || it.sp === null) return "Free";
+    return money(cpOf(it) * stepOf(it)) + (stepOf(it) > 1 ? " / " + stepOf(it) : "");
+  }
+  function qtyCtl(it, canAdd) {
+    var q = owned(it.id), n = esc(itemName(it));
+    if (it.free) return '<span class="tag">Free</span>';
+    var add = '<button type="button" data-add="' + it.id + '" aria-label="Buy ' + n + '"' + (canAdd ? "" : " disabled") + ">+</button>";
+    if (!q) return '<span class="stp buy">' + add + "</span>";
+    return '<span class="stp"><button type="button" data-sub="' + it.id + '" aria-label="Remove ' + n + '">−</button><i>' + q + "</i>" + add + "</span>";
+  }
+  /* arrows and bolts bring a quiver along when there is none (a quiver and its 20 shafts are one item) */
+  function needsQuiver(it) { return (it.id === "arrows" || it.id === "bolts") && !owned("quiver"); }
+  function addCp(it) { return cpOf(it) * stepOf(it) + (needsQuiver(it) ? cpOf(ITEMS.quiver) : 0); }
+  function canBuy(it, left) { return left === null || addCp(it) <= left; }
+  function shopRow(it, left) {
+    var q = owned(it.id), ok = canBuy(it, left);
+    return '<div class="it' + (it.enc === "o" ? " ov" : "") + (q ? " own" : "") + (!ok && !q ? " dim" : "") + '"><div class="it-l"><div class="it-h"><span class="it-n">' + esc(itemName(it)) + tagsOf(it) + '</span><span class="it-p">' + priceOf(it) + "</span></div>" +
+      lineTwo(it, it.desc) + "</div>" + qtyCtl(it, ok) + "</div>";
+  }
+  function gunRow(base, left) {
+    var o = gunOpt(base), v = variant(base, o.lock, o.rifled), ok = canBuy(v, left), b = ITEMS[base];
+    var locks = gunLocks(base).slice().sort(function (x, y) { return x.mult - y.mult; }).map(function (l) {
+      return '<button type="button" data-lock="' + base + ":" + l.id + '" aria-pressed="' + (l.id === o.lock) + '"><span>' + l.en + "</span><i>" + money(cpOf(variant(base, l.id, o.rifled))) + "</i></button>";
+    }).join("");
+    var extra = cpOf(variant(base, o.lock, true)) - cpOf(variant(base, o.lock, false));
+    return '<div class="it gun' + (b.enc === "o" ? " ov" : "") + (owned(v.id) ? " own" : "") + (!ok && !owned(v.id) ? " dim" : "") + '"><div class="it-l"><div class="it-h"><span class="it-n">' + esc(b.en) + tagsOf(b) + '</span><span class="it-p">' + priceOf(v) + "</span></div>" +
+      lineTwo(b, b.desc) + "</div>" + qtyCtl(v, ok) +
+      '<div class="gopts"><span class="gl">' + locks + '</span><button type="button" data-rifle="' + base + '" aria-pressed="' + o.rifled + '"><span>' + FO.rifled.en + "</span><i>+" + money(extra) + "</i></button></div>" +
+      '<p class="it-d gdesc"><span>' + lockOf(o.lock).desc + "</span>" + (o.rifled ? " · <span>" + FO.rifled.desc + "</span>" : "") + "</p></div>";
+  }
+  /* one sub-tab's items, with a heading wherever the data starts a new group */
+  function rowsOf(list, left) {
+    var h = "", g = null;
+    list.forEach(function (it) {
+      if (it.grp && it.grp !== g) { g = it.grp; h += '<div class="ihead">' + g + "</div>"; }
+      h += it.shop === "combat.firearms" && it.weapon ? gunRow(it.id, left) : shopRow(it, left);
+    });
+    return h;
+  }
+  function matches(it, q) {
+    q = q.toLowerCase();
+    return it.en.toLowerCase().indexOf(q) > -1 || (it.ru && it.ru.toLowerCase().indexOf(q) > -1) || (LANG === "ru" && tr(it.en).toLowerCase().indexOf(q) > -1);
+  }
+  function shopList() {
+    var left = leftCp(), q = state.shopQ.trim(), h = "";
+    if (q) {
+      SHOP_TABS.forEach(function (t) {
+        t.subs.forEach(function (s) {
+          var hits = GAME.equipment.filter(function (it) { return it.shop === t.k + "." + s[0] && matches(it, q); });
+          if (hits.length) h += '<div class="ihead"><span>' + t.en + "</span> · <span>" + s[1] + "</span></div>" + rowsOf(hits.map(function (it) { return Object.assign({}, it, { grp: null }); }), left);
+        });
+      });
+      return h || '<p class="sub none">No items match.</p>';
+    }
+    var tab = state.shopTab, sub = state.shopSub[tab] || SHOP_TABS.filter(function (t) { return t.k === tab; })[0].subs[0][0];
+    var need = CLASS_NEEDS[state.klass];
+    if (need && !need.ids.some(owned)) h += '<div class="need"><p>' + need.text + "</p>" + need.ids.map(function (id) { return shopRow(ITEMS[id], left); }).join("") + "</div>";
+    h += rowsOf(GAME.equipment.filter(function (it) { return it.shop === tab + "." + sub; }), left);
+    return h;
+  }
+  function shopTabs() {
+    var t = SHOP_TABS.filter(function (x) { return x.k === state.shopTab; })[0], sub = state.shopSub[t.k] || t.subs[0][0];
+    return '<div class="cats" role="tablist">' + SHOP_TABS.map(function (x) { return '<button type="button" role="tab" data-tab="' + x.k + '" aria-selected="' + (x.k === t.k) + '">' + x.en + "</button>"; }).join("") + "</div>" +
+      '<div class="subs" role="tablist">' + t.subs.map(function (s) { return '<button type="button" role="tab" data-subtab="' + s[0] + '" aria-selected="' + (s[0] === sub) + '">' + s[1] + "</button>"; }).join("") + "</div>";
+  }
+
+  function packRow(id, E) {
+    var it = ITEMS[id], x = state.gear[id], r = E.rows[id] || {}, m;
+    if (x.away) m = "";
+    else if (r.worn) m = "Worn" + (r.armor ? " · " + ptsLbl(r.armor) : "") + (r.over ? " · " + ptsLbl(r.over) : "") + (r.items ? " · " + itemsLbl(r.items) : "");
+    else if (r.over) m = ptsLbl(r.over);
+    else if (r.quiver) m = "In quiver";
+    else if (r.items) m = itemsLbl(r.items);
+    else m = "";
+    var mv = it.free && it.worn || it.away ? "" : '<button type="button" class="mv" data-' + (x.away ? "carry" : "stow") + '="' + id + '">' + (x.away ? "Carry" : "Stow") + "</button>";
+    return '<div class="it pk' + (r.over ? " ov" : "") + '"><div class="it-l"><span class="it-n">' + esc(itemName(it)) + "</span>" +
+      (m ? '<span class="it-m">' + m + "</span>" : "") + "</div>" + mv + qtyCtl(it, canBuy(it, leftCp())) + "</div>";
+  }
+  function packHTML(E) {
+    var ids = Object.keys(state.gear).filter(function (id) { return state.gear[id].q > 0 && ITEMS[id]; }), h = "";
+    function rank(id) { var r = E.rows[id]; return r.over ? 0 : r.items || r.armor || r.quiver ? 1 : 2; }
+    PACK_GROUPS.forEach(function (g) {
+      var list = ids.filter(function (id) { return ITEMS[id].pack === g[0] && !state.gear[id].away; });
+      var coins = g[0] === "misc" && E.coins ? '<div class="it pk coins"><div class="it-l"><span class="it-n">Coins <b>×' + num(E.coins) + '</b></span><span class="it-m">' +
+        (E.coinItems ? itemsLbl(E.coinItems) : "1 item per 100 coins") + "</span></div></div>" : "";
+      if (!list.length && !coins) return;
+      list.sort(function (a, b) { return rank(a) - rank(b); });
+      var counted = list.filter(function (id) { return rank(id) < 2; }), loose = list.filter(function (id) { return rank(id) === 2; });
+      var n = counted.reduce(function (t, id) { return t + E.rows[id].items; }, 0) + (g[0] === "misc" ? E.coinItems : 0);
+      var ov = counted.reduce(function (t, id) { return t + E.rows[id].over; }, 0);
+      h += '<section class="pgroup"><div class="group group-row"><span>' + g[1] + '</span><span class="gcount">' + (n ? "<span>" + itemsLbl(n) + "</span>" : "") +
+        (n && ov ? " · " : "") + (ov ? "<span>" + ov + " oversized</span>" : "") + "</span></div>" +
+        counted.map(function (id) { return packRow(id, E); }).join("") + (E.coinItems ? coins : "") +
+        (loose.length || (coins && !E.coinItems) ? '<div class="nc">Non-encumbering</div>' + loose.map(function (id) { return packRow(id, E); }).join("") + (E.coinItems ? "" : coins) : "") + "</section>";
+    });
+    var away = ids.filter(function (id) { return state.gear[id].away; });
+    if (away.length) h += '<section class="pgroup away"><div class="group">Other possessions</div><p class="tip">Owned but not carried: animals, vehicles and anything you stow.</p>' +
+      away.map(function (id) { return packRow(id, E); }).join("") + "</section>";
+    var bought = ids.some(function (id) { return !ITEMS[id].free; });
+    return (bought ? "" : '<p class="sub none">Nothing bought yet.</p>') + h;
+  }
+
+  function packCount() { return Object.keys(state.gear).filter(function (id) { return state.gear[id].q > 0 && !ITEMS[id].free; }).length; }
+  function refreshGear() {
+    var E = encInfo(), f = document.activeElement, key = null;
+    if (f && f.dataset) ["add", "sub", "stow", "carry", "lock", "rifle"].some(function (k) { if (f.dataset[k]) { key = "[data-" + k + '="' + f.dataset[k] + '"]'; return true; } });
+    el("encbar").innerHTML = encBar(E);
+    el("seg-pack").innerHTML = 'Pack <i>' + packCount() + "</i>";
+    if (state.gearView === "shop") { el("gtabs").hidden = !!state.shopQ.trim(); el("gtabs").innerHTML = shopTabs(); el("glist").innerHTML = shopList(); }
+    else el("gpack").innerHTML = packHTML(E);
+    if (key) { var t = el("body6").querySelector(key); if (t && !t.disabled) t.focus(); }
+    if (state.id) persist();
+  }
+  function renderGear() {
+    ensureDetails();
+    var shop = state.gearView === "shop";
+    el("body6").innerHTML = '<div class="gearhead" id="encbar"></div>' +
+      '<div class="seg" role="tablist"><button type="button" role="tab" id="seg-pack" data-view="pack" aria-selected="' + !shop + '"></button><button type="button" role="tab" data-view="shop" aria-selected="' + shop + '">Shop</button></div>' +
+      (shop ? '<div class="gshop"><input class="gsearch" id="gsearch" type="search" placeholder="Search equipment" aria-label="Search equipment" value="' + esc(state.shopQ) + '"><div id="gtabs"></div><div class="ilist" id="glist"></div></div>'
+        : '<div class="ilist" id="gpack"></div>') +
+      '<div class="actions"><button class="btn" id="gear-ok" type="button">Continue</button><button class="btn ghost" id="gear-back" type="button">Back</button></div>';
+    refreshGear();
+    var s = el("gsearch");
+    if (s) s.addEventListener("input", function () { state.shopQ = s.value; refreshGear(); });
+    el("gear-ok").addEventListener("click", function () { state.gearDone = true; syncChar(); state.view = "s5"; layout(true); });
+    el("gear-back").addEventListener("click", function () { state.detailsDone = false; state.view = "s4"; layout(true); });
+  }
+  el("body6").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button");
+    if (!b || b.disabled) return;
+    var d = b.dataset, g = state.gear;
+    if (d.view) { state.gearView = d.view; renderGear(); return; }
+    if (d.tab) { state.shopTab = d.tab; }
+    else if (d.subtab) { state.shopSub[state.shopTab] = d.subtab; }
+    else if (d.add) {
+      var it = ITEMS[d.add];
+      if (needsQuiver(it)) g.quiver = { q: 1 };
+      if (!g[d.add]) g[d.add] = { q: 0, away: !!it.away };
+      g[d.add].q += stepOf(it);
+    }
+    else if (d.sub) { g[d.sub].q -= Math.min(g[d.sub].q, stepOf(ITEMS[d.sub])); if (!g[d.sub].q) delete g[d.sub]; }
+    else if (d.lock) { gunOpt(d.lock.split(":")[0]).lock = d.lock.split(":")[1]; }
+    else if (d.rifle) { var o = gunOpt(d.rifle); o.rifled = !o.rifled; }
+    else if (d.stow) { g[d.stow].away = true; }
+    else if (d.carry) { g[d.carry].away = false; }
+    else return;
+    refreshGear();
+  });
 
   /* ---------- step 5: character sheet ---------- */
   function xpFor(k, lv) { return lvRow(k, lv).xp; }
@@ -1085,7 +1532,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     var k = state.klass, L = state.level, auto = state.method === "auto" && state.rolls, S = state.sheet;
     var sc = auto ? autoScores() : null, h = "";
     var f = FIGHTERISH[k], sv = savesFor(), base = lvRow(k, L).ab;
-    var sm = effMod("STR"), dm = effMod("DEX");
+    var sm = effMod("STR"), dm = effMod("DEX"), A = acInfo();
     S.used = S.used || {};
 
     /* identity */
@@ -1094,6 +1541,8 @@ html[lang="ru"] h1 { font-weight: 500; }
     h += '<div class="ident"><span class="idline">Level ' + L + " " + esc(k) + " · " + esc(state.align) + "</span>" +
       '<div class="xp"><div class="xpbar" aria-hidden="true"><i id="xpfill" style="width:' + xpPct(xp) + '%"></i></div>' +
       '<label class="xpnum"><input data-f="xp" id="xpin" type="text" inputmode="numeric" maxlength="9" aria-label="Current experience points" value="' + esc(xp) + '"><span>/ ' + num(xpFor(k, L + 1)) + " XP</span></label></div></div>";
+    var top = h;
+    h = "";
 
     /* at a glance */
     var max = state.hp ? state.hp.total : "", cur = S.curhp === null ? max : S.curhp;
@@ -1103,7 +1552,8 @@ html[lang="ru"] h1 { font-weight: 500; }
       '<div class="hpmid"><div class="hpval"><input id="curhp" data-f="curhp" type="text" inputmode="numeric" aria-label="Current hit points" value="' + esc(cur) + '"><span class="of">/ ' + maxHTML + "</span></div>" +
       '<span class="fl">Hit points</span><span class="hpstat" id="hpstat" role="status">' + hpStatus(parseInt(cur, 10)) + "</span></div>" +
       '<button class="hpb" type="button" data-hp="1" aria-label="Gain 1 hit point">+</button></div>' +
-      '<div class="g-stat"><span class="fl">AC</span><b>' + (dm === null ? "12<small> + DEX</small>" : 12 + dm) + "</b></div>" +
+      '<div class="g-stat"><span class="fl">AC</span><b>' + (dm === null ? A.ac + "<small> + DEX</small>" : A.ac + dm) + "</b>" +
+      (A.missile > A.ac ? '<small class="g-sub">+' + (A.missile - A.ac) + " vs missiles</small>" : "") + "</div>" +
       '<div class="g-stat"><span class="fl">Melee AB</span><b>' + (sm === null ? fmt(base) + "<small> + STR</small>" : fmt(base + sm)) + "</b></div>" +
       '<div class="g-stat"><span class="fl">Ranged AB</span><b>' + (dm === null ? fmt(base) + "<small> + DEX</small>" : fmt(base + dm)) + "</b></div>" +
       '<div class="g-stat g-sur"><span class="fl">Surprise</span>' + dieBox(k === "Elf" ? 1 : 2) + '<small class="g-sub">AC 10</small></div></section>';
@@ -1133,6 +1583,10 @@ html[lang="ru"] h1 { font-weight: 500; }
     if (k === "Specialist") state.custom.forEach(function (c) { if (c.name || c.pts) tiles.push(skillTile("c", 1 + c.pts, 5, "", "", esc(c.name || "Custom skill"))); });
     h += '<section class="panel"><div class="group">Skills</div><div class="skills-grid">' + tiles.join("") + "</div></section>";
 
+    h += '<section class="panel"><div class="group">Notes</div><textarea class="notes" data-f="notes" rows="4" aria-label="Notes" placeholder="Anything worth remembering">' + esc(S.notes || "") + "</textarea></section>";
+    var pages = { info: h };
+    h = "";
+
     /* spells: slots and known spells per level */
     var slots = slotsFor();
     if (slots) {
@@ -1144,17 +1598,44 @@ html[lang="ru"] h1 { font-weight: 500; }
         return '<div class="splrow"><span class="bl">' + ordinal(lv) + '</span><div class="dots">' + dots + "</div>" +
           (book ? '<div class="chips2">' + (known.length ? known.map(function (s) { return '<span class="sp">' + esc(s) + "</span>"; }).join("") : '<span class="sub none">No spells known</span>') + "</div>" : "") + "</div>";
       }).join("") + "</div>" + (book ? "" : '<p class="colhint">Prepare any Cleric spell of a level you have slots for.</p>') + "</section>";
+      pages.spells = h;
     }
+    pages.gear = gearPanel();
+    pages.retainers = '<section class="panel"><div class="group">Retainers</div><p class="sub none">Hired retainers will be tracked here.</p></section>';
 
-    h += '<section class="panel"><div class="group">Notes</div><textarea class="notes" data-f="notes" rows="4" aria-label="Notes" placeholder="Anything worth remembering">' + esc(S.notes || "") + "</textarea></section>";
-    return h;
+    /* the sheet is split into pages, like the sides of a paper sheet; the tab bar stays in reach while scrolling */
+    var tabs = SHEET_TABS.filter(function (t) { return pages[t[0]]; });
+    if (!pages[S.tab]) S.tab = "info";
+    return top + '<div class="stabs" role="tablist" style="--n:' + tabs.length + '">' + tabs.map(function (t) {
+      return '<button type="button" role="tab" id="tab-' + t[0] + '" data-stab="' + t[0] + '" aria-controls="page-' + t[0] + '" aria-selected="' + (t[0] === S.tab) + '">' + t[1] + "</button>";
+    }).join("") + "</div>" + tabs.map(function (t) {
+      return '<div class="spage" role="tabpanel" id="page-' + t[0] + '" aria-labelledby="tab-' + t[0] + '"' + (t[0] === S.tab ? "" : " hidden") + ">" + pages[t[0]] + "</div>";
+    }).join("");
+  }
+  var SHEET_TABS = [["info", "Character"], ["spells", "Spells"], ["gear", "Inventory"], ["retainers", "Retainers"]];
+
+  /* equipment on the sheet: one row of chips per pack group, oversized items marked */
+  function gearPanel() {
+    var E = encInfo(), Lv = ENC.levels[E.lvl], left = leftCp(), rows = "";
+    var ids = Object.keys(state.gear).filter(function (id) { return state.gear[id].q > 0 && ITEMS[id]; });
+    function chip(id) {
+      var q = state.gear[id].q;
+      return '<span class="sp' + (E.rows[id] && E.rows[id].over ? " ov" : "") + '">' + esc(itemName(ITEMS[id])) + (q > 1 ? "<i>×" + q + "</i>" : "") + "</span>";
+    }
+    PACK_GROUPS.concat([["away", "Other possessions"]]).forEach(function (g) {
+      var list = ids.filter(function (id) { return g[0] === "away" ? state.gear[id].away : ITEMS[id].pack === g[0] && !state.gear[id].away; });
+      list.sort(function (a, b) { return (E.rows[b].over ? 1 : 0) - (E.rows[a].over ? 1 : 0); });
+      if (list.length) rows += '<div class="kitrow"><span class="bl">' + g[1] + '</span><div class="chips2">' + list.map(chip).join("") + "</div></div>";
+    });
+    return '<section class="panel"><div class="group-row"><div class="group">Inventory</div><button class="link" id="edit-gear" type="button">Edit</button></div>' +
+      '<div class="encline"><span class="eb-lvl l' + E.lvl + '">' + Lv.en + '</span><span class="eb-mv">' + moveLbl(Lv) + "</span><span>" + itemsLbl(E.items) + "</span>" +
+      (left !== null ? "<span>" + money(left) + "</span>" : "") + "</div>" + '<div class="kit">' + rows + "</div></section>";
   }
 
   function renderSheet() {
     ensureDetails();
     var auto = state.method === "auto" && state.rolls, notes = ["Saved automatically on this device."];
     if (!auto) notes.push("Ability scores were rolled at the table, so values that depend on them show the modifier to add.");
-    notes.push("Armor class assumes no armor until equipment is added.");
     el("body5").innerHTML =
       '<div class="sheethead"><button class="link" id="back-home" type="button">&larr; Characters</button><button class="link" id="back-det" type="button">Edit</button></div>' +
       '<input class="namein" data-f="name" type="text" maxlength="40" placeholder="Character name" aria-label="Character name" value="' + esc(state.sheet.name) + '">' +
@@ -1163,7 +1644,18 @@ html[lang="ru"] h1 { font-weight: 500; }
     persist();
     el("back-home").addEventListener("click", goHome);
     el("back-det").addEventListener("click", function () { state.detailsDone = false; state.view = "s4"; layout(true); });
+    el("edit-gear").addEventListener("click", function () { state.view = "s6"; layout(true); });
     var b = el("body5");
+    b.querySelectorAll("[data-stab]").forEach(function (x) {
+      x.addEventListener("click", function () {
+        state.sheet.tab = x.dataset.stab;
+        b.querySelectorAll("[data-stab]").forEach(function (y) { y.setAttribute("aria-selected", y === x); });
+        b.querySelectorAll(".spage").forEach(function (pg) { pg.hidden = pg.id !== "page-" + x.dataset.stab; });
+        var bar = b.querySelector(".stabs");
+        if (bar.getBoundingClientRect().top < 1) bar.scrollIntoView();
+        persist();
+      });
+    });
     b.querySelectorAll("[data-f]").forEach(function (i) {
       i.addEventListener("input", function () {
         state.sheet[i.dataset.f] = i.value;
@@ -1200,11 +1692,11 @@ html[lang="ru"] h1 { font-weight: 500; }
     "Choose a class": "Выбор класса", "Level and alignment": "Уровень и мировоззрение",
     /* abilities */
     "CHA": "ХАР", "CON": "ТЕЛ", "DEX": "ЛОВ", "INT": "ИНТ", "STR": "СИЛ", "WIS": "МДР",
-    "Hire retainers and affect their loyalty": "Найм работников и их лояльность", "Hit Points": "Пункты здоровья",
+    "Hire retainers and affect their loyalty": "Найм наёмников и их лояльность", "Hit Points": "Пункты здоровья",
     "Armor Class, ranged attacks and initiative": "Класс брони, стрелковые атаки и инициатива",
     "Languages, saving throws against Magic": "Языки, спасброски против магии", "Melee attacks, Open Doors": "Рукопашные атаки, открывание дверей",
     "Saving throws against non-Magic": "Спасброски против немагических эффектов",
-    "Retainers, loyalty": "Работники, лояльность", "Hit points": "Пункты здоровья", "AC, ranged, initiative": "КБ, стрельба, инициатива",
+    "Retainers, loyalty": "Наёмники, лояльность", "Hit points": "Пункты здоровья", "AC, ranged, initiative": "КБ, стрельба, инициатива",
     "Languages, magic saves": "Языки, спасброски от магии", "Melee, Open Doors": "Рукопашная, открывание дверей", "Non-magic saves": "Спасброски от немагических эффектов",
     "Ability modifiers": "Модификаторы атрибутов", "Ability score": "Значение атрибута", "Modifier": "Модификатор", "Ability": "Атрибут", "Score": "Значение", "Mod": "Мод.",
     "Additional rules": "Дополнительные правила",
@@ -1262,7 +1754,6 @@ html[lang="ru"] h1 { font-weight: 500; }
     "Notes": "Заметки", "Anything worth remembering": "Всё, что стоит запомнить",
     "Saved automatically on this device.": "Сохраняется автоматически на этом устройстве.",
     "Ability scores were rolled at the table, so values that depend on them show the modifier to add.": "Атрибуты брошены за столом, поэтому у зависящих от них значений указан модификатор, который нужно добавить.",
-    "Armor class assumes no armor until equipment is added.": "Класс брони указан без доспехов, пока не добавлено снаряжение.",
     /* list */
     "New character": "Новый персонаж", "Backup": "Резервная копия", "Import": "Импорт", "Export": "Экспорт", "Delete": "Удалить", "Sure?": "Точно?",
     "No saved characters yet. Create your first one.": "Сохранённых персонажей пока нет. Создайте первого.",
@@ -1273,8 +1764,68 @@ html[lang="ru"] h1 { font-weight: 500; }
     "Paste backup text here, or choose a file.": "Вставьте сюда текст резервной копии или выберите файл.",
     "Add characters": "Добавить персонажей", "Choose file": "Выбрать файл", "Close": "Закрыть", "Copy": "Копировать", "Copied.": "Скопировано.",
     "Press Ctrl/Cmd+C to copy.": "Нажмите Ctrl/Cmd+C, чтобы скопировать.", "That doesn't look like a character backup.": "Это не похоже на резервную копию персонажа.",
-    "Backup text": "Текст резервной копии"
+    "Backup text": "Текст резервной копии",
+    /* money and equipment */
+    "Equipment": "Снаряжение", "New characters pay the lower of the City and Rural prices.": "Новые персонажи платят меньшую из городской и сельской цен.",
+    "Starting money": "Стартовые деньги", "Roll money": "Бросить деньги", "Starting money in silver pieces": "Стартовые деньги в серебряных монетах",
+    "Rolled at the table? Type the total instead.": "Бросали за столом? Введите сумму.",
+    "left": "осталось", "Money not rolled": "Деньги не брошены", "Encumbrance": "Нагрузка", "Movement per turn / round": "Движение за ход / раунд",
+    "Shop": "Лавка", "Pack": "Поклажа", "Search equipment": "Поиск снаряжения",
+    "Combat": "Бой", "Survival": "Выживание", "Travel": "Путешествия", "Misc": "Разное",
+    "Armor": "Доспехи", "Melee": "Ближний бой", "Ranged": "Стрелковое", "Firearms": "Огнестрельное", "Food": "Еда", "Light": "Свет", "Camping": "Лагерь",
+    "Animals": "Животные", "Vehicles": "Транспорт", "Containers": "Ёмкости", "Tools": "Орудия труда", "Clothing & valuables": "Одежда и ценности",
+    "Holy & herbs": "Святыни и травы", "Books & writing": "Книги и письмо", "Other": "Прочее", "Combat & clothing": "Бой и одежда",
+    "Other possessions": "Прочее имущество", "Owned but not carried: animals, vehicles and anything you stow.": "Есть, но не при себе: животные, транспорт и всё, что вы оставили.",
+    "Free": "Бесплатно", "Oversized": "Негабаритный", "Non-encumbering": "Не утяжеляет", "Not carried": "Не при себе", "Firearms rules": "Правила огнестрела",
+    "Halflings can't use": "Недоступно Полуросликам", "Two-handed for Halflings": "Полурослики держат двумя руками",
+    "Worn": "Надето", "In quiver": "В колчане", "Stow": "Оставить", "Carry": "Взять", "Coins": "Монеты", "1 item per 100 coins": "1 предмет за 100 монет",
+    "Nothing bought yet.": "Пока ничего не куплено.", "No items match.": "Ничего не найдено.",
+    "Firearms are an optional rule. Ask your Referee.": "Огнестрельное оружие — дополнительное правило. Спросите Рефери.",
+    "Clerics need a holy symbol to cast spells.": "Клирикам для колдовства нужен святой символ.",
+    "Specialists need Specialist's Tools to find traps and open locks.": "Специалистам нужны инструменты специалиста, чтобы искать ловушки и вскрывать замки.",
+    "Magic-Users can't cast spells when more than Lightly Encumbered.": "Маги не могут колдовать, если нагружены сильнее, чем слегка.",
+    "Elves can't cast spells when more than Heavily Encumbered.": "Эльфы не могут колдовать, если нагружены сильнее, чем сильно.",
+    "Specialists take −1 to movement skills per encumbrance level.": "Специалисты получают −1 к навыкам движения за каждый уровень нагрузки.",
+    "Dwarfs carry 5 more items before the first point.": "Дворфы несут на 5 предметов больше до первого очка нагрузки.",
+    "Every 5 different items past the 5th add a point.": "Каждые 5 разных предметов сверх пятого добавляют очко нагрузки.",
+    "Item count maxed": "Предметы больше не добавляют очков",
+    "Traveling Clothes": "Дорожная одежда", "Arrows": "Стрелы", "Crossbow Bolts": "Арбалетные болты", "Sling Bullets": "Пули для пращи",
+    "Pistol": "Пистолет", "Arquebus": "Аркебуза", "Musket": "Мушкет",
+    "12 Apostles": "12 апостолов", "Fire Bomb": "Граната", "Gunpowder": "Порох", "Gunpowder, Barrel": "Бочка с порохом", "Powder Horn": "Рог с порохом",
+    "Scattershot": "Картечь", "Shot Bag": "Сумка с пулями", "Match Cord": "Фитильный шнур",
+    "Movement per turn": "Движение за ход", "Movement per round": "Движение за раунд",
+    "Comes with a quiver if you have none": "С колчаном, если его ещё нет",
+    "Half range; 1d6 in a 45° area, Breath save for half": "Полдальности; 1d6 в области 45°, спасбросок от детонации — половина",
+    "1d4, ignites flammables; a misfire blows up": "1d4, поджигает; осечка — взрыв",
+    "Per meter; burns 10 cm a turn": "За метр; горит 10 см за ход",
+    "Character": "Персонаж", "Inventory": "Снаряжение", "Retainers": "Наёмники", "Hired retainers will be tracked here.": "Здесь будут нанятые наёмники.",
+    "Matchlock": "Фитильный замок", "Wheellock": "Колесцовый замок", "Flintlock": "Кремниевый замок", "Rifled": "Нарезной",
+    "Generic weapons": "Обычное оружие", "Special weapons": "Особое оружие", "Weapons": "Оружие", "Ammunition": "Боеприпасы", "Ammo holders": "Для боеприпасов",
+    "Daggers, clubs; −2 to hit AC 15+": "Кинжалы, дубинки; −2 к удару по КБ 15+", "Short swords, hand axes": "Короткие мечи, ручные топоры",
+    "Swords, battle axes, maces": "Мечи, боевые топоры, булавы", "Two-handed: greatswords, mauls": "Двуручное: двуручные мечи, молоты",
+    "Fist wrappings; −2 to hit AC 15+": "Кулачные обмотки; −2 к удару по КБ 15+", "Reaches 10'; useless against AC 14+": "Достаёт на 10'; бесполезен против КБ 14+",
+    "Two-handed": "Двуручное", "Needs surprise or a grapple; 1d6/round": "Нужна внезапность или захват; 1d6/раунд",
+    "Second rank, receives charges, thrown": "Второй ряд, встречает разбег, метается",
+    "Two-handed, second rank; +1 vs AC 16+": "Двуручное, второй ряд; +1 против КБ 16+",
+    "−2 to hit AC 15+": "−2 к удару по КБ 15+", "One-handed in a mounted charge": "Одной рукой в конной атаке",
+    "Two-handed; holds on a failed Paralysis save": "Двуручное; держит цель при проваленном спасброске от паралича",
+    "Every other round; ignores 2 AC": "Раз в два раунда; игнорирует 2 КБ", "Every third round; ignores 4 AC": "Раз в три раунда; игнорирует 4 КБ",
+    "Half range with stones": "Камнями — половина дальности",
+    "Holds 20 shafts; one item with them": "Вмещает 20 стрел; вместе с ними — один предмет",
+    "One hand; 1d4 in melee; a brace is one item": "Одной рукой; 1d4 в рукопашной; пара — один предмет",
+    "Two hands; 1d6 in melee": "Двумя руками; 1d6 в рукопашной", "Needs a rest (−2 without); 1d6 in melee": "Нужна подпорка (без неё −2); 1d6 в рукопашной",
+    "12 measured shots; each loads a round faster": "12 отмеренных зарядов; каждый ускоряет зарядку",
+    "One shot of powder": "Один выстрел пороха", "Bag of 100 round shot": "Сумка со 100 пулями", "Holds 50 shots of powder": "Вмещает 50 зарядов пороха",
+    "2500 shots of powder": "2500 выстрелов пороха", "Per meter of cord; cord burns 10 cm/turn": "За метр шнура, горит со скоростью 10 сантиметров/ход",
+    "1d4 damage, ignites flammables; misfire blows up": "1d4 урона, зажигательная, осечка приводит к взрыву",
+    "Ranges halved, no armor cancellation, 45° area effect doing 1d6 damage, save versus Breath Weapon for half damage": "Снижает дальность в 2 раза, не останавливается доспехом, все в области 45° получают 1d6 урона, или половину при удачном спасброске против оружия Детонации",
+    "Needs a lit match; misfires 2 in 10, more when damp or wet": "Нужен горящий фитиль; осечка 2 из 10, чаще в сырости и под дождём",
+    "No extra misfires when damp or wet; may break if used as a club": "Сырость не добавляет осечек; может сломаться при ударе",
+    "Misfires 1 in 10; half the reload time": "Осечка 1 из 10; перезарядка вдвое быстрее",
+    "No doubled range penalties; reloads 1.5 × slower": "Без удвоенных штрафов за дальность; перезарядка в 1,5 раза дольше"
   };
+  function ruN(n, f) { var a = n % 10, b = n % 100; return f[a === 1 && b !== 11 ? 0 : a >= 2 && a <= 4 && (b < 12 || b > 14) ? 1 : 2]; }
+  var RU_ITEM = ["предмет", "предмета", "предметов"];
   var RU_GEN = { "Cleric": "Клирика", "Magic-User": "Мага", "Elf": "Эльфа" };
   var RU_ACC = { "Charisma": "Харизму", "Constitution": "Телосложение", "Dexterity": "Ловкость", "Intelligence": "Интеллект", "Strength": "Силу", "Wisdom": "Мудрость" };
   var RU_ORD = { "1st": "1-й", "2nd": "2-й", "3rd": "3-й", "4th": "4-й", "5th": "5-й", "6th": "6-й", "7th": "7-й", "8th": "8-й", "9th": "9-й" };
@@ -1283,13 +1834,15 @@ html[lang="ru"] h1 { font-weight: 500; }
   Object.keys(GAME.abilities).forEach(function (a) { RU[GAME.abilities[a].en] = GAME.abilities[a].ru; });
   Object.keys(GAME.alignments).forEach(function (a) { RU[a] = GAME.alignments[a]; });
   GAME.saves.concat(GAME.skills).forEach(function (t) { RU[t.en] = t.ru; });
+  GAME.equipment.forEach(function (e) { if (e.ru) RU[e.en] = e.ru; });
+  GAME.encumbrance.levels.forEach(function (l) { if (l.ru) RU[l.en] = l.ru; });
   GAME.spellLists.magicUser.concat(GAME.spellLists.cleric).forEach(function (l) { l.forEach(function (sp) { if (sp.ru) RU[sp.en] = sp.ru; }); });
 
   /* token pass for short stat strings like "+2 hit, −4 AC" or "1d6 + 2 × CON mod" */
   var RU_TOKENS = [
     [/\b(CHA|CON|DEX|INT|STR|WIS) mod\b/g, function (m, k) { return "мод. " + RU[k]; }],
     [/\b(CHA|CON|DEX|INT|STR|WIS)\b/g, function (m, k) { return RU[k]; }],
-    [/\bin 6\b/g, "из 6"], [/\bAC\b/g, "КБ"], [/\bHP\b/g, "ПЗ"], [/\bXP\b/g, "опыта"], [/\bhit\b/g, "к удару"], [/\bdamage\b/g, "урона"], [/\bmod\b/g, "мод."]
+    [/\bin 6\b/g, "из 6"], [/\bsp\b/g, "см"], [/\bcp\b/g, "мм"], [/\bAC\b/g, "КБ"], [/\bHP\b/g, "ПЗ"], [/\bXP\b/g, "опыта"], [/\bhit\b/g, "к удару"], [/\bdamage\b/g, "урона"], [/\bmod\b/g, "мод."]
   ];
   var RU_RULES = [
     [/^Level (\d+) (Cleric|Fighter|Magic-User|Specialist|Dwarf|Elf|Halfling)$/, function (m, l, k) { return RU[k] + " " + l + "-го уровня"; }],
@@ -1310,7 +1863,21 @@ html[lang="ru"] h1 { font-weight: 500; }
     [/^Custom skill (\d) name$/, "Название своего навыка $1"],
     [/^Added (\d+)\.$/, "Добавлено: $1."],
     [/^Hit points: rolled at the table$/, "Пункты здоровья: брошены за столом"],
-    [/^(Hit points|Spellbook): ?$/, function (m, k) { return RU[k] + ": "; }]
+    [/^(Hit points|Spellbook|Starting money): ?$/, function (m, k) { return RU[k] + ": "; }],
+    [/^(\d+) items?$/, function (m, n) { return n + " " + ruN(+n, RU_ITEM); }],
+    [/^\+(\d+) points?$/, function (m, n) { return "+" + n + " " + ruN(+n, ["очко", "очка", "очков"]); }],
+    [/^(\d+) more to (.+)$/, function (m, n, l) { return "ещё " + n + " " + ruN(+n, RU_ITEM) + " до: " + (RU[l] || l).toLowerCase(); }],
+    [/^(\d+) oversized$/, function (m, n) { return n + " " + ruN(+n, ["негабаритный", "негабаритных", "негабаритных"]); }],
+    [/^Oversized ×(\d+)$/, "Негабаритный ×$1"],
+    [/^(\d+) in coins$/, "$1 в монетах"],
+    [/^Explore (\d+')$/, "Исследование $1"], [/^Combat (\d+')$/, "Бой $1"],
+    [/^(\d+)' radius; (\d+) turns( per flask of oil)?$/, function (m, r, t, f) { return "Радиус " + r + "'; " + t + " " + ruN(+t, ["ход", "хода", "ходов"]) + (f ? " на фляжку масла" : ""); }],
+    [/^Keeps a lantern lit for (\d+) turns$/, function (m, t) { return "Фонарь горит " + t + " " + ruN(+t, ["ход", "хода", "ходов"]); }],
+    [/^(.+) \((Matchlock|Wheellock|Flintlock)(, rifled)?\)$/, function (m, n, l, r) { return (trOne(n) || n) + " (" + RU[l].toLowerCase() + (r ? ", нарезной" : "") + ")"; }],
+    [/^\+(\d) AC, \+(\d) vs missiles$/, "+$1 КБ, +$2 против снарядов"],
+    [/^\+(\d+) vs missiles$/, "+$1 против снарядов"],
+    [/^(Buy|Remove) (.+)$/, function (m, a, n) { return (a === "Buy" ? "Купить: " : "Убрать: ") + (trOne(n) || n); }],
+    [/^Encumbrance points: (.+)$/, function (m, l) { return "Очки нагрузки: " + l.replace("Armor", "доспех").replace("Items", "предметы").replace("Oversized", "негабарит"); }]
   ];
 
   var LANG = "en";
@@ -1490,11 +2057,13 @@ html[lang="ru"] h1 { font-weight: 500; }
     el("step3").hidden = v !== "s3";
     el("step4").hidden = v !== "s4";
     el("step5").hidden = v !== "s5";
+    el("step6").hidden = v !== "s6";
     el("banner").hidden = !(v === "s2" || v === "s3" || v === "s4");
     if (v === "recap") renderRecap();
     if (v === "s2") { renderBanner(); renderClass(); }
     if (v === "s3") { renderBanner(); renderLevelAlign(); }
     if (v === "s4") { renderBanner(); renderDetails(); }
+    if (v === "s6") renderGear();
     if (v === "s5") renderSheet();
     if (v === "home") renderHome();
     renderRail();
