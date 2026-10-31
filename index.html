@@ -504,8 +504,6 @@ html[lang="ru"] h1 { font-weight: 500; }
 .it .mv { background: none; border: 0; padding: 4px 0; color: var(--muted); font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; text-decoration: underline; cursor: pointer; }
 .it .mv:hover { color: var(--fg); }
 .it .mv:disabled { opacity: .4; cursor: default; }
-.it .acts { display: flex; gap: 12px; }
-.it .mv.use { color: var(--fg); }
 .ihead { padding: 14px 0 4px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--fg); }
 .ihead:first-child { padding-top: 0; }
 #body8 { display: flex; flex-direction: column; gap: 22px; }
@@ -541,6 +539,17 @@ html[lang="ru"] h1 { font-weight: 500; }
 .encline { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
 .encline .eb-lvl { text-align: left; font-size: 20px; }
 .kit { display: flex; flex-direction: column; }
+.sups { display: flex; flex-direction: column; margin-bottom: 8px; }
+.sups:last-child { margin-bottom: 0; }
+.sup { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 4px 0; }
+.sup-l { display: flex; flex-direction: column; min-width: 0; }
+.sup-n { font-size: 16px; }
+.sup-n i { font-style: normal; font-family: var(--font-mono); font-size: 11px; color: var(--accent); margin-left: 6px; }
+.sup-c { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
+.sup .btn { min-width: 64px; }
+.sup.is-on .sup-n { font-weight: 600; }
+.sup-c .on { color: var(--good); font-weight: 600; }
+.sup-c .warn { color: var(--accent); }
 .kitrow { display: grid; grid-template-columns: 9.5em minmax(0, 1fr); gap: 6px 14px; padding: 8px 0; border-bottom: 1px solid var(--line); align-items: start; }
 .sp.ov { border-color: var(--accent); }
 .it-d { font-family: "EB Garamond", Georgia, serif; font-size: 15px; line-height: 1.3; color: var(--muted); }
@@ -1343,9 +1352,28 @@ html[lang="ru"] h1 { font-weight: 500; }
   function carried(id) { var x = state.gear[id]; return x && !x.away ? x.q : 0; }
   function itemName(it) { return it.en; }
 
-  /* the best body armor carried is the one worn */
+  /* equipped gear lives in state.equip: weapon and armor are ids, shield a flag. Armor left unset means the best carried
+     armor is worn (as before equipping existed); null means none */
+  function eq() { return state.equip = state.equip || {}; }
+  function isWeapon(it) { return !!(it.weapon || it.id === "dart"); }
+  function isArmor(it) { return typeof it.ac === "number" && it.id.indexOf("barding") !== 0; }
+  /* two-handed: great weapons, staff, polearm, mancatcher, lance unless charging mounted (p. 31), arquebus and musket (p. 161);
+     bows and crossbows need both hands to shoot; Halflings wield medium weapons two-handed */
+  var TWO_HANDED = ["weapon-great", "staff", "polearm", "mancatcher", "lance", "bow-short", "bow-long", "crossbow-light", "crossbow-heavy", "fa-arquebus", "fa-musket"];
+  function twoHanded(id) { var b = ITEMS[id].base || id; return TWO_HANDED.indexOf(b) > -1 || (state.klass === "Halfling" && b === "weapon-medium"); }
+  function cantWield(id) { return state.klass === "Halfling" && id === "weapon-great"; }
+  function weaponOn() { var w = eq().weapon; return w && ITEMS[w] && carried(w) ? w : null; }
+  function shieldOn() { var w = weaponOn(); return !!carried("shield") && eq().shield !== false && !(w && twoHanded(w)); }
+  function equip(id) {
+    var e = eq(), it = ITEMS[id];
+    if (id === "shield") e.shield = !shieldOn();
+    else if (isArmor(it)) e.armor = bodyArmor() === id ? null : id;
+    else if (isWeapon(it)) { e.weapon = weaponOn() === id ? null : id; if (e.weapon && twoHanded(id)) e.shield = false; }
+  }
   function bodyArmor() {
-    var best = null;
+    var a = eq().armor, best = null;
+    if (a === null) return null;
+    if (a && ITEMS[a] && carried(a)) return a;
     Object.keys(state.gear).forEach(function (id) {
       var it = ITEMS[id];
       if (carried(id) && typeof it.ac === "number" && id.indexOf("barding") !== 0 && (!best || it.ac > ITEMS[best].ac)) best = id;
@@ -1354,7 +1382,7 @@ html[lang="ru"] h1 { font-weight: 500; }
   }
   function acInfo() {
     var body = bodyArmor(), ac = body ? ITEMS[body].ac : GAME.ac.base;
-    var sh = carried("shield") ? GAME.ac.shield : null;
+    var sh = shieldOn() ? GAME.ac.shield : null;
     return { body: body, ac: ac + (sh ? sh.melee : 0), missile: ac + (sh ? sh.missile : 0) };
   }
 
@@ -1527,7 +1555,6 @@ html[lang="ru"] h1 { font-weight: 500; }
     x.used = (x.used || 0) + 1;
     if (x.used >= it.burn) { x.used = 0; if (!--x.q) delete state.gear[src]; }
   }
-  function isRation(id) { return /^rations-/.test(id); }
   function packRow(id, E) {
     var it = ITEMS[id], x = state.gear[id], r = E.rows[id] || {}, m = [];
     if (x.away) { /* nothing counted */ }
@@ -1538,18 +1565,8 @@ html[lang="ru"] h1 { font-weight: 500; }
       if (r.held) m.push(HOLD_LBL[id] + (r.items ? " " + r.held : ""));
       if (r.items) m.push(itemsLbl(r.items) + (stackOf(it) > 1 ? " (" + stackOf(it) + " per item)" : ""));
     }
-    var use = "";
-    if (MODE === "play" && !x.away) {
-      if (isRation(id)) use = '<button type="button" class="mv use" data-eat="' + id + '">Eat</button>';
-      else if (it.burn) {
-        var left = lightLeft(id);
-        m.push(it.fuel && !carried(it.fuel) ? "No oil" : "Light: " + left + (left === 1 ? " turn" : " turns"));
-        use = '<button type="button" class="mv use" data-burn="' + id + '"' + (left > 0 ? "" : " disabled") + ">Burn</button>";
-      }
-    }
     m = m.join(" · ");
-    var mv = use + (it.free && it.worn || it.away ? "" : '<button type="button" class="mv" data-' + (x.away ? "carry" : "stow") + '="' + id + '">' + (x.away ? "Carry" : "Stow") + "</button>");
-    if (use) mv = '<span class="acts">' + mv + "</span>";
+    var mv = it.free && it.worn || it.away ? "" : '<button type="button" class="mv" data-' + (x.away ? "carry" : "stow") + '="' + id + '">' + (x.away ? "Carry" : "Stow") + "</button>";
     var desc = MODE === "play" && it.custom && it.desc ? '<span class="it-d"><span data-notr>' + esc(it.desc) + "</span></span>" : "";
     return '<div class="it pk' + (r.over ? " ov" : "") + '"><div class="it-l"><span class="it-n">' + (it.custom ? "<span data-notr>" + esc(it.en) + '</span><span class="tg c">Custom</span>' : esc(itemName(it))) + "</span>" +
       (m ? '<span class="it-m">' + m + "</span>" : "") + desc + "</div>" + mv + qtyCtl(it, canBuy(it, leftCp()), "pack") + "</div>";
@@ -1681,7 +1698,7 @@ html[lang="ru"] h1 { font-weight: 500; }
   function onKit() { return MODE === "create" && !state.kitDone; }
   function refreshGear() {
     var E = encInfo(), f = document.activeElement, key = null, v = gearView();
-    if (f && f.dataset) ["add", "sub", "drop", "eat", "burn", "found", "stow", "carry", "lock", "rifle", "kplus", "kminus"].some(function (k) { if (f.dataset[k]) { key = "[data-" + k + '="' + f.dataset[k] + '"]'; return true; } });
+    if (f && f.dataset) ["add", "sub", "drop", "found", "stow", "carry", "lock", "rifle", "kplus", "kminus"].some(function (k) { if (f.dataset[k]) { key = "[data-" + k + '="' + f.dataset[k] + '"]'; return true; } });
     if (onKit()) {
       el("gkit").innerHTML = kitHTML();
       el("kithead").innerHTML = kitHead();
@@ -1823,8 +1840,7 @@ html[lang="ru"] h1 { font-weight: 500; }
       if (paid) state.purse += cpOf(ITEMS[d.sub]) * n;
       g[d.sub].q -= n; if (!g[d.sub].q) delete g[d.sub];
     }
-    else if (d.drop || d.eat) { var did = d.drop || d.eat; if (!--g[did].q) { delete g[did]; delete state.homebrew[did]; } }
-    else if (d.burn) { burnTurn(d.burn); }
+    else if (d.drop) { if (!--g[d.drop].q) { delete g[d.drop]; delete state.homebrew[d.drop]; } }
     else if (d.found) { if (!g[d.found]) g[d.found] = { q: 0, away: !!ITEMS[d.found].away }; g[d.found].q++; }
     else if (d.lock) { gunOpt(d.lock.split(":")[0]).lock = d.lock.split(":")[1]; }
     else if (d.rifle) { var o = gunOpt(d.rifle); o.rifled = !o.rifled; }
@@ -2158,6 +2174,45 @@ html[lang="ru"] h1 { font-weight: 500; }
   var SHEET_TABS = [["info", "Character"], ["spells", "Spells"], ["gear", "Inventory"], ["retainers", "Retainers"]];
 
   /* equipment on the sheet: one row of chips per pack group, oversized items marked */
+  /* food is eaten (or drunk, or fed to an animal) one at a time; light burns a turn at a time */
+  function useOf(id) {
+    var it = ITEMS[id];
+    if (it.pack === "food") return /^bottle-/.test(id) ? "Drink" : /^feed-/.test(id) ? "Feed" : "Eat";
+    return it.burn ? "Burn" : null;
+  }
+  function supplyRow(id) {
+    var it = ITEMS[id], q = state.gear[id].q, act = useOf(id), cap, ok = true;
+    if (act === "Burn") {
+      var n = lightLeft(id), oil = it.fuel ? carried(it.fuel) : 0;
+      ok = n > 0;
+      cap = it.fuel && !oil ? '<span class="warn">No oil</span>' : "Light: " + n + (n === 1 ? " turn" : " turns");
+    } else cap = /^rations-/.test(id) ? q + (q === 1 ? " day" : " days") : "";
+    return '<div class="sup"><span class="sup-l"><span class="sup-n"><span>' + esc(itemName(it)) + "</span>" + (q > 1 ? "<i>×" + q + "</i>" : "") + "</span>" +
+      (cap ? '<span class="sup-c">' + cap + "</span>" : "") + "</span>" +
+      '<button class="btn ghost sm" type="button" data-use="' + id + '"' + (ok ? "" : " disabled") + ">" + act + "</button></div>";
+  }
+  function gearSlot(id) { var it = ITEMS[id]; return id === "shield" || isArmor(it) || isWeapon(it); }
+  function isOn(id) { return id === "shield" ? shieldOn() : isArmor(ITEMS[id]) ? bodyArmor() === id : weaponOn() === id; }
+  function equipRow(id) {
+    var it = ITEMS[id], q = state.gear[id].q, on = isOn(id), w = weaponOn(), why = "";
+    if (cantWield(id)) why = "Halflings can't use";
+    else if (id === "shield" && !on && w && twoHanded(w)) why = "Needs a free hand";
+    /* each part in its own element, so the translator sees whole phrases */
+    var parts = (it.id === "shield" ? [] : [statsOf(it)]).concat(it.id === "shield" ? ["+" + GAME.ac.shield.melee + " AC, +" + GAME.ac.shield.missile + " vs missiles"] : [])
+      .concat(isWeapon(it) && twoHanded(id) ? ["Two-handed"] : []).filter(Boolean).map(function (x) { return "<span>" + esc(x) + "</span>"; });
+    if (on) parts.unshift('<b class="on">' + (isArmor(it) ? "Worn" : "Equipped") + "</b>");
+    else if (why) parts.unshift('<span class="warn">' + why + "</span>");
+    var sub = parts.join(" · ");
+    return '<div class="sup' + (on ? " is-on" : "") + '"><span class="sup-l"><span class="sup-n"><span>' + esc(itemName(it)) + "</span>" + (q > 1 ? "<i>×" + q + "</i>" : "") + "</span>" +
+      (sub ? '<span class="sup-c">' + sub + "</span>" : "") + "</span>" +
+      '<button class="btn ' + (on ? "" : "ghost ") + 'sm" type="button" data-equip="' + id + '" aria-pressed="' + on + '"' + (why ? " disabled" : "") + ">" + (on ? "Unequip" : "Equip") + "</button></div>";
+  }
+  function useItem(id) {
+    var x = state.gear[id];
+    if (!x) return;
+    if (useOf(id) === "Burn") burnTurn(id);
+    else if (!--x.q) delete state.gear[id];
+  }
   function gearPanel() {
     var E = encInfo(), Lv = ENC.levels[E.lvl], left = leftCp(), rows = "";
     var ids = Object.keys(state.gear).filter(function (id) { return state.gear[id].q > 0 && ITEMS[id]; });
@@ -2168,7 +2223,12 @@ html[lang="ru"] h1 { font-weight: 500; }
     PACK_GROUPS.concat([["away", "Other possessions"]]).forEach(function (g) {
       var list = ids.filter(function (id) { return g[0] === "away" ? state.gear[id].away : ITEMS[id].pack === g[0] && !state.gear[id].away; });
       list.sort(function (a, b) { return (E.rows[b].over ? 1 : 0) - (E.rows[a].over ? 1 : 0); });
-      if (list.length) rows += '<div class="kitrow"><span class="bl">' + g[1] + '</span><div class="chips2">' + list.map(chip).join("") + "</div></div>";
+      var sup = g[0] === "away" ? [] : list.filter(function (id) { return useOf(id) || gearSlot(id); });
+      sup.sort(function (a, b) { return (isOn(b) ? 1 : 0) - (isOn(a) ? 1 : 0); });
+      var rest = list.filter(function (id) { return sup.indexOf(id) < 0; });
+      if (sup.length || rest.length) rows += '<div class="kitrow"><span class="bl">' + g[1] + "</span><div>" +
+        (sup.length ? '<div class="sups">' + sup.map(function (id) { return gearSlot(id) ? equipRow(id) : supplyRow(id); }).join("") + "</div>" : "") +
+        (rest.length ? '<div class="chips2">' + rest.map(chip).join("") + "</div>" : "") + "</div></div>";
     });
     return '<section class="panel"><div class="group-row"><div class="group">Inventory</div><button class="link" id="edit-gear" type="button">Edit</button></div>' +
       '<div class="encline"><span class="eb-lvl l' + E.lvl + '">' + Lv.en + '</span><span class="eb-mv">' + moveLbl(Lv) + "</span><span>" + itemsLbl(E.items) + "</span>" +
@@ -2189,6 +2249,22 @@ html[lang="ru"] h1 { font-weight: 500; }
     el("back-det").addEventListener("click", function () { state.detailsDone = false; state.view = "s4"; layout(true); });
     el("edit-gear").addEventListener("click", function () { state.view = "inv"; layout(true); });
     var b = el("body5");
+    b.querySelectorAll("[data-equip]").forEach(function (x) {
+      x.addEventListener("click", function () {
+        var id = x.dataset.equip;
+        equip(id); renderSheet();
+        var t = el("body5").querySelector('[data-equip="' + id + '"]');
+        if (t && !t.disabled) t.focus();
+      });
+    });
+    b.querySelectorAll("[data-use]").forEach(function (x) {
+      x.addEventListener("click", function () {
+        var id = x.dataset.use;
+        useItem(id); renderSheet();
+        var t = el("body5").querySelector('[data-use="' + id + '"]');
+        if (t && !t.disabled) t.focus();
+      });
+    });
     b.querySelectorAll("[data-stab]").forEach(function (x) {
       x.addEventListener("click", function () {
         state.sheet.tab = x.dataset.stab;
@@ -2330,7 +2406,8 @@ html[lang="ru"] h1 { font-weight: 500; }
     "Optional starting pack": "Необязательный стартовый набор", "Add to inventory": "Добавить в снаряжение", "Skip to shop": "Сразу в лавку",
     "A suggested shopping list for your class. Adjust it and add it to your inventory, or skip it. Either way, the shop comes next.":
       "Предлагаемый список покупок для вашего класса. Измените его и добавьте в снаряжение или пропустите. В любом случае дальше — лавка.",
-    "Eat": "Съесть", "Burn": "Жечь", "No oil": "Нет масла", "Costs more than your starting money.": "Стоит больше стартовых денег.", "No items match.": "Ничего не найдено.",
+    "Equip": "Взять", "Unequip": "Снять", "Equipped": "В руках", "Needs a free hand": "Нужна свободная рука",
+    "Eat": "Съесть", "Drink": "Выпить", "Feed": "Накормить", "Burn": "Жечь", "No oil": "Нет масла", "Costs more than your starting money.": "Стоит больше стартовых денег.", "No items match.": "Ничего не найдено.",
     "Firearms are an optional rule. Ask your Referee.": "Огнестрельное оружие — дополнительное правило. Спросите Рефери.",
     "Clerics need a holy symbol to cast spells.": "Клирикам для колдовства нужен святой символ.",
     "Specialists need Specialist's Tools to find traps and open locks.": "Специалистам нужны инструменты специалиста, чтобы искать ловушки и вскрывать замки.",
@@ -2418,6 +2495,7 @@ html[lang="ru"] h1 { font-weight: 500; }
     [/^Raised to the level 1 minimum of (\d+)\.$/, "Поднято до минимума 1 уровня: $1."],
     [/^HP (d\d+)$/, "ПЗ $1"],
     [/^Light: (\d+) turns?$/, "Свет: $1 ход."],
+    [/^(\d+) days?$/, "$1 дн."],
     [/^HP (d\d+), then (d\d+)$/, "ПЗ $1, затем $2"],
     [/^Take no other action this round for \+(\d) AC\.$/, "Никаких других действий в этом раунде: +$1 к КБ."],
     [/^Custom skill (\d) name$/, "Название своего навыка $1"],
