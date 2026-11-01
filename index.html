@@ -607,6 +607,11 @@ main.wide { max-width: 1120px; }
 .plv:not([open]) > summary::before { content: "▸"; }
 .plv > summary:hover { color: var(--fg); }
 .plv-n { margin-left: auto; color: var(--accent); letter-spacing: .06em; }
+.plv-x { margin-left: auto; color: var(--muted); letter-spacing: .04em; }
+.plv-n + .plv-x { margin-left: 0; }
+.pc .bk { width: 30px; height: 30px; background: transparent; border: 1px solid var(--line); cursor: pointer; font-family: var(--font-mono); font-size: 16px; color: var(--fg); }
+.pc .bk:hover { border-color: var(--fg); }
+.pc .bk.on { border-color: var(--good); color: var(--good); }
 .plv-up { display: inline-flex; gap: 4px; padding: 0 6px; border: 1px solid var(--coin); color: var(--coin); letter-spacing: .04em; white-space: nowrap; }
 .plv-up i { font-style: normal; }
 .plv > summary { flex-wrap: wrap; }
@@ -888,7 +893,7 @@ main.wide { max-width: 1120px; }
   ];
   var FORCED = {};
   Object.keys(GAME.classes).forEach(function (k) { if (GAME.classes[k].alignment) FORCED[k] = GAME.classes[k].alignment; });
-  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s6: 4, s8: 5, s5: 5, inv: 5, prep: 5 };
+  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s6: 4, s8: 5, s5: 5, inv: 5, prep: 5, book: 5 };
   function renderRail() {
     var cur = VIEW_IDX[state.view], done = [state.confirmed, state.classDone, state.alignDone, state.detailsDone, state.gearDone, state.nameDone];
     el("rail").innerHTML = STEPS.map(function (s, i) {
@@ -1181,7 +1186,7 @@ main.wide { max-width: 1120px; }
   function ensureDetails() {
     ensureGear();
     if (state.detSig === sig()) return;
-    state.detSig = sig(); state.hp = null; state.spells = null; state.detailsDone = false; state.conInput = null;
+    state.detSig = sig(); state.hp = null; state.spells = null; state.detailsDone = false; state.conInput = null; delete state.sheet.book;
     state.pts = {}; state.custom = [{ name: "", pts: 0 }, { name: "", pts: 0 }];
   }
 
@@ -1318,6 +1323,7 @@ main.wide { max-width: 1120px; }
       out[lv] = arr;
     });
     state.spells = out;
+    delete state.sheet.book;
   }
   function flatSpells() {
     var r = [];
@@ -1956,20 +1962,30 @@ main.wide { max-width: 1120px; }
   var SPELLS = GAME.spells;
   function spName(p) { return p.rev ? SPELLS[p.id].rev.en : SPELLS[p.id].en; }
   function isCleric() { return state.klass === "Cleric"; }
-  /* the spellbook: Read Magic plus the spells rolled for it, as ids by spell level */
+  /* the spellbook: Read Magic plus the spells rolled at creation, until the player edits it (p. 84: spells are
+     copied from scrolls or other books, or researched, at any level); then it is state.sheet.book, a list of {id, rev} */
   var MU_ID = {};
   GAME.spellLists.magicUser.forEach(function (l) { l.forEach(function (sp) { MU_ID[sp.en] = sp.id; }); });
-  function bookIds() {
-    var by = { 1: ["read-magic"] };
+  function bookList() {
+    if (state.sheet.book) return state.sheet.book;
+    var out = [{ id: "read-magic", rev: false }];
     Object.keys(state.spells || {}).forEach(function (lv) {
-      (state.spells[lv] || []).forEach(function (n) { if (MU_ID[n]) (by[lv] = by[lv] || []).push(MU_ID[n]); });
+      (state.spells[lv] || []).forEach(function (n) { if (MU_ID[n]) out.push({ id: MU_ID[n], rev: false }); });
     });
+    return out;
+  }
+  function inBook(p) { return bookList().some(function (q) { return sameSp(p, q); }); }
+  function bookIds() {
+    var by = {};
+    bookList().slice().sort(spOrder).forEach(function (e) { var lv = SPELLS[e.id].lv; (by[lv] = by[lv] || []).push({ id: e.id, rev: !!e.rev }); });
     return by;
   }
-  /* the spells offered when preparing, per spell level */
+  /* the spells offered when preparing, per spell level: {id, rev, pair} with pair for a Cleric's reversible spell */
   function prepLists(levels) {
     var book = isCleric() ? null : bookIds(), out = [];
-    for (var lv = 1; lv <= levels; lv++) out.push(book ? book[lv] || [] : GAME.spellLists.cleric[lv - 1].map(function (sp) { return sp.id; }));
+    for (var lv = 1; lv <= levels; lv++) {
+      out.push(book ? book[lv] || [] : GAME.spellLists.cleric[lv - 1].map(function (sp) { return { id: sp.id, rev: false, pair: !!SPELLS[sp.id].rev }; }));
+    }
     return out;
   }
   function sameSp(a, b) { return a.id === b.id && !!a.rev === !!b.rev; }
@@ -2109,7 +2125,7 @@ main.wide { max-width: 1120px; }
     }).join("") + "</div>";
   }
   function renderPrep() {
-    var slots = slotsFor() || [], lists = prepLists(slots.length), pairs = isCleric();
+    var slots = slotsFor() || [], lists = prepLists(slots.length);
     var kept = state.prepDraft.some(function (p) { return p.lock; });
     var draft = state.prepDraft.slice().sort(spOrder), at = slotPlan(draft, slots, true);
     /* lower slots are always filled first, so a spell only moves up when its own level is full: say where it went */
@@ -2123,9 +2139,8 @@ main.wide { max-width: 1120px; }
       lists.map(function (l, i) {
         var lv = i + 1, n = state.prepDraft.filter(function (p) { return SPELLS[p.id].lv === lv; }).length;
         return '<details class="plv" data-plv="' + lv + '"' + (state.prepFold && state.prepFold[lv] ? "" : " open") + '><summary class="group">' + ordinal(lv) + " level" +
-          (n ? '<span class="plv-n">' + n + " prepared</span>" + upNote(lv) : "") + "</summary>" + (l.length ? l.map(function (id) {
-          var two = pairs && SPELLS[id].rev;
-          return '<div class="prow' + (two ? " pair" : "") + '" data-prow="' + id + '">' + prepCell(id, false, slots) + (two ? prepCell(id, true, slots) : "") + "</div>";
+          (n ? '<span class="plv-n">' + n + " prepared</span>" + upNote(lv) : "") + "</summary>" + (l.length ? l.map(function (e) {
+          return '<div class="prow' + (e.pair ? " pair" : "") + '" data-prow="' + e.id + '">' + prepCell(e.id, e.rev, slots) + (e.pair ? prepCell(e.id, true, slots) : "") + "</div>";
         }).join("") : '<p class="sub none">No spells of this level in the spellbook.</p>') + "</details>";
       }).join("") +
       '<div class="actions"><button class="btn" id="prep-ok" type="button">Prepare</button><button class="btn ghost" id="prep-clear" type="button"' + (state.prepDraft.some(function (p) { return !p.lock; }) ? "" : " disabled") + ">Clear</button></div>" +
@@ -2135,6 +2150,36 @@ main.wide { max-width: 1120px; }
     el("prep-ok").addEventListener("click", savePrep);
     el("prep-clear").addEventListener("click", function () { state.prepDraft = state.prepDraft.filter(function (p) { return p.lock; }); renderPrep(); persist(); });
   }
+  /* editing the spellbook: every Magic-User spell, both versions of reversible ones; changes apply at once.
+     Spells above the levels the character can cast may be in the book, but can't be prepared yet */
+  function bookCell(id, rev) {
+    var p = { id: id, rev: rev }, has = inBook(p), sel = !!state.prepSel && sameSp(state.prepSel, p);
+    var nm = esc(spName(p)), key = ' data-pid="' + id + '"' + (rev ? ' data-rev="1"' : "");
+    return '<div class="pc' + (sel ? " sel" : "") + (has ? " own" : "") + '"><button type="button" class="pc-n" data-psel' + key + ' aria-pressed="' + sel + '">' +
+      (rev ? '<span class="pc-r">Reversed</span>' : "") + nm + "</button>" +
+      '<button type="button" class="bk' + (has ? " on" : "") + '" data-bk' + key + ' aria-pressed="' + has + '" aria-label="' + (has ? "Remove from spellbook: " : "Add to spellbook: ") + nm + '">' + (has ? "✓" : "+") + "</button></div>";
+  }
+  function renderBook() {
+    var castable = (slotsFor() || []).length, by = bookIds();
+    var lists = GAME.spellLists.magicUser.map(function (l, i) { return (i ? [] : ["read-magic"]).concat(l.map(function (sp) { return sp.id; })); });
+    var h = '<div class="prep"><div class="plist">' + lists.map(function (l, i) {
+      var lv = i + 1, n = (by[lv] || []).length, fold = state.bookFold && lv in state.bookFold ? state.bookFold[lv] : lv > castable;
+      return '<details class="plv" data-plv="' + lv + '"' + (fold ? "" : " open") + '><summary class="group">' + ordinal(lv) + " level" +
+        (n ? '<span class="plv-n">' + n + " in spellbook</span>" : "") + (lv > castable ? '<span class="plv-x">Can’t cast yet</span>' : "") + "</summary>" +
+        l.map(function (id) {
+          var two = !!SPELLS[id].rev;
+          return '<div class="prow' + (two ? " pair" : "") + '" data-prow="' + id + '">' + bookCell(id, false) + (two ? bookCell(id, true) : "") + "</div>";
+        }).join("") + "</details>";
+    }).join("") +
+      '<div class="actions"><button class="btn" id="book-done" type="button">Done</button></div>' +
+      '</div><aside class="paside" id="paside"><div class="pdesc" id="pdesc">' + prepDetail() + "</div></aside></div>";
+    el("body9").innerHTML = h;
+    placeDetail();
+    el("book-done").addEventListener("click", closePrep);
+  }
+  function renderSpellScreen() { if (state.view === "book") renderBook(); else renderPrep(); }
+  function openBook() { state.prepSel = null; state.view = "book"; layout(true); }
+
   /* on narrow screens the description opens under the chosen spell's row instead of beside the list */
   var NARROW = window.matchMedia("(max-width: 899px)");
   function placeDetail() {
@@ -2160,19 +2205,24 @@ main.wide { max-width: 1120px; }
       if (d.pd === "1") state.prepDraft.push(p);
       else { var i = state.prepDraft.findIndex(function (q) { return sameSp(q, p) && !q.lock; }); if (i > -1) state.prepDraft.splice(i, 1); }
     }
+    else if (d.bk !== undefined) {
+      state.prepSel = p;
+      var book = state.sheet.book = bookList().slice();
+      if (inBook(p)) book.splice(book.findIndex(function (q) { return sameSp(q, p); }), 1); else book.push(p);
+    }
     else return;
-    if (!focus) focus = (d.psel !== undefined ? "[data-psel]" : '[data-pd="' + d.pd + '"]') + '[data-pid="' + d.pid + '"]' + (d.rev ? "[data-rev]" : ":not([data-rev])");
-    renderPrep(); persist();
+    if (!focus) focus = (d.psel !== undefined ? "[data-psel]" : d.bk !== undefined ? "[data-bk]" : '[data-pd="' + d.pd + '"]') + '[data-pid="' + d.pid + '"]' + (d.rev ? "[data-rev]" : ":not([data-rev])");
+    renderSpellScreen(); persist();
     /* removing the last copy takes the − away, so focus falls back to the + */
     var t = el("body9").querySelector(focus) || el("body9").querySelector(focus.replace('[data-pd="-1"]', '[data-pd="1"]'));
     if (t && !t.disabled) t.focus({ preventScroll: true });
   });
   /* toggle doesn't bubble, so listen while capturing */
   el("body9").addEventListener("toggle", function (ev) {
-    var lv = ev.target.dataset && ev.target.dataset.plv;
+    var lv = ev.target.dataset && ev.target.dataset.plv, k = state.view === "book" ? "bookFold" : "prepFold";
     if (!lv) return;
-    state.prepFold = state.prepFold || {};
-    if (ev.target.open) delete state.prepFold[lv]; else state.prepFold[lv] = true;
+    state[k] = state[k] || {};
+    state[k][lv] = !ev.target.open;
     persist();
   }, true);
   /* Magic-Users keep their uncast spells: those come in locked, and only the slots of cast spells are free again */
@@ -2579,9 +2629,11 @@ main.wide { max-width: 1120px; }
   function bookRef() {
     var S = state.sheet, by = bookIds();
     S.spOpen = S.spOpen || {}; S.spFull = S.spFull || {};
-    return '<section class="panel"><div class="group">Spellbook</div><div class="sref">' + Object.keys(by).sort(function (a, b) { return a - b; }).map(function (lv) {
-      return by[lv].map(function (id) { return refRow({ id: id }, "b:" + id, ordinal(+lv) + " level"); }).join("");
-    }).join("") + "</div></section>";
+    var lvs = Object.keys(by).sort(function (a, b) { return a - b; });
+    return '<section class="panel"><div class="group-row"><div class="group">Spellbook</div><button class="link" id="book-edit" type="button">Edit</button></div>' +
+      (lvs.length ? '<div class="sref">' + lvs.map(function (lv) {
+        return by[lv].map(function (e) { return refRow(e, "b:" + spKey(e), ordinal(+lv) + " level"); }).join("");
+      }).join("") + "</div>" : '<p class="sub none">The spellbook is empty.</p>') + "</section>";
   }
   var SHEET_TABS = [["info", "Character"], ["spells", "Spells"], ["gear", "Inventory"], ["retainers", "Retainers"]];
 
@@ -2703,6 +2755,7 @@ main.wide { max-width: 1120px; }
       });
     });
     if (el("prep-open")) el("prep-open").addEventListener("click", openPrep);
+    if (el("book-edit")) el("book-edit").addEventListener("click", openBook);
     b.querySelectorAll("[data-sref]").forEach(function (x) {
       x.addEventListener("toggle", function () {
         if (x.open) state.sheet.spOpen[x.dataset.sref] = true; else delete state.sheet.spOpen[x.dataset.sref];
@@ -2851,7 +2904,7 @@ main.wide { max-width: 1120px; }
     "Show full text": "Показать полный текст", "Hide full text": "Скрыть полный текст", "Select a spell to read about it.": "Выберите заклинание, чтобы прочитать о нём.",
     "No spells prepared yet.": "Заклинания пока не подготовлены.", "Prepared spells": "Подготовленные заклинания",
     "Spells still prepared from before stay until cast.": "Заклинания, подготовленные раньше, остаются, пока их не сотворят.",
-    "No spells of this level in the spellbook.": "В книге нет заклинаний этого уровня.", "The book gives no description.": "В книге нет описания.",
+    "No spells of this level in the spellbook.": "В книге нет заклинаний этого уровня.", "The spellbook is empty.": "Книга заклинаний пуста.", "Can’t cast yet": "Пока не колдует", "The book gives no description.": "В книге нет описания.",
     "Too encumbered to cast: Magic-Users can't cast spells above Lightly Encumbered.": "Слишком нагружен, чтобы колдовать: Маг не колдует, если нагружен сильнее, чем слегка.",
     "Too encumbered to cast: Elves can't cast spells above Heavily Encumbered.": "Слишком нагружен, чтобы колдовать: Эльф не колдует, если нагружен сильнее, чем сильно.",
     "Undead HD": "КЗ нежити", "T: turned": "T: изгнана", "D: destroyed or commanded": "D: уничтожена или подчинена", "*: twice as many": "*: вдвое больше", "Empty slot": "Пустая ячейка",
@@ -2959,6 +3012,8 @@ main.wide { max-width: 1120px; }
     [/^(\d+) of (\d+) left$/, "осталось $1 из $2"],
     [/^At level (\d+)$/, "На $1 уровне"],
     [/^(\d+) in (a )?higher-level slots?$/, function (m, n) { return n + (n === "1" ? " в ячейке" : " в ячейках") + " выше уровнем"; }],
+    [/^(\d+) in spellbook$/, "в книге: $1"],
+    [/^(Add to|Remove from) spellbook: (.+)$/, function (m, a, n) { return (a === "Add to" ? "Добавить в книгу: " : "Убрать из книги: ") + (trOne(n) || n); }],
     [/^Prepare (.+)$/, function (m, n) { return "Подготовить: " + (trOne(n) || n); }],
     [/^(Buy|Remove|Remove one|Add) (.+)$/, function (m, a, n) { return { "Buy": "Купить: ", "Remove": "Убрать: ", "Remove one": "Убрать одно: ", "Add": "Добавить: " }[a] + (trOne(n) || n); }],
     [/^(\d+) items? \((\d+) per item\)$/, function (m, n, k) { return n + " " + ruN(+n, RU_ITEM) + " (" + k + " на предмет)"; }],
@@ -3133,8 +3188,8 @@ main.wide { max-width: 1120px; }
 
   /* which card is visible */
   function layout(scroll) {
-    var v = state.view, sheetish = v === "s5" || v === "inv" || v === "prep";
-    document.querySelector("main").classList.toggle("wide", v === "prep");
+    var v = state.view, spellish = v === "prep" || v === "book", sheetish = v === "s5" || v === "inv" || spellish;
+    document.querySelector("main").classList.toggle("wide", spellish);
     MODE = v === "inv" ? "play" : "create";
     if (v === "inv") el("body6").innerHTML = ""; else el("body7").innerHTML = "";
     el("home").hidden = v !== "home"; el("hometip").hidden = v !== "home"; el("sheettip").hidden = v !== "s5";
@@ -3150,7 +3205,8 @@ main.wide { max-width: 1120px; }
     el("step6").hidden = v !== "s6";
     el("step7").hidden = v !== "inv";
     el("step8").hidden = v !== "s8";
-    el("step9").hidden = v !== "prep";
+    el("step9").hidden = !spellish;
+    if (spellish) el("s9t").textContent = v === "book" ? "Spellbook" : "Prepare spells";
     el("banner").hidden = !(v === "s2" || v === "s3" || v === "s4");
     if (v === "recap") renderRecap();
     if (v === "s2") { renderBanner(); renderClass(); }
@@ -3160,7 +3216,7 @@ main.wide { max-width: 1120px; }
     if (v === "inv") renderInventory();
     if (v === "s8") renderName();
     if (v === "s5") renderSheet();
-    if (v === "prep") renderPrep();
+    if (spellish) renderSpellScreen();
     if (v === "home") renderHome();
     renderRail();
     if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
