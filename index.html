@@ -607,6 +607,9 @@ main.wide { max-width: 1120px; }
 .plv:not([open]) > summary::before { content: "▸"; }
 .plv > summary:hover { color: var(--fg); }
 .plv-n { margin-left: auto; color: var(--accent); letter-spacing: .06em; }
+.plv-up { display: inline-flex; gap: 4px; padding: 0 6px; border: 1px solid var(--coin); color: var(--coin); letter-spacing: .04em; white-space: nowrap; }
+.plv-up i { font-style: normal; }
+.plv > summary { flex-wrap: wrap; }
 .prow { display: grid; grid-template-columns: minmax(0, 1fr); border-bottom: 1px solid var(--line); }
 .prow.pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .prow.pair .pc + .pc { border-left: 1px dashed var(--line); padding-left: 12px; }
@@ -2033,7 +2036,12 @@ main.wide { max-width: 1120px; }
     if (n < 0) n = row.length;
     return '<div class="pd-turn"><span class="fl">At level ' + lv + "</span><table><tr><th>Undead HD</th>" + row.slice(0, n).map(function (x, i) { return "<th>" + (i + 1) + "</th>"; }).join("") +
       "</tr><tr><th>Roll</th>" + row.slice(0, n).map(function (x) { return "<td>" + esc(x) + "</td>"; }).join("") + "</tr></table>" +
-      '<span class="fl">T: turned · D: destroyed or commanded · *: twice as many</span></div>';
+      turnKey(row.slice(0, n)) + "</div>";
+  }
+  function turnKey(cells) {
+    var has = function (re) { return cells.some(function (c) { return re.test(c); }); };
+    var keys = [[/^T/, "T: turned"], [/^D/, "D: destroyed or commanded"], [/\*/, "*: twice as many"]].filter(function (k) { return has(k[0]); });
+    return keys.length ? '<span class="fl">' + keys.map(function (k) { return "<span>" + k[1] + "</span>"; }).join(" · ") + "</span>" : "";
   }
   function spellBody(p, full, toggle) {
     var s = SPELLS[p.id], L = function (o) { return o && (LANG === "ru" && o.ru ? o.ru : o.en); };
@@ -2072,13 +2080,19 @@ main.wide { max-width: 1120px; }
   }
   function renderPrep() {
     var slots = slotsFor() || [], lists = GAME.spellLists.cleric.slice(0, slots.length);
+    var draft = state.prepDraft.slice().sort(spOrder), at = slotPlan(draft, slots, true);
+    /* lower slots are always filled first, so a spell only moves up when its own level is full: say where it went */
+    function upNote(lv) {
+      var up = draft.filter(function (p, j) { return SPELLS[p.id].lv === lv && at[j] > lv; }).length;
+      return up ? '<span class="plv-up"><i aria-hidden="true">↑</i><span>' + up + (up > 1 ? " in higher-level slots" : " in a higher-level slot") + "</span></span>" : "";
+    }
     var h = '<div class="prep"><div class="plist">' +
       '<section class="panel"><div class="group">Today’s spells</div>' + prepToday(slots) +
-      '<p class="colhint">After 6 hours of rest, pray for as many hours as the highest spell level prepared. Once a day. A spell can also take a higher-level slot.</p></section>' +
+      "</section>" +
       lists.map(function (l, i) {
         var lv = i + 1, n = state.prepDraft.filter(function (p) { return SPELLS[p.id].lv === lv; }).length;
         return '<details class="plv" data-plv="' + lv + '"' + (state.prepFold && state.prepFold[lv] ? "" : " open") + '><summary class="group">' + ordinal(lv) + " level" +
-          (n ? '<span class="plv-n">' + n + " prepared</span>" : "") + "</summary>" + l.map(function (sp) {
+          (n ? '<span class="plv-n">' + n + " prepared</span>" + upNote(lv) : "") + "</summary>" + l.map(function (sp) {
           return '<div class="prow' + (SPELLS[sp.id].rev ? " pair" : "") + '" data-prow="' + sp.id + '">' + prepCell(sp.id, false, slots) + (SPELLS[sp.id].rev ? prepCell(sp.id, true, slots) : "") + "</div>";
         }).join("") + "</details>";
       }).join("") +
@@ -2494,7 +2508,7 @@ main.wide { max-width: 1120px; }
         if (book) { if (lv === 1) known.push("Read Magic"); if (state.spells && state.spells[lv]) known = known.concat(state.spells[lv]); }
         return '<div class="splrow"><span class="bl">' + ordinal(lv) + '</span><div class="dots">' + dots + "</div>" +
           (book ? '<div class="chips2">' + (known.length ? known.map(function (s) { return '<span class="sp">' + esc(s) + "</span>"; }).join("") : '<span class="sub none">No spells known</span>') + "</div>" : "") + "</div>";
-      }).join("") + "</div>" + (book ? "" : '<p class="colhint">' + (prep.length ? "Tap a spell when you cast it. Preparing again starts a new day." : "No spells prepared yet.") + "</p>") + "</section>";
+      }).join("") + "</div>" + (book || prep.length ? "" : '<p class="colhint">No spells prepared yet.</p>') + "</section>";
       if (!book && prep.length) h += spellRef(prep);
       pages.spells = h;
     }
@@ -2800,11 +2814,8 @@ main.wide { max-width: 1120px; }
     "Prepare spells": "Подготовить заклинания", "Today’s spells": "Заклинания на сегодня", "Prepare": "Подготовить", "Clear": "Очистить",
     "Reversed": "Обратное", "Range": "Дистанция", "Duration": "Длительность", "Book page": "Стр. книги",
     "Show full text": "Показать полный текст", "Hide full text": "Скрыть полный текст", "Select a spell to read about it.": "Выберите заклинание, чтобы прочитать о нём.",
-    "After 6 hours of rest, pray for as many hours as the highest spell level prepared. Once a day. A spell can also take a higher-level slot.":
-      "После 6 часов отдыха Клирик молится столько часов, каков наивысший уровень подготовленных заклинаний. Раз в сутки. Заклинание может занять и ячейку более высокого уровня.",
-    "Tap a spell when you cast it. Preparing again starts a new day.": "Нажмите на заклинание, когда сотворите его. Новая подготовка начинает новый день.",
     "No spells prepared yet.": "Заклинания пока не подготовлены.", "Prepared spells": "Подготовленные заклинания",
-    "Undead HD": "КЗ нежити", "Roll": "Бросок", "T: turned · D: destroyed or commanded · *: twice as many": "T: изгнана · D: уничтожена или подчинена · *: вдвое больше", "Empty slot": "Пустая ячейка",
+    "Undead HD": "КЗ нежити", "Roll": "Бросок", "T: turned": "T: изгнана", "D: destroyed or commanded": "D: уничтожена или подчинена", "*: twice as many": "*: вдвое больше", "Empty slot": "Пустая ячейка",
     "Open Game License": "Открытая игровая лицензия", "Weird fantasy role-playing": "Ролевая игра в жанре странного фэнтези",
     "← Sheet": "← Лист", "Buy": "Купить", "Add": "Добавить", "Done": "Готово", "Money": "Деньги", "Money in silver pieces": "Деньги в серебряных монетах",
     "Prices": "Цены", "Town": "Город", "Rural": "Деревня", "Owned": "Есть", "Not sold here": "Здесь не продаётся", "Custom": "Своё",
@@ -2908,6 +2919,7 @@ main.wide { max-width: 1120px; }
     [/^(\d+) prepared$/, "подготовлено: $1"],
     [/^(\d+) of (\d+) left$/, "осталось $1 из $2"],
     [/^At level (\d+)$/, "На $1 уровне"],
+    [/^(\d+) in (a )?higher-level slots?$/, function (m, n) { return n + (n === "1" ? " в ячейке" : " в ячейках") + " выше уровнем"; }],
     [/^Prepare (.+)$/, function (m, n) { return "Подготовить: " + (trOne(n) || n); }],
     [/^(Buy|Remove|Remove one|Add) (.+)$/, function (m, a, n) { return { "Buy": "Купить: ", "Remove": "Убрать: ", "Remove one": "Убрать одно: ", "Add": "Добавить: " }[a] + (trOne(n) || n); }],
     [/^(\d+) items? \((\d+) per item\)$/, function (m, n, k) { return n + " " + ruN(+n, RU_ITEM) + " (" + k + " на предмет)"; }],
