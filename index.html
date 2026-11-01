@@ -601,6 +601,12 @@ main.wide { max-width: 1120px; }
 .paside { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto; border-left: 1px solid var(--line); padding-left: 24px; }
 .plist { display: flex; flex-direction: column; gap: 18px; }
 .plv { display: flex; flex-direction: column; }
+.plv > summary { display: flex; align-items: baseline; gap: 8px; cursor: pointer; list-style: none; }
+.plv > summary::-webkit-details-marker { display: none; }
+.plv > summary::before { content: "▾"; width: 1em; font-size: 13px; color: var(--muted); }
+.plv:not([open]) > summary::before { content: "▸"; }
+.plv > summary:hover { color: var(--fg); }
+.plv-n { margin-left: auto; color: var(--accent); letter-spacing: .06em; }
 .prow { display: grid; grid-template-columns: minmax(0, 1fr); border-bottom: 1px solid var(--line); }
 .prow.pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .prow.pair .pc + .pc { border-left: 1px dashed var(--line); padding-left: 12px; }
@@ -610,7 +616,11 @@ main.wide { max-width: 1120px; }
 .pc-n:hover { text-decoration: underline; text-decoration-color: var(--line); }
 .pc.sel .pc-n { color: var(--accent); }
 .pc.own .pc-n { font-weight: 600; }
+.pc .stp { width: 92px; justify-content: space-between; }
 .pc .stp button { width: 30px; height: 30px; }
+.pc .stp.buy { border-color: transparent; justify-content: flex-end; }
+.pc .stp.buy button { border: 1px solid var(--line); }
+.pc .stp.buy button:hover:not(:disabled) { border-color: var(--fg); }
 .pc-r { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 400; }
 .ptoday { display: flex; flex-direction: column; gap: 6px; }
 .ptoday .splrow { grid-template-columns: 3.2em auto minmax(0, 1fr); padding: 6px 0; }
@@ -632,6 +642,16 @@ main.wide { max-width: 1120px; }
 .pd-t th { font-weight: 600; }
 .pdesc .link { align-self: flex-start; }
 .splrow.cl { grid-template-columns: 3.2em minmax(0, 1fr); }
+.sref { display: flex; flex-direction: column; }
+.sref-i { border-bottom: 1px solid var(--line); }
+.sref-i > summary { display: flex; align-items: baseline; gap: 10px; padding: 8px 0; cursor: pointer; list-style: none; font-family: var(--font-body); font-size: inherit; letter-spacing: normal; text-transform: none; margin-bottom: 0; }
+.sref-i > summary::-webkit-details-marker { display: none; }
+.sref-i > summary::before { content: "▸"; width: 1em; font-size: 13px; color: var(--muted); }
+.sref-i[open] > summary::before { content: "▾"; }
+.sref-n { font-size: 17px; }
+.sref-c { margin-left: auto; font-family: var(--font-mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
+.sref-i.out .sref-n { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--accent); }
+.sref-i .pdesc { padding: 0 0 14px 1.6em; }
 .pslots { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .pslot { border: 1px solid var(--fg); background: transparent; padding: 3px 10px; font-size: 16px; cursor: pointer; display: inline-flex; gap: 8px; align-items: baseline; }
 .pslot i { font-style: normal; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
@@ -1965,14 +1985,17 @@ main.wide { max-width: 1120px; }
   function prepDetail() {
     var p = state.prepSel;
     if (!p) return '<p class="sub none">Select a spell to read about it.</p>';
+    return '<h3 class="pd-n">' + esc(spName(p)) + "</h3>" + spellBody(p, state.prepFull, "data-pfull");
+  }
+  /* what both the prepare screen and the sheet show about a spell, below its name; toggle names the full-text button */
+  function spellBody(p, full, toggle) {
     var s = SPELLS[p.id], L = function (o) { return o && (LANG === "ru" && o.ru ? o.ru : o.en); };
-    var sum = s.sum && L(p.rev ? s.sum.r : s.sum.s), full = state.prepFull;
-    return '<h3 class="pd-n">' + esc(spName(p)) + "</h3>" +
-      (p.rev ? '<p class="pd-rev">Reverse of ' + esc(SPELL_NAME[p.id].en) + "</p>" : "") +
+    var sum = s.sum && L(p.rev ? s.sum.r : s.sum.s);
+    return (p.rev ? '<p class="pd-rev">Reverse of ' + esc(SPELL_NAME[p.id].en) + "</p>" : "") +
       '<dl class="pd-m"><div><dt>Level</dt><dd>' + s.lv + "</dd></div><div><dt>Range</dt><dd data-notr>" + esc(L(s.range)) + "</dd></div>" +
       "<div><dt>Duration</dt><dd data-notr>" + esc(L(s.dur)) + "</dd></div><div><dt>Book page</dt><dd>" + s.page + "</dd></div></dl>" +
       (sum ? '<p class="pd-s" data-notr>' + esc(sum) + "</p>" : "") +
-      '<button class="link" type="button" data-pfull aria-expanded="' + !!full + '">' + (full ? "Hide full text" : "Show full text") + "</button>" +
+      '<button class="link" type="button" ' + toggle + ' aria-expanded="' + !!full + '">' + (full ? "Hide full text" : "Show full text") + "</button>" +
       (full ? '<div class="pd-t" data-notr>' + spellText(L(s.text)) + "</div>" : "");
   }
   function prepCell(id, rev, slots) {
@@ -1981,7 +2004,7 @@ main.wide { max-width: 1120px; }
     var can = !!slotPlan(state.prepDraft.concat([p]), slots);
     return '<div class="pc' + (sel ? " sel" : "") + (n ? " own" : "") + '"><button type="button" class="pc-n" data-psel' + key + ' aria-pressed="' + sel + '">' +
       (rev ? '<span class="pc-r">Reversed</span>' : "") + nm + "</button>" +
-      '<span class="stp"><button type="button" data-pd="-1"' + key + ' aria-label="Remove ' + nm + '"' + (n ? "" : " disabled") + ">−</button><i>" + n + "</i>" +
+      '<span class="stp' + (n ? "" : " buy") + '">' + (n ? '<button type="button" data-pd="-1"' + key + ' aria-label="Remove ' + nm + '">−</button><i>' + n + "</i>" : "") +
       '<button type="button" data-pd="1"' + key + ' aria-label="Prepare ' + nm + '"' + (can ? "" : " disabled") + ">+</button></span></div>";
   }
   function prepToday(slots) {
@@ -2005,9 +2028,11 @@ main.wide { max-width: 1120px; }
       '<section class="panel"><div class="group">Today’s spells</div>' + prepToday(slots) +
       '<p class="colhint">After 6 hours of rest, pray for as many hours as the highest spell level prepared. Once a day. A spell can also take a higher-level slot.</p></section>' +
       lists.map(function (l, i) {
-        return '<section class="plv"><div class="group">' + ordinal(i + 1) + " level</div>" + l.map(function (sp) {
+        var lv = i + 1, n = state.prepDraft.filter(function (p) { return SPELLS[p.id].lv === lv; }).length;
+        return '<details class="plv" data-plv="' + lv + '"' + (state.prepFold && state.prepFold[lv] ? "" : " open") + '><summary class="group">' + ordinal(lv) + " level" +
+          (n ? '<span class="plv-n">' + n + " prepared</span>" : "") + "</summary>" + l.map(function (sp) {
           return '<div class="prow' + (SPELLS[sp.id].rev ? " pair" : "") + '" data-prow="' + sp.id + '">' + prepCell(sp.id, false, slots) + (SPELLS[sp.id].rev ? prepCell(sp.id, true, slots) : "") + "</div>";
-        }).join("") + "</section>";
+        }).join("") + "</details>";
       }).join("") +
       '<div class="actions"><button class="btn" id="prep-ok" type="button">Prepare</button><button class="btn ghost" id="prep-clear" type="button"' + (state.prepDraft.length ? "" : " disabled") + ">Clear</button></div>" +
       '</div><aside class="paside" id="paside"><div class="pdesc" id="pdesc">' + prepDetail() + "</div></aside></div>";
@@ -2044,9 +2069,18 @@ main.wide { max-width: 1120px; }
     else return;
     if (!focus) focus = (d.psel !== undefined ? "[data-psel]" : '[data-pd="' + d.pd + '"]') + '[data-pid="' + d.pid + '"]' + (d.rev ? "[data-rev]" : ":not([data-rev])");
     renderPrep(); persist();
-    var t = el("body9").querySelector(focus);
+    /* removing the last copy takes the − away, so focus falls back to the + */
+    var t = el("body9").querySelector(focus) || el("body9").querySelector(focus.replace('[data-pd="-1"]', '[data-pd="1"]'));
     if (t && !t.disabled) t.focus({ preventScroll: true });
   });
+  /* toggle doesn't bubble, so listen while capturing */
+  el("body9").addEventListener("toggle", function (ev) {
+    var lv = ev.target.dataset && ev.target.dataset.plv;
+    if (!lv) return;
+    state.prepFold = state.prepFold || {};
+    if (ev.target.open) delete state.prepFold[lv]; else state.prepFold[lv] = true;
+    persist();
+  }, true);
   function openPrep() {
     state.prepDraft = (state.sheet.prep || []).map(function (p) { return { id: p.id, rev: !!p.rev }; });
     state.prepSel = null; state.view = "prep"; layout(true);
@@ -2413,6 +2447,7 @@ main.wide { max-width: 1120px; }
         return '<div class="splrow"><span class="bl">' + ordinal(lv) + '</span><div class="dots">' + dots + "</div>" +
           (book ? '<div class="chips2">' + (known.length ? known.map(function (s) { return '<span class="sp">' + esc(s) + "</span>"; }).join("") : '<span class="sub none">No spells known</span>') + "</div>" : "") + "</div>";
       }).join("") + "</div>" + (book ? "" : '<p class="colhint">' + (prep.length ? "Tap a spell when you cast it. Preparing again starts a new day." : "No spells prepared yet.") + "</p>") + "</section>";
+      if (!book && prep.length) h += spellRef(prep);
       pages.spells = h;
     }
     pages.gear = gearPanel();
@@ -2426,6 +2461,23 @@ main.wide { max-width: 1120px; }
     }).join("") + "</div>" + tabs.map(function (t) {
       return '<div class="spage" role="tabpanel" id="page-' + t[0] + '" aria-labelledby="tab-' + t[0] + '"' + (t[0] === S.tab ? "" : " hidden") + ">" + pages[t[0]] + "</div>";
     }).join("");
+  }
+  /* each prepared spell once, folding open to its description; casting stays on the slot buttons above */
+  function spKey(p) { return p.id + (p.rev ? "~r" : ""); }
+  function spellRef(prep) {
+    var S = state.sheet, seen = {}, rows = [];
+    S.spOpen = S.spOpen || {}; S.spFull = S.spFull || {};
+    prep.forEach(function (p) {
+      var k = spKey(p);
+      if (!seen[k]) { seen[k] = { p: p, n: 0, left: 0 }; rows.push(seen[k]); }
+      seen[k].n++; if (!p.cast) seen[k].left++;
+    });
+    return '<section class="panel"><div class="group">Prepared spells</div><div class="sref">' + rows.map(function (r) {
+      var k = spKey(r.p);
+      return '<details class="sref-i' + (r.left ? "" : " out") + '" data-sref="' + k + '"' + (S.spOpen[k] ? " open" : "") + "><summary>" +
+        '<span class="sref-n">' + esc(spName(r.p)) + '</span><span class="sref-c">' + r.left + " of " + r.n + " left</span></summary>" +
+        '<div class="pdesc">' + spellBody(r.p, S.spFull[k], 'data-sfull="' + k + '"') + "</div></details>";
+    }).join("") + "</div></section>";
   }
   var SHEET_TABS = [["info", "Character"], ["spells", "Spells"], ["gear", "Inventory"], ["retainers", "Retainers"]];
 
@@ -2547,6 +2599,21 @@ main.wide { max-width: 1120px; }
       });
     });
     if (el("prep-open")) el("prep-open").addEventListener("click", openPrep);
+    b.querySelectorAll("[data-sref]").forEach(function (x) {
+      x.addEventListener("toggle", function () {
+        if (x.open) state.sheet.spOpen[x.dataset.sref] = true; else delete state.sheet.spOpen[x.dataset.sref];
+        persist();
+      });
+    });
+    b.querySelectorAll("[data-sfull]").forEach(function (x) {
+      x.addEventListener("click", function () {
+        var k = x.dataset.sfull, F = state.sheet.spFull;
+        if (F[k]) delete F[k]; else F[k] = true;
+        renderSheet();
+        var t = el("body5").querySelector('[data-sfull="' + k + '"]');
+        if (t) t.focus({ preventScroll: true });
+      });
+    });
     b.querySelectorAll("[data-cast]").forEach(function (x) {
       x.addEventListener("click", function () {
         var j = +x.dataset.cast, p = state.sheet.prep[j];
@@ -2688,7 +2755,7 @@ main.wide { max-width: 1120px; }
     "After 6 hours of rest, pray for as many hours as the highest spell level prepared. Once a day. A spell can also take a higher-level slot.":
       "После 6 часов отдыха Клирик молится столько часов, каков наивысший уровень подготовленных заклинаний. Раз в сутки. Заклинание может занять и ячейку более высокого уровня.",
     "Tap a spell when you cast it. Preparing again starts a new day.": "Нажмите на заклинание, когда сотворите его. Новая подготовка начинает новый день.",
-    "No spells prepared yet.": "Заклинания пока не подготовлены.", "Empty slot": "Пустая ячейка",
+    "No spells prepared yet.": "Заклинания пока не подготовлены.", "Prepared spells": "Подготовленные заклинания", "Empty slot": "Пустая ячейка",
     "Open Game License": "Открытая игровая лицензия", "Weird fantasy role-playing": "Ролевая игра в жанре странного фэнтези",
     "← Sheet": "← Лист", "Buy": "Купить", "Add": "Добавить", "Done": "Готово", "Money": "Деньги", "Money in silver pieces": "Деньги в серебряных монетах",
     "Prices": "Цены", "Town": "Город", "Rural": "Деревня", "Owned": "Есть", "Not sold here": "Здесь не продаётся", "Custom": "Своё",
@@ -2789,6 +2856,8 @@ main.wide { max-width: 1120px; }
     [/^\+(\d) AC, \+(\d) vs missiles$/, "+$1 КБ, +$2 против снарядов"],
     [/^\+(\d+) vs missiles$/, "+$1 против снарядов"],
     [/^Reverse of (.+)$/, function (m, n) { return "Обратное к «" + (trOne(n) || n) + "»"; }],
+    [/^(\d+) prepared$/, "подготовлено: $1"],
+    [/^(\d+) of (\d+) left$/, "осталось $1 из $2"],
     [/^Prepare (.+)$/, function (m, n) { return "Подготовить: " + (trOne(n) || n); }],
     [/^(Buy|Remove|Remove one|Add) (.+)$/, function (m, a, n) { return { "Buy": "Купить: ", "Remove": "Убрать: ", "Remove one": "Убрать одно: ", "Add": "Добавить: " }[a] + (trOne(n) || n); }],
     [/^(\d+) items? \((\d+) per item\)$/, function (m, n, k) { return n + " " + ruN(+n, RU_ITEM) + " (" + k + " на предмет)"; }],
