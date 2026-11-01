@@ -372,6 +372,17 @@ details.notesbox[open] summary { margin-bottom: 0; }
 .xpnum { display: flex; align-items: baseline; gap: 6px; font-family: var(--font-mono); font-size: 13px; color: var(--muted); white-space: nowrap; }
 .xpnum input { width: 7ch; background: transparent; border: 0; border-bottom: 1px solid transparent; color: var(--fg); font: 13px var(--font-mono); text-align: right; padding: 0; }
 .xpnum input:hover, .xpnum input:focus { border-bottom-color: var(--line); outline: none; }
+.lvbtns { display: flex; gap: 8px; }
+.lvbtns:not(:has(button:not([hidden]))) { display: none; }
+#body10 { display: flex; flex-direction: column; gap: 22px; }
+#body10 .actions { margin: 0; }
+.lvto { font-family: var(--font-display); font-size: 22px; margin-top: -8px; }
+.lvchg { display: flex; flex-direction: column; }
+.lvrow { display: grid; grid-template-columns: 9em minmax(0, 1fr); gap: 4px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.lvvals { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 16px; }
+.lvvals span { white-space: nowrap; }
+.lvvals b { font-family: var(--font-mono); font-size: 13px; font-weight: 500; margin-left: 4px; }
+@media (max-width: 560px) { .lvrow { grid-template-columns: minmax(0, 1fr); } }
 .glance { display: grid; grid-template-columns: 2.3fr 1fr 1fr 1fr; border: 1px solid var(--line); }
 .glance > div { padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; justify-content: center; min-width: 0; }
 .glance > div + div { border-left: 1px solid var(--line); }
@@ -386,15 +397,17 @@ details.notesbox[open] summary { margin-bottom: 0; }
 .hpstat { font-size: 11px; min-height: 1.2em; }
 .g-stat b { font-family: var(--font-mono); font-size: 30px; font-weight: 500; line-height: 1.1; }
 .g-stat b small, .g-sub { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
-.opts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: -16px; }
-.opts .fl { margin-right: 4px; }
-.opt { border: 1px solid var(--line); padding: 4px 10px; font-size: 15px; }
 /* the sheet's top block: hit points, then armor class, weapon and attack bonuses */
 .glance2 { display: grid; grid-template-columns: minmax(250px, 2fr) 1.2fr 1.2fr; gap: 1px; background: var(--line); border: 1px solid var(--line); }
 .g-hit { font-family: var(--font-mono); font-size: 15px; }
-.opts + .opts { margin-top: -18px; }
-.opt.mv { font-family: var(--font-display); }
-.opt.mv.l0 { color: var(--good); } .opt.mv.l3, .opt.mv.l4 { color: var(--accent); }
+.cstrip { margin: -14px 0 0; display: flex; flex-direction: column; gap: 4px; font-size: 15px; color: var(--muted); }
+.cstrip > div { display: grid; grid-template-columns: 9.5em minmax(0, 1fr); gap: 2px 12px; align-items: baseline; }
+.cstrip dt { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+.cstrip dd { margin: 0; display: flex; flex-wrap: wrap; gap: 2px 16px; }
+.cstrip dd > span { white-space: nowrap; }
+.cstrip b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--fg); margin-left: 3px; }
+.cstrip .mv.l0 { color: var(--good); } .cstrip .mv.l3, .cstrip .mv.l4 { color: var(--accent); }
+@media (max-width: 560px) { .cstrip > div { grid-template-columns: minmax(0, 1fr); } }
 .glance2 > div { background: var(--surface); padding: 14px 12px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .glance2 .fl { white-space: nowrap; letter-spacing: .05em; }
 .g-card > b { font-family: var(--font-mono); font-size: 30px; font-weight: 500; line-height: 1.1; }
@@ -403,6 +416,16 @@ details.notesbox[open] summary { margin-bottom: 0; }
 .acseg { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 .acseg button { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 2px 6px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
 .acseg button[aria-pressed="true"] { color: var(--fg); border-color: var(--fg); }
+.langs { display: flex; flex-direction: column; }
+.lrow { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.lname { min-width: 0; background: transparent; color: var(--fg); border: 0; border-bottom: 1px dashed var(--line); font: 17px var(--font-body); padding: 2px 0; }
+.lname:focus-visible { outline: none; border-bottom-color: var(--fg); }
+.lseg { margin: 0; flex-wrap: nowrap; }
+.lseg button[data-v="true"][aria-pressed="true"] { color: var(--good); border-color: var(--good); }
+.lseg button[data-v="false"][aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+.lx { background: none; border: 0; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 0 4px; }
+.lx:hover { color: var(--fg); }
+#lang-add { align-self: flex-start; }
 .g-ab { justify-content: center; }
 .g-line { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
 .g-line b { font-size: 24px; font-weight: 500; color: var(--fg); }
@@ -412,7 +435,6 @@ details.notesbox[open] summary { margin-bottom: 0; }
 .row.arow.hasc .score { font-size: 24px; font-weight: 600; color: var(--fg); }
 .row.arow.hasc .mod { font-size: 14px; font-weight: 500; }
 .row.arow.hasc { grid-template-columns: minmax(0, 1fr) 2.2em 3.2ch; }
-.opt b { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 4px; }
 .row.arow { grid-template-columns: minmax(0, 1fr) 3ch 3.6ch; padding: 8px 2px; gap: 4px 12px; align-items: center; }
 .row.arow.srow { grid-template-columns: minmax(0, 1fr) 3.6ch; }
 .row.arow .name { font-size: 20px; }
@@ -830,6 +852,14 @@ main.wide { max-width: 1120px; }
     <div id="body7"></div>
   </section>
 
+  <section class="card" id="step10" aria-labelledby="s10t" hidden>
+    <header>
+      <div class="sheethead"><button class="link" id="lvl-back" type="button">&larr; Sheet</button></div>
+      <h2 id="s10t">Level up</h2>
+    </header>
+    <div id="body10"></div>
+  </section>
+
   <section class="card" id="step9" aria-labelledby="s9t" hidden>
     <header>
       <div class="sheethead"><button class="link" id="prep-back" type="button">&larr; Sheet</button></div>
@@ -964,7 +994,7 @@ main.wide { max-width: 1120px; }
   ];
   var FORCED = {};
   Object.keys(GAME.classes).forEach(function (k) { if (GAME.classes[k].alignment) FORCED[k] = GAME.classes[k].alignment; });
-  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s6: 4, s8: 5, s5: 5, inv: 5, prep: 5, book: 5 };
+  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s6: 4, s8: 5, s5: 5, inv: 5, prep: 5, book: 5, lvl: 5 };
   function renderRail() {
     var cur = VIEW_IDX[state.view], done = [state.confirmed, state.classDone, state.alignDone, state.detailsDone, state.gearDone, state.nameDone];
     el("rail").innerHTML = STEPS.map(function (s, i) {
@@ -1258,8 +1288,9 @@ main.wide { max-width: 1120px; }
     return m === null ? null : m + racialBonus(key);
   }
 
+  function curLevel() { return state.lvlUp ? state.lvlUp.to : state.level; }
   function skillBase(n) {
-    var r = lvRow(state.klass, state.level);
+    var r = lvRow(state.klass, curLevel());
     if (n === "Architecture" && r.architecture) return r.architecture;
     if (n === "Bushcraft" && r.bushcraft) return r.bushcraft;
     if (n === "Search" && r.search) return r.search;
@@ -1350,7 +1381,7 @@ main.wide { max-width: 1120px; }
     return v + " in 6";
   }
   function ptsUsed() { var t = 0; Object.keys(state.pts).forEach(function (k) { t += state.pts[k]; }); state.custom.forEach(function (c) { t += c.pts; }); return t; }
-  function pool() { return lvRow("Specialist", state.level).skillPoints; }
+  function pool() { return lvRow("Specialist", curLevel()).skillPoints; }
   function stepper(attr, key, p, canAdd) {
     return '<span class="stp"><button type="button" ' + attr + '="' + esc(key) + '" data-d="-1" aria-label="Remove a point"' + (p <= 0 ? " disabled" : "") + '>−</button><i>' + p + '</i><button type="button" ' + attr + '="' + esc(key) + '" data-d="1" aria-label="Add a point"' + (canAdd ? "" : " disabled") + ">+</button></span>";
   }
@@ -1611,6 +1642,18 @@ main.wide { max-width: 1120px; }
     if (id === "shield") e.shield = !shieldOn();
     else if (isArmor(it)) e.armor = bodyArmor() === id ? null : id;
     else if (isWeapon(it)) { e.weapon = weaponOn() === id ? null : id; if (e.weapon && twoHanded(id)) e.shield = false; }
+  }
+  /* at the end of the equipment step, everyone but Clerics and Magic-Users takes up the melee weapon with the biggest
+     damage die they carry, unless a weapon was already chosen or put down */
+  function autoEquip() {
+    if (state.klass === "Cleric" || state.klass === "Magic-User" || eq().weapon !== undefined) return;
+    var best = null, die = function (id) { var m = /d(\d+)/.exec(ITEMS[id].dam || ""); return m ? +m[1] : 0; };
+    Object.keys(state.gear).forEach(function (id) {
+      var it = ITEMS[id];
+      if (!it || !carried(id) || cantWield(id) || (it.shop || (it.base && ITEMS[it.base].shop) || "") !== "combat.melee") return;
+      if (!best || die(id) > die(best)) best = id;
+    });
+    if (best) equip(best);
   }
   function bodyArmor() {
     var a = eq().armor, best = null;
@@ -1993,7 +2036,7 @@ main.wide { max-width: 1120px; }
       (v === "shop" ? shopHTML() : '<div class="ilist" id="gpack"></div>');
     refreshGear();
     bindSearch();
-    footer(true, function () { state.gearDone = true; syncChar(); state.view = "s8"; layout(true); });
+    footer(true, function () { state.gearDone = true; autoEquip(); syncChar(); state.view = "s8"; layout(true); });
   }
 
   /* ---------- inventory in play: the sheet's own page, never back into character creation ---------- */
@@ -2665,6 +2708,129 @@ main.wide { max-width: 1120px; }
   function xpFor(k, lv) { return lvRow(k, lv).xp; }
   function num(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 
+  /* ---------- gaining and losing levels (p. 38) ---------- */
+  function maxLevel(k) { return GAME.classes[k].levels.length - 1; }
+  function canLevelUp(xp) { return !isNaN(xp) && xp !== null && state.level < maxLevel(state.klass) && xp >= xpFor(state.klass, state.level + 1); }
+  function canLevelDown(xp) { return !isNaN(xp) && xp !== null && state.level > 1 && xp < xpFor(state.klass, state.level); }
+  function maxHP() { return state.hp ? state.hp.total : parseInt(state.sheet.maxhp, 10); }
+  function setMaxHP(n) { if (state.hp) state.hp.total = n; else state.sheet.maxhp = String(n); }
+  function curHPset() { var c = state.sheet.curhp; return c !== null && c !== undefined && c !== "" && !isNaN(parseInt(c, 10)); }
+  /* hit points, details and gear remember the level they were made for; a new level is the character's own, so they follow */
+  function relevel(L) { state.level = L; state.detSig = sig(); state.gearSig = gearSig(); }
+  function conForHP() { var c = effMod("CON"); return c === null ? racialBonus("CON") : c; }
+  function signed(n) { return (n < 0 ? "−" : "+") + Math.abs(n); }
+
+  /* a new level's hit points are its die plus CON, with no level 1 minimum, or from 10th level a fixed amount;
+     they go on both the current and the maximum, so the character stays as hurt as before */
+  function openLevelUp() {
+    state.lvlUp = { to: state.level + 1, hp: null, roll: null, spLv: null, spell: null, undo: JSON.stringify([state.pts, state.custom]) };
+    state.view = "lvl"; layout(true);
+  }
+  function closeLevelUp() {
+    var u = state.lvlUp;
+    if (u) { var o = JSON.parse(u.undo); state.pts = o[0]; state.custom = o[1]; }
+    state.lvlUp = null; state.view = "s5"; layout(true);
+  }
+  el("lvl-back").addEventListener("click", closeLevelUp);
+  function freeSpell() { return state.klass === "Magic-User" || state.klass === "Elf"; }
+  function levelUpReady() {
+    var u = state.lvlUp;
+    return u.hp !== null && (state.klass !== "Specialist" || ptsUsed() >= pool()) && (!freeSpell() || !!u.spell || u.spell === false);
+  }
+  function renderLevelUp() {
+    var u = state.lvlUp, k = state.klass, L = state.level, T = u.to, r0 = lvRow(k, L), r1 = lvRow(k, T), hd = HPT[k], c = conForHP();
+    var fixed = T >= 10, changes = [];
+    /* what the new level brings by itself */
+    var sv0 = r0.saves, sv1 = r1.saves, sav = [];
+    SAVE_NAMES.forEach(function (n, i) {
+      var m = effMod(i === 4 ? "INT" : "WIS") || 0;
+      if (sv0[i] !== sv1[i]) sav.push("<span>" + n + " <b>" + (sv0[i] - m) + " → " + (sv1[i] - m) + "</b></span>");
+    });
+    if (sav.length) changes.push(["Saving throws", sav.join("")]);
+    if (r0.ab !== r1.ab) changes.push(["Attack bonus", "<span><b>" + fmt(r0.ab) + " → " + fmt(r1.ab) + "</b></span>"]);
+    if (r1.slots && JSON.stringify(r0.slots) !== JSON.stringify(r1.slots)) changes.push(["Spells per day", r1.slots.map(function (n, i) {
+      var was = (r0.slots || [])[i] || 0;
+      return "<span>" + ordinal(i + 1) + " <b>" + (was === n ? n : was + " → " + n) + "</b></span>";
+    }).join("")]);
+    var cTxt = c ? (c > 0 ? " + " : " − ") + Math.abs(c) : "";
+    var hpForm = fixed ? "+" + hd.fixed + (hd.conAlways ? cTxt : "") : "1d" + hd.d + cTxt;
+    if (fixed) u.hp = hd.fixed + (hd.conAlways ? c : 0);
+    var hpRight = fixed ? '<div class="result"><span class="big">' + signed(u.hp) + "</span></div>" :
+      u.roll !== null ? '<div class="result"><span class="big">' + signed(u.hp) + "</span></div>" :
+      '<div class="hp-roll"><label class="inl"><input id="lu-hp" type="text" inputmode="numeric" maxlength="3" aria-label="Hit points gained" value="' + (u.hp === null ? "" : u.hp) + '"> HP</label><span class="or">or</span><button class="btn" id="lu-roll" type="button">Roll hit points</button></div>';
+    var h = '<p class="lvto">Level ' + L + " → " + T + " " + k + "</p>" +
+      (changes.length ? '<section class="panel"><div class="group">What changes</div><div class="lvchg">' + changes.map(function (x) {
+        return '<div class="lvrow"><span class="bl">' + x[0] + '</span><div class="lvvals">' + x[1] + "</div></div>";
+      }).join("") + "</div></section>" : "") +
+      '<section class="panel"><div class="group">Hit points</div><div class="hp-row"><div class="formula">' + hpForm + "</div>" + hpRight + "</div>" +
+      (u.roll !== null ? '<div class="hp-dice">' + anyDie(hd.d, u.roll, u.anim) + "</div>" : "") + "</section>";
+    u.anim = false;
+    if (k === "Specialist") h += skillsSection();
+    if (freeSpell()) {
+      var lvs = r1.slots.length, book = bookList();
+      if (u.spLv === null || u.spLv > lvs) u.spLv = lvs;
+      h += '<section class="panel"><div class="group">Free spell</div>' +
+        (u.spell ? '<div class="chips2"><span class="sp">' + esc(SPELLS[u.spell].en) + "</span><span class=\"sub none\">" + ordinal(SPELLS[u.spell].lv) + " level</span></div>" :
+         u.spell === false ? '<p class="sub none">The spellbook already has every spell of that level.</p>' :
+         '<div class="lbl"><span>Spell level</span><div class="subs" role="group" aria-label="Spell level">' + Array.apply(null, Array(lvs)).map(function (x, i) {
+           return '<button type="button" data-splv="' + (i + 1) + '" aria-selected="' + (u.spLv === i + 1) + '">' + ordinal(i + 1) + "</button>";
+         }).join("") + '</div></div><div class="actions"><button class="btn" id="lu-spell" type="button">Roll spell</button></div>') + "</section>";
+    }
+    h += '<div class="actions"><button class="btn" id="lu-ok" type="button"' + (levelUpReady() ? "" : " disabled") + ">Level up</button>" +
+      '<button class="btn ghost" id="lu-cancel" type="button">Cancel</button></div>';
+    var b = el("body10");
+    b.innerHTML = h;
+    var hi = el("lu-hp");
+    if (hi) hi.addEventListener("input", function () {
+      var v = parseInt(hi.value.replace(/[^\d-]/g, ""), 10);
+      u.hp = isNaN(v) ? null : v; el("lu-ok").disabled = !levelUpReady();
+    });
+    if (el("lu-roll")) el("lu-roll").addEventListener("click", function () { u.roll = dN(hd.d); u.hp = u.roll + c; u.anim = true; renderLevelUp(); });
+    b.querySelectorAll("[data-splv]").forEach(function (x) { x.addEventListener("click", function () { u.spLv = +x.dataset.splv; renderLevelUp(); }); });
+    /* one random spell of the chosen level, rolled again while it's one the book already has (p. 83) */
+    if (el("lu-spell")) el("lu-spell").addEventListener("click", function () {
+      var have = {}; bookList().forEach(function (e) { if (!e.rev) have[e.id] = true; });
+      var list = GAME.spellLists.magicUser[u.spLv - 1].filter(function (sp) { return !have[sp.id]; });
+      u.spell = list.length ? list[dN(list.length) - 1].id : false;
+      renderLevelUp();
+    });
+    b.querySelectorAll("[data-sk]").forEach(function (x) {
+      x.addEventListener("click", function () { var n = x.dataset.sk; state.pts[n] = Math.max(0, (state.pts[n] || 0) + (+x.dataset.d)); renderLevelUp(); });
+    });
+    b.querySelectorAll("[data-ck]").forEach(function (x) {
+      x.addEventListener("click", function () { var cc = state.custom[+x.dataset.ck]; cc.pts = Math.max(0, cc.pts + (+x.dataset.d)); renderLevelUp(); });
+    });
+    b.querySelectorAll(".cname").forEach(function (x) { x.addEventListener("input", function () { state.custom[+x.dataset.ci].name = x.value; }); });
+    el("lu-cancel").addEventListener("click", closeLevelUp);
+    el("lu-ok").addEventListener("click", function () {
+      var S = state.sheet, max = maxHP();
+      if (!isNaN(max)) { setMaxHP(max + u.hp); if (curHPset()) S.curhp = String(parseInt(S.curhp, 10) + u.hp); }
+      if (u.spell) (S.book = bookList().slice()).push({ id: u.spell, rev: false });
+      relevel(u.to);
+      state.lvlUp = null; persist(); state.view = "s5"; layout(true);
+    });
+  }
+
+  /* losing a level: the maximum drops by an average level's hit points (the die's average plus CON, or the fixed
+     amount from 10th level), current hit points no higher than that, and prepared spells that no longer fit are gone */
+  function levelDown() {
+    var k = state.klass, L = state.level, hd = HPT[k], c = conForHP(), S = state.sheet;
+    if (L <= 1) return;
+    var avg = Math.max(0, L >= 10 ? hd.fixed + (hd.conAlways ? c : 0) : Math.round((hd.d + 1) / 2) + c), max = maxHP();
+    if (!isNaN(max)) {
+      var to = Math.max(1, max - avg);
+      setMaxHP(to);
+      if (curHPset() && parseInt(S.curhp, 10) > to) S.curhp = String(to);
+    }
+    relevel(L - 1);
+    var slots = slotsFor();
+    if (S.prep && S.prep.length) {
+      var at = slots ? slotPlan(S.prep, slots, true) : [];
+      S.prep = S.prep.filter(function (p, j) { return at[j] > 0; });
+    }
+    persist(); renderSheet();
+  }
+
   function skillRating(n) {
     var p = state.pts[n] || 0, v;
     if (n === "Open Doors") { var sm = effMod("STR"); v = 1 + (sm === null ? 0 : sm) + p; }
@@ -2699,7 +2865,9 @@ main.wide { max-width: 1120px; }
     if (!isNaN(xpn)) xp = num(xpn);
     h += '<div class="ident"><span class="idline">Level ' + L + " " + esc(k) + " · " + esc(state.align) + "</span>" +
       '<div class="xp"><div class="xpbar" aria-hidden="true"><i id="xpfill" style="width:' + xpPct(xp) + '%"></i></div>' +
-      '<label class="xpnum"><input data-f="xp" id="xpin" type="text" inputmode="numeric" maxlength="9" aria-label="Current experience points" value="' + esc(xp) + '"><span>/ ' + num(xpFor(k, L + 1)) + " XP</span></label></div></div>";
+      '<label class="xpnum"><input data-f="xp" id="xpin" type="text" inputmode="numeric" maxlength="9" aria-label="Current experience points" value="' + esc(xp) + '"><span>/ ' + num(xpFor(k, L + 1)) + " XP</span></label></div>" +
+      '<div class="lvbtns"><button class="btn sm" id="lvl-up" type="button"' + (canLevelUp(xpn) ? "" : " hidden") + ">Level up</button>" +
+      '<button class="btn ghost sm" id="lvl-down" type="button"' + (canLevelDown(xpn) ? "" : " hidden") + ">Level down</button></div></div>";
     var top = h;
     h = "";
 
@@ -2727,11 +2895,11 @@ main.wide { max-width: 1120px; }
       }).join("") + "</div></div>" +
       '<div class="g-card"><span class="fl">Weapon</span><b>' + esc(wit ? wit.dam || "—" : GAME.unarmed) + "</b>" +
       '<span class="g-name">' + (wit ? esc(itemName(wit)) : "Unarmed") + '</span><span class="g-hit">' + wAB + " to hit</span></div></section>";
-    h += '<div class="opts"><span class="fl">Combat options</span><span class="opt">Parry <b>+' + (f ? 4 : 2) + " AC</b></span>" +
-      (f ? '<span class="opt">Press <b>+2 hit, −4 AC</b></span><span class="opt">Defensive <b>+2 AC, −4 hit</b></span>' : "") +
-      '<span class="opt">Surprised <b>' + (k === "Elf" ? 1 : 2) + " in 6</b></span></div>" +
-      '<div class="opts"><span class="fl">Movement</span><span class="opt mv l' + E.lvl + '">' + Lv.en + "</span>" +
-      '<span class="opt">Exploration <b>' + Lv.explore + '</b></span><span class="opt">Combat <b>' + Lv.combat + '</b></span><span class="opt">Travel <b>' + Lv.miles + " mi/day</b></span></div>";
+    h += '<dl class="cstrip"><div><dt>Combat options</dt><dd><span>Parry <b>+' + (f ? 4 : 2) + " AC</b></span>" +
+      (f ? "<span>Press <b>+2 hit, −4 AC</b></span><span>Defensive <b>+2 AC, −4 hit</b></span>" : "") +
+      "<span>Surprised <b>" + (k === "Elf" ? 1 : 2) + " in 6</b></span></dd></div>" +
+      '<div><dt>Movement</dt><dd><span class="mv l' + E.lvl + '">' + Lv.en + "</span>" +
+      "<span>Exploration <b>" + Lv.explore + "</b></span><span>Combat <b>" + Lv.combat + "</b></span><span>Travel <b>" + Lv.miles + " mi/day</b></span></dd></div></dl>";
 
     /* abilities + saves */
     h += '<div class="twocol"><section class="panel"><div class="group">Ability scores</div><div class="sheet flat">' + ABILITIES.map(function (a, i) {
@@ -2755,6 +2923,13 @@ main.wide { max-width: 1120px; }
     });
     if (k === "Specialist") state.custom.forEach(function (c) { if (c.name || c.pts) tiles.push(skillTile("c", 1 + c.pts, 5, "", "", esc(c.name || "Custom skill"))); });
     h += '<section class="panel"><div class="group">Skills</div><div class="skills-grid">' + tiles.join("") + "</div></section>";
+    var langs = S.langs || [];
+    h += '<section class="panel"><div class="group">Languages</div>' + (langs.length ? '<div class="langs">' + langs.map(function (l, i) {
+      return '<div class="lrow"><input class="lname" data-li="' + i + '" type="text" maxlength="30" placeholder="Language name" aria-label="Language name" value="' + esc(l.n) + '">' +
+        '<div class="acseg lseg">' + [[true, "Known"], [false, "Unknown"]].map(function (x) {
+          return '<button type="button" data-lk="' + i + '" data-v="' + x[0] + '" aria-pressed="' + (l.k === x[0]) + '">' + x[1] + "</button>";
+        }).join("") + '</div><button type="button" class="lx" data-lx="' + i + '" aria-label="Remove language">×</button></div>';
+    }).join("") + "</div>" : "") + '<button class="link" id="lang-add" type="button">+ Add language</button></section>';
 
     h += '<details class="panel notesbox" id="notesbox"' + (S.notesShut ? "" : " open") + '><summary class="group">Notes</summary><textarea class="notes" data-f="notes" rows="3" aria-label="Notes" placeholder="Anything worth remembering">' + esc(S.notes || "") + "</textarea></details>";
     var pages = { info: h };
@@ -2939,7 +3114,11 @@ main.wide { max-width: 1120px; }
       i.addEventListener("input", function () {
         state.sheet[i.dataset.f] = i.value;
         if (i.id === "curhp") setHpStatus(i.value);
-        if (i.id === "xpin") el("xpfill").style.width = xpPct(i.value) + "%";
+        if (i.id === "xpin") {
+          el("xpfill").style.width = xpPct(i.value) + "%";
+          var v = parseInt(i.value.replace(/[^\d]/g, ""), 10);
+          el("lvl-up").hidden = !canLevelUp(v); el("lvl-down").hidden = !canLevelDown(v);
+        }
         persist();
       });
     });
@@ -2951,6 +3130,25 @@ main.wide { max-width: 1120px; }
       });
     });
     if (el("prep-open")) el("prep-open").addEventListener("click", openPrep);
+    el("lvl-up").addEventListener("click", openLevelUp);
+    el("lvl-down").addEventListener("click", function () {
+      var x = el("lvl-down");
+      if (x.dataset.arm !== "1") { x.dataset.arm = "1"; x.textContent = "Sure?"; setTimeout(function () { if (el("lvl-down") === x) { x.dataset.arm = ""; x.textContent = "Level down"; } }, 3000); return; }
+      levelDown();
+    });
+    el("lang-add").addEventListener("click", function () {
+      (state.sheet.langs = state.sheet.langs || []).push({ n: "", k: null }); renderSheet();
+      var all = el("body5").querySelectorAll(".lname"); all[all.length - 1].focus();
+    });
+    b.querySelectorAll(".lname").forEach(function (x) { x.addEventListener("input", function () { state.sheet.langs[+x.dataset.li].n = x.value; persist(); }); });
+    b.querySelectorAll("[data-lk]").forEach(function (x) {
+      x.addEventListener("click", function () {
+        var l = state.sheet.langs[+x.dataset.lk], v = x.dataset.v === "true";
+        l.k = l.k === v ? null : v; renderSheet();
+        el("body5").querySelector('[data-lk="' + x.dataset.lk + '"][data-v="' + x.dataset.v + '"]').focus();
+      });
+    });
+    b.querySelectorAll("[data-lx]").forEach(function (x) { x.addEventListener("click", function () { state.sheet.langs.splice(+x.dataset.lx, 1); renderSheet(); }); });
     b.querySelectorAll("[data-acm]").forEach(function (x) {
       x.addEventListener("click", function () {
         state.sheet.acMode = x.dataset.acm; renderSheet();
@@ -3110,7 +3308,11 @@ main.wide { max-width: 1120px; }
     "Too encumbered to cast: Magic-Users can't cast spells above Lightly Encumbered.": "Слишком нагружен, чтобы колдовать: Маг не колдует, если нагружен сильнее, чем слегка.",
     "Too encumbered to cast: Elves can't cast spells above Heavily Encumbered.": "Слишком нагружен, чтобы колдовать: Эльф не колдует, если нагружен сильнее, чем сильно.",
     "Undead HD": "КЗ нежити", "T: turned": "T: изгнана", "D: destroyed or commanded": "D: уничтожена или подчинена", "*: twice as many": "*: вдвое больше", "Empty slot": "Пустая ячейка",
-    "Open Game License": "Открытая игровая лицензия", "Not recommended for first-time players": "Не рекомендуется новичкам", "Unnamed": "Без имени",
+    "Open Game License": "Открытая игровая лицензия", "Not recommended for first-time players": "Не рекомендуется новичкам",
+    "Level up": "Новый уровень", "Level down": "Потеря уровня", "What changes": "Что меняется", "Spells per day": "Заклинаний в день",
+    "Hit points gained": "Полученные ПЗ", "Free spell": "Бесплатное заклинание", "Spell level": "Уровень заклинания", "Roll spell": "Бросить заклинание",
+    "The spellbook already has every spell of that level.": "В книге уже есть все заклинания этого уровня.",
+    "Known": "Знает", "Unknown": "Не знает", "+ Add language": "+ Добавить язык", "Language name": "Название языка", "Remove language": "Убрать язык", "Unnamed": "Без имени",
     "Movement": "Передвижение", "Exploration": "Исследование", "Unarmed": "Без оружия", "Search spells": "Поиск заклинаний", "No spells match.": "Ничего не найдено.",
     "Armor class": "Класс брони", "Armor class against": "Класс брони против", "Missile": "Снаряды", "Surprised": "Врасплох",
     "No armor": "Без доспехов", "Weapon": "Оружие", "None equipped": "Не экипировано", "Attack bonus": "Бонус атаки",
@@ -3222,6 +3424,7 @@ main.wide { max-width: 1120px; }
     [/^(\d+) prepared$/, "подготовлено: $1"],
     [/^(\d+) of (\d+) left$/, "осталось $1 из $2"],
     [/^At level (\d+)$/, "На $1 уровне"],
+    [/^Level (\d+) → (\d+) (Cleric|Fighter|Magic-User|Specialist|Dwarf|Elf|Halfling)$/, function (m, a, b, k) { return RU[k] + ": уровень " + a + " → " + b; }],
     [/^(\d+) in (a )?higher-level slots?$/, function (m, n) { return n + (n === "1" ? " в ячейке" : " в ячейках") + " выше уровнем"; }],
     [/^(\d+) in spellbook$/, "в книге: $1"],
     [/^(Add to|Remove from) spellbook: (.+)$/, function (m, a, n) { return (a === "Add to" ? "Добавить в книгу: " : "Убрать из книги: ") + (trOne(n) || n); }],
@@ -3341,6 +3544,8 @@ main.wide { max-width: 1120px; }
   function openChar(c) {
     state = Object.assign(freshState(), JSON.parse(JSON.stringify(c.state)));
     if (state.pts && state.pts.Tinkering !== undefined) { state.pts.Tinker = state.pts.Tinkering; delete state.pts.Tinkering; }
+    /* a level-up left unfinished (the page closed on it) is undone */
+    if (state.lvlUp) { var o = JSON.parse(state.lvlUp.undo); state.pts = o[0]; state.custom = o[1]; state.lvlUp = null; }
     state.id = c.id; state.view = "s5"; registerVariants(); syncChar(); layout(true);
   }
   function goHome() { state = freshState(); state.view = "home"; layout(true); }
@@ -3409,7 +3614,7 @@ main.wide { max-width: 1120px; }
 
   /* which card is visible */
   function layout(scroll) {
-    var v = state.view, spellish = v === "prep" || v === "book", sheetish = v === "s5" || v === "inv" || spellish;
+    var v = state.view, spellish = v === "prep" || v === "book", sheetish = v === "s5" || v === "inv" || v === "lvl" || spellish;
     document.querySelector("main").classList.toggle("wide", spellish);
     var creating = ["s1", "recap", "s2", "s3", "s4", "s6", "s8"].indexOf(v) > -1;
     el("cfoot").hidden = !creating; document.body.classList.toggle("has-foot", creating);
@@ -3429,6 +3634,7 @@ main.wide { max-width: 1120px; }
     el("step7").hidden = v !== "inv";
     el("step8").hidden = v !== "s8";
     el("step9").hidden = !spellish;
+    el("step10").hidden = v !== "lvl";
     if (spellish) el("s9t").textContent = v === "book" ? "Spellbook" : "Prepare spells";
     el("banner").hidden = !(v === "s2" || v === "s3" || v === "s4");
     if (v === "recap") renderRecap();
@@ -3440,6 +3646,7 @@ main.wide { max-width: 1120px; }
     if (v === "s8") renderName();
     if (v === "s5") renderSheet();
     if (spellish) renderSpellScreen();
+    if (v === "lvl") renderLevelUp();
     if (v === "home") renderHome();
     renderRail();
     if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
