@@ -3416,16 +3416,19 @@ main.wide { max-width: 1120px; }
       (left !== null ? "<span>" + money(left) + "</span>" : "") + "</div>" + '<div class="kit">' + rows + "</div></section>";
   }
 
+  function sheetTip() {
+    var notes = [storageOk ? "Saved automatically on this device." : "This browser is not saving, so changes will be lost when you close the page. Use Backup on the Characters screen to keep a copy."];
+    if (!scores()) notes.push("Ability scores were rolled at the table, so values that depend on them show the modifier to add.");
+    el("sheettip").className = "tip outside" + (storageOk ? "" : " warn");
+    el("sheettip").textContent = notes.join(" ");
+  }
   function renderSheet() {
     ensureDetails();
-    var auto = !!scores(), notes = ["Saved automatically on this device."];
-    if (!auto) notes.push("Ability scores were rolled at the table, so values that depend on them show the modifier to add.");
     el("body5").innerHTML =
       '<div class="sheethead"><button class="link" id="back-home" type="button">&larr; Characters</button></div>' +
       '<input class="namein" data-f="name" type="text" maxlength="40" placeholder="Character name" aria-label="Character name" value="' + esc(state.sheet.name) + '">' +
       sheetHTML();
-    el("sheettip").textContent = notes.join(" ");
-    persist();
+    persist(); sheetTip();
     el("back-home").addEventListener("click", goHome);
     var nb = el("notesbox"), na = nb.querySelector(".notes");
     function grow() { na.style.height = "auto"; na.style.height = na.scrollHeight + 2 + "px"; }
@@ -3613,6 +3616,11 @@ main.wide { max-width: 1120px; }
     "No saved characters yet. Create your first one.": "Сохранённых персонажей пока нет. Создайте первого.",
     "Characters are saved automatically in this browser on this device. Use Backup to keep a copy elsewhere.": "Персонажи сохраняются автоматически в этом браузере на этом устройстве. Сделайте резервную копию, чтобы хранить их где-то ещё.",
     "This browser is blocking saving, so characters will be lost when you close the page. Use Backup to keep a copy.": "Этот браузер блокирует сохранение, и персонажи пропадут после закрытия страницы. Сделайте резервную копию.",
+    "This browser is not saving, so changes will be lost when you close the page.": "Этот браузер не сохраняет данные, и изменения пропадут после закрытия страницы.",
+    "Use Backup on the Characters screen to keep a copy.": "Сделайте резервную копию на экране персонажей.",
+    "Your saved characters could not be read, so saving is paused to avoid overwriting them.": "Сохранённых персонажей не удалось прочитать, поэтому сохранение приостановлено, чтобы их не перезаписать.",
+    "Your saved characters could not be read, so they were set aside instead of overwritten.": "Сохранённых персонажей не удалось прочитать, поэтому они отложены, а не перезаписаны.",
+    "Use Damaged save to copy that text and keep it.": "Нажмите «Повреждённые данные», чтобы скопировать этот текст и сохранить его.", "Damaged save": "Повреждённые данные",
     "Copy this text and keep it somewhere safe.": "Скопируйте этот текст и сохраните его в надёжном месте.",
     "Copy this text to keep or move this character. Use Import to add it back.": "Скопируйте этот текст, чтобы сохранить или перенести персонажа. Вернуть его можно через Импорт.",
     "Paste backup text here, or choose a file.": "Вставьте сюда текст резервной копии или выберите файл.",
@@ -3768,6 +3776,7 @@ main.wide { max-width: 1120px; }
     [/^Take no other action this round for \+(\d) AC\.$/, "Никаких других действий в этом раунде: +$1 к КБ."],
     [/^Custom skill (\d) name$/, "Название своего навыка $1"],
     [/^Added (\d+)\.$/, "Добавлено: $1."],
+    [/^Skipped (\d+): the copy here is newer\.$/, "Пропущено: $1 — здесь копия новее."],
     [/^Hit points: rolled at the table$/, "Пункты здоровья: брошены за столом"],
     [/^(Hit points|Spellbook|Starting money): ?$/, function (m, k) { return RU[k] + ": "; }],
     [/^(\d+) items?$/, function (m, n) { return n + " " + ruN(+n, RU_ITEM); }],
@@ -3886,24 +3895,45 @@ main.wide { max-width: 1120px; }
   renderLangToggle();
 
   /* ---------- storage ---------- */
-  var KEY = "lotfp.characters.v1", mem = null, storageOk = true;
+  var KEY = "lotfp.characters.v1", mem = null, storageOk = true, damaged = null, locked = false;
+  /* saved text that won't parse is copied aside before anything can overwrite it; if even that fails, saving stays off */
+  function readStore() {
+    var r = localStorage.getItem(KEY), d = null;
+    if (!r) return [];
+    try { d = JSON.parse(r); } catch (e) {}
+    if (Array.isArray(d)) return d;
+    damaged = r;
+    try { localStorage.setItem(KEY + ".broken", r); } catch (e) { locked = true; storageOk = false; }
+    return [];
+  }
   function loadAll() {
     if (mem) return mem;
-    try { var r = localStorage.getItem(KEY); mem = r ? JSON.parse(r) : []; } catch (e) { storageOk = false; mem = []; }
-    if (!Array.isArray(mem)) mem = [];
+    try { mem = readStore(); } catch (e) { storageOk = false; mem = []; }
     return mem;
   }
+  /* re-read before changing the list, so another tab's saves aren't written over; with saving off, memory is the only copy */
+  function fresh() { if (storageOk) mem = null; return loadAll(); }
   function saveAll(list) {
+    var was = storageOk;
     mem = list;
-    try { localStorage.setItem(KEY, JSON.stringify(list)); storageOk = true; } catch (e) { storageOk = false; }
+    if (!locked) { try { localStorage.setItem(KEY, JSON.stringify(list)); storageOk = true; } catch (e) { storageOk = false; } }
+    if (storageOk !== was && state.view === "s5") sheetTip();
   }
   function persist() {
     if (!state.id) state.id = "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-    var list = loadAll().slice(), snap = { id: state.id, savedAt: Date.now(), state: JSON.parse(JSON.stringify(state)) };
+    var list = fresh().slice(), json = JSON.stringify(state);
     var i = list.findIndex(function (x) { return x.id === state.id; });
+    /* an unchanged character keeps its savedAt, so it tells when it last changed (import compares it) */
+    if (i > -1 && JSON.stringify(list[i].state) === json) return;
+    var snap = { id: state.id, savedAt: Date.now(), state: JSON.parse(json) };
     if (i < 0) list.unshift(snap); else list[i] = snap;
     saveAll(list);
   }
+  window.addEventListener("storage", function (e) {
+    if (e.key !== KEY && e.key !== null) return;
+    if (storageOk) mem = null;
+    if (state.view === "home") renderHome();
+  });
   function charTitle(c) { var t = c.state; return (t.sheet && t.sheet.name) || ("Level " + t.level + " " + t.klass); }
   function openChar(c) {
     state = Object.assign(freshState(), JSON.parse(JSON.stringify(c.state)));
@@ -3915,15 +3945,18 @@ main.wide { max-width: 1120px; }
   }
   function goHome() { state = freshState(); state.view = "home"; layout(true); }
   function importText(txt) {
-    var data = JSON.parse(txt), arr = Array.isArray(data) ? data : [data], n = 0, list = loadAll().slice();
+    var data = JSON.parse(txt), arr = Array.isArray(data) ? data : [data], n = 0, kept = 0, list = fresh().slice();
     arr.forEach(function (c) {
       if (!c || !c.id || !c.state || !c.state.klass || !c.state.level) return;
       var i = list.findIndex(function (x) { return x.id === c.id; });
+      /* an old backup doesn't replace a copy here that changed since */
+      if (i > -1 && (list[i].savedAt || 0) > (c.savedAt || 0)) { kept++; return; }
       if (i < 0) list.push(c); else list[i] = c;
       n++;
     });
-    if (!n) throw new Error("no characters");
-    saveAll(list); return n;
+    if (!n && !kept) throw new Error("no characters");
+    if (n) saveAll(list);
+    return (n ? "Added " + n + "." : "") + (kept ? (n ? " " : "") + "Skipped " + kept + ": the copy here is newer." : "");
   }
 
   function renderHome() {
@@ -3943,11 +3976,14 @@ main.wide { max-width: 1120px; }
     }).join("");
     b.innerHTML = '<div class="actions"><button class="btn" id="h-new" type="button">New character</button></div>' +
       (list.length ? '<ul class="chars">' + items + "</ul>" : '<p class="sub">No saved characters yet. Create your first one.</p>') +
-      '<div class="actions"><button class="btn ghost sm" id="h-bak" type="button">Backup</button><button class="btn ghost sm" id="h-imp" type="button">Import</button></div>' +
+      '<div class="actions"><button class="btn ghost sm" id="h-bak" type="button">Backup</button><button class="btn ghost sm" id="h-imp" type="button">Import</button>' +
+      (damaged ? '<button class="btn ghost sm" id="h-dmg" type="button">Damaged save</button>' : "") + "</div>" +
       '<div id="h-io"></div>';
     var ht = el("hometip");
-    ht.className = "tip outside" + (storageOk ? "" : " warn");
-    ht.textContent = storageOk ? "Characters are saved automatically in this browser on this device. Use Backup to keep a copy elsewhere." : "This browser is blocking saving, so characters will be lost when you close the page. Use Backup to keep a copy.";
+    ht.className = "tip outside" + (storageOk && !damaged ? "" : " warn");
+    ht.textContent = damaged ? (locked ? "Your saved characters could not be read, so saving is paused to avoid overwriting them." : "Your saved characters could not be read, so they were set aside instead of overwritten.") + " Use Damaged save to copy that text and keep it." :
+      storageOk ? "Characters are saved automatically in this browser on this device. Use Backup to keep a copy elsewhere." : "This browser is blocking saving, so characters will be lost when you close the page. Use Backup to keep a copy.";
+    if (damaged) el("h-dmg").addEventListener("click", function () { ioPanel("Copy this text and keep it somewhere safe.", damaged, false); });
     el("h-new").addEventListener("click", function () { state = freshState(); render(); window.scrollTo({ top: 0, behavior: "smooth" }); });
     el("h-bak").addEventListener("click", function () { ioPanel("Copy this text and keep it somewhere safe.", JSON.stringify(loadAll()), false); });
     el("h-imp").addEventListener("click", function () { ioPanel("Paste backup text here, or choose a file.", "", true); });
@@ -3956,7 +3992,7 @@ main.wide { max-width: 1120px; }
     b.querySelectorAll("[data-del]").forEach(function (x) {
       x.addEventListener("click", function () {
         if (x.dataset.arm !== "1") { x.dataset.arm = "1"; x.textContent = "Sure?"; setTimeout(function () { x.dataset.arm = ""; x.textContent = "Delete"; }, 3000); return; }
-        saveAll(loadAll().filter(function (q) { return q.id !== x.dataset.del; })); renderHome();
+        saveAll(fresh().filter(function (q) { return q.id !== x.dataset.del; })); renderHome();
       });
     });
   }
@@ -3968,7 +4004,10 @@ main.wide { max-width: 1120px; }
     var t = el("io-t"), m = el("io-m");
     el("io-x").addEventListener("click", function () { h.innerHTML = ""; });
     if (imp) {
-      var go = function () { try { var n = importText(t.value); if (!host) renderHome(); else m.textContent = "Added " + n + "."; } catch (e) { m.textContent = "That doesn't look like a character backup."; } };
+      var go = function () {
+        var msg; try { msg = importText(t.value); } catch (e) { m.textContent = "That doesn't look like a character backup."; return; }
+        if (!host) { renderHome(); el("h-io").innerHTML = '<p class="sub">' + msg + "</p>"; } else m.textContent = msg;
+      };
       el("io-go").addEventListener("click", go);
       el("io-f").addEventListener("change", function (ev) { var f = ev.target.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () { t.value = r.result; go(); }; r.readAsText(f); });
     } else {
