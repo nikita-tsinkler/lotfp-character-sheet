@@ -871,7 +871,17 @@ main.wide { max-width: 1120px; }
   </section>
   <p class="tip outside" id="hometip" hidden></p>
 
-  <section class="card" id="step1" aria-labelledby="s1t">
+  <section class="card" id="step1" aria-labelledby="s1q">
+    <header id="s1-kind-h">
+      <h2 id="s1q">New or existing character?</h2>
+    </header>
+    <div id="s1-kind">
+      <div class="choices" role="group" aria-label="New or existing character?">
+        <button class="choice" id="pick-new" aria-pressed="false" type="button"><b>New character</b></button>
+        <button class="choice" id="pick-paper" aria-pressed="false" type="button"><b>Existing paper character</b></button>
+      </div>
+    </div>
+
     <header id="s1-roll">
       <h2 id="s1t">Roll ability scores</h2>
       <p class="sub">Roll 3d6 for each ability, in this order:<br>Charisma, Constitution, Dexterity, Intelligence, Strength, Wisdom.</p>
@@ -1082,6 +1092,7 @@ main.wide { max-width: 1120px; }
   function el(id) { return document.getElementById(id); }
 
   function freshState() { return {
+    started: false,      // the first step's question, new or from paper, has been answered
     paper: false,        // being copied from a paper sheet: true until the sheet opens, and nothing is saved before that
     method: null,        // "manual" | "auto"
     rolls: null,         // auto: array of 6 {dice:[a,b,c]}
@@ -4256,7 +4267,8 @@ main.wide { max-width: 1120px; }
     "Abstract": "Абстрактное", "Domination not rolled": "Доминирование не брошено", "No summoned creatures yet.": "Призванных существ пока нет.",
     "Hit Dice": "Кости Здоровья", "Armor Class": "Класс брони", "Attacks": "Атаки", "Move": "Движение",
     "This browser is blocking saving, so these rolls are lost when you close the page.": "Этот браузер не даёт сохранять, поэтому броски пропадут, когда вы закроете страницу.",
-    "Add from a paper sheet": "Перенести с бумажного листа", "Add your adventurer": "Добавьте своего искателя приключений",
+    "Add character": "Добавить персонажа", "Add your adventurer": "Добавьте своего искателя приключений",
+    "New or existing character?": "Новый или уже существующий персонаж?", "Existing paper character": "Существующий персонаж с бумажного листа",
     "Enter ability scores": "Введите значения характеристик",
     "Copy the six scores from your paper sheet. Everything that follows from them is worked out for you.": "Перепишите шесть значений с бумажного листа. Всё, что из них следует, будет рассчитано за вас.",
     "Maximum": "Максимум", "Current": "Текущие", "Current XP": "Текущий опыт", "Experience": "Опыт",
@@ -4520,7 +4532,7 @@ main.wide { max-width: 1120px; }
       return '<li class="char' + (hp.dead ? " dead" : "") + '"><button class="char-open" type="button" data-open="' + esc(c.id) + '"><span class="ch-l">' + (t.sheet && t.sheet.name ? "<b data-notr>" + esc(t.sheet.name) + "</b>" : '<b class="unnamed">Unnamed</b>') + "<span>Level " + t.level + " " + esc(t.klass) + "</span></span>" + hpHTML + '</button>' +
         '<span class="char-acts"><button class="btn ghost sm" type="button" data-exp="' + esc(c.id) + '">Export</button><button class="btn ghost sm" type="button" data-del="' + esc(c.id) + '">Delete</button></span></li>';
     }).join("");
-    b.innerHTML = '<div class="actions"><button class="btn" id="h-new" type="button">New character</button><button class="btn ghost" id="h-paper" type="button">Add from a paper sheet</button></div>' +
+    b.innerHTML = '<div class="actions"><button class="btn" id="h-new" type="button">Add character</button></div>' +
       (list.length ? '<ul class="chars">' + items + "</ul>" : '<p class="sub">No saved characters yet. Create your first one.</p>') +
       '<div class="actions"><button class="btn ghost sm" id="h-bak" type="button">Backup</button><button class="btn ghost sm" id="h-imp" type="button">Import</button>' +
       (damaged ? '<button class="btn ghost sm" id="h-dmg" type="button">Damaged save</button>' : "") + "</div>" +
@@ -4531,7 +4543,6 @@ main.wide { max-width: 1120px; }
       storageOk ? "Characters are saved automatically in this browser on this device. Use Backup to keep a copy elsewhere." : "This browser is blocking saving, so characters will be lost when you close the page. Use Backup to keep a copy.";
     if (damaged) el("h-dmg").addEventListener("click", function () { ioPanel("Copy this text and keep it somewhere safe.", damaged, false); });
     el("h-new").addEventListener("click", function () { state = freshState(); render(); window.scrollTo({ top: 0, behavior: "smooth" }); });
-    el("h-paper").addEventListener("click", function () { state = freshState(); state.paper = true; state.method = "manual"; state.gearView = "shop"; render(); window.scrollTo({ top: 0, behavior: "smooth" }); });
     el("h-bak").addEventListener("click", function () { ioPanel("Copy this text and keep it somewhere safe.", JSON.stringify(loadAll()), false); });
     el("h-imp").addEventListener("click", function () { ioPanel("Paste backup text here, or choose a file.", "", true); });
     b.querySelectorAll("[data-open]").forEach(function (x) { x.addEventListener("click", function () { var c = loadAll().find(function (q) { return q.id === x.dataset.open; }); if (c) openChar(c); }); });
@@ -4575,8 +4586,11 @@ main.wide { max-width: 1120px; }
     el("home").hidden = v !== "home"; el("hometip").hidden = v !== "home"; el("sheettip").hidden = v !== "s5";
     el("rail").hidden = v === "home" || sheetish || v === "ref";
     el("title").hidden = sheetish || v === "ref"; el("kicker").hidden = sheetish || v === "ref";
-    el("title").textContent = v === "home" ? "Your adventurers" : state.paper ? "Add your adventurer" : "Create your adventurer";
-    el("s1-roll").hidden = el("s1-pick").hidden = !!state.paper; el("s1-paper").hidden = !state.paper;
+    el("title").textContent = v === "home" ? "Your adventurers" : state.started && !state.paper ? "Create your adventurer" : "Add your adventurer";
+    /* the question stays open through the first step and closes once its scores are confirmed, so answering again can't lose later steps */
+    el("s1-kind-h").hidden = el("s1-kind").hidden = v !== "s1" || state.confirmed;
+    el("s1-roll").hidden = el("s1-pick").hidden = !state.started || state.paper; el("s1-paper").hidden = !state.paper;
+    if (v === "s1" && !state.started) el("rail").hidden = true;
     /* these screens open from the steps while a paper character is being added, and go back there */
     el("prep-back").textContent = el("hire-back").textContent = state.paper ? "\u2190 Back" : "\u2190 Sheet";
     el("restart").hidden = v === "home" || sheetish || v === "ref";
@@ -4614,6 +4628,8 @@ main.wide { max-width: 1120px; }
   }
 
   function render() {
+    el("pick-new").setAttribute("aria-pressed", state.started && !state.paper);
+    el("pick-paper").setAttribute("aria-pressed", state.paper);
     el("pick-manual").setAttribute("aria-pressed", state.method === "manual");
     el("pick-auto").setAttribute("aria-pressed", state.method === "auto");
     layout(false);
@@ -4635,6 +4651,14 @@ main.wide { max-width: 1120px; }
     clearTimeout(restartTimer); restartTimer = null; b.innerHTML = "&larr; Characters";
     window.lotfpCharacter = undefined; goHome();
   });
+  function startAs(paper) {
+    if (state.started && state.paper === paper) return;
+    state = freshState(); state.started = true; state.paper = paper;
+    if (paper) { state.method = "manual"; state.gearView = "shop"; }
+    render();
+  }
+  el("pick-new").addEventListener("click", function () { startAs(false); });
+  el("pick-paper").addEventListener("click", function () { startAs(true); });
   el("pick-manual").addEventListener("click", function () { state.method = "manual"; state.confirmed = false; state.view = "s1"; render(); });
   el("pick-auto").addEventListener("click", function () { state.method = "auto"; state.confirmed = false; state.view = "s1"; render(); });
   el("ref-back").addEventListener("click", function () {
