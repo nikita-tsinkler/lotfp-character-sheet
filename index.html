@@ -872,12 +872,16 @@ main.wide { max-width: 1120px; }
   <p class="tip outside" id="hometip" hidden></p>
 
   <section class="card" id="step1" aria-labelledby="s1t">
-    <header>
+    <header id="s1-roll">
       <h2 id="s1t">Roll ability scores</h2>
       <p class="sub">Roll 3d6 for each ability, in this order:<br>Charisma, Constitution, Dexterity, Intelligence, Strength, Wisdom.</p>
     </header>
+    <header id="s1-paper" hidden>
+      <h2>Enter ability scores</h2>
+      <p class="sub">Copy the six scores from your paper sheet. Everything that follows from them is worked out for you.</p>
+    </header>
 
-    <div>
+    <div id="s1-pick">
       <div class="choices" role="group" aria-label="How do you want to roll?">
         <button class="choice" id="pick-manual" aria-pressed="false" type="button"><b>I'll roll my own dice</b></button>
         <button class="choice" id="pick-auto" aria-pressed="false" type="button"><b>Roll for me</b></button>
@@ -915,6 +919,13 @@ main.wide { max-width: 1120px; }
       <h2 id="s6t">Equipment</h2><button class="btn ghost sm" id="gear-back" type="button">Back</button>
     </header>
     <div id="body6"></div>
+  </section>
+
+  <section class="card" id="step13" aria-labelledby="s13t" hidden>
+    <header class="stephead">
+      <h2 id="s13t">Retainers</h2><button class="btn ghost sm" id="ret-back" type="button">Back</button>
+    </header>
+    <div id="body13"></div>
   </section>
 
   <section class="card" id="step8" aria-labelledby="s8t" hidden>
@@ -1071,6 +1082,7 @@ main.wide { max-width: 1120px; }
   function el(id) { return document.getElementById(id); }
 
   function freshState() { return {
+    paper: false,        // being copied from a paper sheet: true until the sheet opens, and nothing is saved before that
     method: null,        // "manual" | "auto"
     rolls: null,         // auto: array of 6 {dice:[a,b,c]}
     rerolls: 0,
@@ -1093,10 +1105,12 @@ main.wide { max-width: 1120px; }
   ];
   var FORCED = {};
   Object.keys(GAME.classes).forEach(function (k) { if (GAME.classes[k].alignment) FORCED[k] = GAME.classes[k].alignment; });
-  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s6: 4, s8: 5, s5: 5, inv: 5, prep: 5, book: 5, lvl: 5, hire: 5 };
+  var VIEW_IDX = { s1: 0, recap: 0, s2: 1, s3: 2, s4: 3, s6: 4, sr: 5, s8: 5, s5: 5, inv: 5, prep: 5, book: 5, lvl: 5, hire: 5 };
   function renderRail() {
-    var cur = VIEW_IDX[state.view], done = [state.confirmed, state.classDone, state.alignDone, state.detailsDone, state.gearDone, state.nameDone];
-    el("rail").innerHTML = STEPS.map(function (s, i) {
+    var cur = VIEW_IDX[state.view], done = [state.confirmed, state.classDone, state.alignDone, state.detailsDone, state.gearDone, state.nameDone], steps = STEPS;
+    /* a paper character also brings its retainers, in a step of their own before the name */
+    if (state.paper) { steps = STEPS.slice(0, 5).concat("Retainers", STEPS[5]); done.splice(5, 0, state.retDone); if (state.view === "s8") cur = 6; }
+    el("rail").innerHTML = steps.map(function (s, i) {
       var c = i === cur ? "on" : done[i] ? "done" : "";
       return '<li class="' + c + '">' + s + "</li>";
     }).join("");
@@ -1133,7 +1147,7 @@ main.wide { max-width: 1120px; }
           '<input class="sc-in" data-sc="' + i + '" type="number" inputmode="numeric" min="3" max="18" aria-label="' + a.name + ' score" value="' + (v === null ? "" : v) + '">' +
           '<span class="mod" data-scm="' + i + '"></span></div>';
       }).join("") + "</div></div>" +
-      '<div class="note"><strong>Additional rules</strong>If the total of all six ability modifiers is less than zero, you may discard the character and roll again. You may also swap the position of one pair of ability scores.</div>';
+      (state.paper ? "" : '<div class="note"><strong>Additional rules</strong>If the total of all six ability modifiers is less than zero, you may discard the character and roll again. You may also swap the position of one pair of ability scores.</div>');
     function update() {
       state.manual.forEach(function (v, i) {
         var m = scoreOk(v) ? modOf(v) : null, e = el("body").querySelector('[data-scm="' + i + '"]');
@@ -1299,6 +1313,8 @@ main.wide { max-width: 1120px; }
     if (state.view === "s4") row += '<span class="chip chip-class"><b>Level</b> ' + state.level + '</span><span class="chip chip-class"><b>Alignment</b> ' + state.align + "</span>";
     b.innerHTML = '<div class="banner-info"><div class="banner-row">' + inner + "</div>" + (row ? '<div class="banner-row">' + row + "</div>" : "") + '</div><button class="btn ghost sm" id="back1" type="button">Back</button>';
     el("back1").addEventListener("click", function () {
+      /* a paper character's scores are copied, not rolled, so going back just opens them again */
+      if (state.view === "s2" && state.paper) { state.view = "s1"; render(); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
       state.view = state.view === "s4" ? "s3" : state.view === "s3" ? "s2" : "recap"; layout(true);
     });
   }
@@ -1337,7 +1353,7 @@ main.wide { max-width: 1120px; }
         '<div class="k-head"><h3>' + a.name + "</h3></div><p>" + a.text + "</p>" + (forced === a.name ? '<span class="tag req">Required for ' + state.klass + "</span>" : "") + "</button>";
     }).join("");
     el("body3").innerHTML =
-      '<div class="lvl"><span class="group-inline">Starting level</span><div class="stepper"><button type="button" id="lv-dn" aria-label="Lower level">\u2212</button>' +
+      '<div class="lvl"><span class="group-inline">' + (state.paper ? "Level" : "Starting level") + '</span><div class="stepper"><button type="button" id="lv-dn" aria-label="Lower level">\u2212</button>' +
       '<input id="lv" type="number" inputmode="numeric" min="1" max="20" value="' + state.level + '" aria-label="Starting level">' +
       '<button type="button" id="lv-up" aria-label="Raise level">+</button></div></div>' +
       '<div class="klass-wrap"><div class="group">Alignment</div>' +
@@ -1403,6 +1419,15 @@ main.wide { max-width: 1120px; }
   function ensureDetails() {
     ensureGear();
     if (state.detSig === sig()) return;
+    /* what was copied from a paper sheet stays when an earlier step changes; only what belongs to the old class goes */
+    if (state.paper && state.detSig) {
+      var classChanged = JSON.parse(state.detSig)[2] !== state.klass;
+      if (classChanged) delete state.sheet.book;
+      /* a lower level has fewer skill points, and which ones to take back is the player's to say */
+      if (classChanged || ptsUsed() > pool()) { state.pts = {}; state.custom = [{ name: "", pts: 0 }, { name: "", pts: 0 }]; }
+      state.detSig = sig();
+      return;
+    }
     state.detSig = sig(); state.hp = null; state.spells = null; state.detailsDone = false; state.conInput = null; delete state.sheet.book;
     state.pts = {}; state.custom = [{ name: "", pts: 0 }, { name: "", pts: 0 }];
   }
@@ -1514,7 +1539,7 @@ main.wide { max-width: 1120px; }
         '<input class="cname" data-ci="' + i + '" type="text" maxlength="24" placeholder="Custom skill" value="' + esc(c.name) + '" aria-label="Custom skill ' + (i + 1) + ' name">'));
     });
     return '<section class="panel"><div class="group">Skills</div>' +
-      (spec ? '<p class="tip">Each point adds 1 to a skill, up to 6 in 6. Sneak Attack points add 1 to the damage multiplier and give +2 to hit.</p><div class="points"><b>' + left + "</b> of " + pool() + " skill points left</div>" : "") +
+      (spec ? '<p class="tip">' + (state.paper ? "Set each skill to the rating on your sheet. Sneak Attack is the damage multiplier." : "Each point adds 1 to a skill, up to 6 in 6. Sneak Attack points add 1 to the damage multiplier and give +2 to hit.") + '</p><div class="points"><b>' + left + "</b> of " + pool() + " skill points left</div>" : "") +
       '<div class="skills-grid">' + tiles.join("") + "</div></section>";
   }
 
@@ -1572,8 +1597,56 @@ main.wide { max-width: 1120px; }
     return '<section class="panel">' + html + "</section>";
   }
 
+  /* ---------- a paper character's details: what can't be worked out is copied from the sheet ---------- */
+  function paperBook() {
+    var by = {};
+    bookList().forEach(function (p) { var lv = SPELLS[p.id].lv; (by[lv] = by[lv] || []).push(p); });
+    var seen = !!state.sheet.book;
+    return '<section class="panel"><div class="group">Spellbook</div>' + (seen ? '<div class="book">' + Object.keys(by).sort(function (a, c) { return a - c; }).map(function (lv) {
+      return '<div class="brow"><span class="bl">' + ordinal(+lv) + ' level</span><div class="chips2">' + by[lv].slice().sort(spOrder).map(function (p) { return '<span class="sp">' + esc(spName(p)) + "</span>"; }).join("") + "</div></div>";
+    }).join("") + "</div>" : '<p class="tip">Mark every spell written in your spellbook.</p>') +
+      '<div class="actions"><button class="btn' + (seen ? " ghost" : "") + '" id="pa-book" type="button">' + (seen ? "Edit spells" : "Choose spells") + "</button></div></section>";
+  }
+  function xpHint() {
+    var k = state.klass, L = state.level, a = xpFor(k, L), c = xpFor(k, L + 1);
+    return '<p class="tip">' + "Level " + L + " starts at " + num(a) + " XP" + (c > a ? ", level " + (L + 1) + " at " + num(c) + " XP" : "") + ".</p>";
+  }
+  /* XP has to fit the level: anything else, or nothing, becomes the level's minimum */
+  function fixPaperXp() {
+    var k = state.klass, L = state.level, a = xpFor(k, L), c = xpFor(k, L + 1), v = parseInt(String(state.sheet.xp === undefined ? "" : state.sheet.xp).replace(/[^\d]/g, ""), 10);
+    state.sheet.xp = String(isNaN(v) || v < a || (c > a && v >= c) ? a : v);
+  }
+  function renderPaperDetails() {
+    var b = el("body4"), S = state.sheet;
+    fixPaperXp();
+    b.innerHTML = '<section class="panel"><div class="group">Hit points</div><div class="rf pair">' +
+      rfld("Maximum", '<input id="pa-max" type="number" min="1" inputmode="numeric" value="' + (state.hp ? state.hp.total : "") + '">') +
+      rfld("Current", '<input id="pa-cur" type="number" inputmode="numeric" value="' + (curHPset() ? esc(S.curhp) : "") + '">') + '</div><p class="tip">Leave Current empty if the character is unhurt.</p></section>' +
+      '<section class="panel"><div class="group">Experience</div><div class="rf pair">' +
+      rfld("Current XP", '<input id="pa-xp" type="text" inputmode="numeric" maxlength="9" value="' + esc(num(S.xp)) + '">') + '</div><div id="pa-xptip">' + xpHint() + "</div></section>" +
+      (state.klass === "Specialist" ? skillsSection() : "") + (freeSpell() ? paperBook() : "");
+    function ready() {
+      footer(!!state.hp && (!freeSpell() || !!S.book) && (state.klass !== "Specialist" || ptsUsed() >= pool()), function () { fixPaperXp(); state.detailsDone = true; syncChar(); state.view = "s6"; layout(true); });
+    }
+    ready();
+    el("pa-max").addEventListener("input", function () { var v = parseInt(this.value, 10); state.hp = isNaN(v) || v < 1 ? null : { total: v }; ready(); });
+    el("pa-cur").addEventListener("input", function () { var v = parseInt(this.value, 10); S.curhp = isNaN(v) ? null : String(v); });
+    /* checked when the field is left, so a number can be typed digit by digit */
+    el("pa-xp").addEventListener("input", function () { S.xp = this.value; });
+    el("pa-xp").addEventListener("change", function () { S.xp = this.value; fixPaperXp(); this.value = num(S.xp); });
+    if (el("pa-book")) el("pa-book").addEventListener("click", openBook);
+    b.querySelectorAll("[data-sk]").forEach(function (x) {
+      x.addEventListener("click", function () { var n = x.dataset.sk; state.pts[n] = Math.max(0, (state.pts[n] || 0) + (+x.dataset.d)); renderPaperDetails(); });
+    });
+    b.querySelectorAll("[data-ck]").forEach(function (x) {
+      x.addEventListener("click", function () { var c = state.custom[+x.dataset.ck]; c.pts = Math.max(0, c.pts + (+x.dataset.d)); renderPaperDetails(); });
+    });
+    b.querySelectorAll(".cname").forEach(function (x) { x.addEventListener("input", function () { state.custom[+x.dataset.ci].name = x.value; }); });
+  }
+
   function renderDetails() {
     ensureDetails();
+    if (state.paper) { renderPaperDetails(); return; }
     var b = el("body4");
     if (state.detailsDone) {
       b.innerHTML = '<div class="chosen">Character details recorded</div>' +
@@ -1686,11 +1759,20 @@ main.wide { max-width: 1120px; }
   function ensureGear() {
     state.gunOpt = state.gunOpt || {};
     if (state.gear && state.gearSig === gearSig()) { registerVariants(); return; }
+    /* a paper character's belongings don't depend on class or level, except the spellbook they all start with */
+    if (state.gear && state.paper) {
+      state.gearSig = gearSig();
+      if (state.klass === "Magic-User" || state.klass === "Elf") state.gear.spellbook = state.gear.spellbook || { q: 1 }; else delete state.gear.spellbook;
+      registerVariants();
+      return;
+    }
     state.gearSig = gearSig(); state.money = null; state.purse = null; state.gearDone = false; state.homebrew = {}; state.kitDone = false;
     state.gear = { "travel-clothes": { q: 1 } };
     if (state.klass === "Magic-User" || state.klass === "Elf") state.gear.spellbook = { q: 1 };
   }
   function mkt() { return MODE === "play" ? state.market : null; }
+  /* a paper character already owns what it carries, so nothing costs anything until the sheet opens */
+  function freeGear() { return state.paper && MODE === "create"; }
   /* a market column set to null means the item isn't sold there */
   function unsold(it) { var m = mkt(); return !!m && it[m] === null && it.sp !== null; }
   function cpOf(it) { var m = mkt(), v = m && typeof it[m] === "number" ? it[m] : it.sp; return Math.round((v || 0) * 10); }
@@ -1827,7 +1909,7 @@ main.wide { max-width: 1120px; }
     var warn = CASTER_LIMIT[state.klass] && E.lvl > CASTER_LIMIT[state.klass][0] ? CASTER_LIMIT[state.klass][1] :
       state.klass === "Specialist" && E.lvl > 0 ? "Specialists take −1 to movement skills per encumbrance level." : "";
     return '<div class="eb-top"><span class="eb-money' + (left !== null && left < 0 ? " neg" : "") + '">' +
-      (left === null ? "<span>Money not rolled</span>" : "<b>" + money(left) + "</b> <span>left</span>") + "</span>" +
+      (left === null ? "<span>Money not rolled</span>" : "<b>" + money(left) + "</b>" + (freeGear() ? "" : " <span>left</span>")) + "</span>" +
       '<span class="eb-lvl l' + E.lvl + '" title="Encumbrance">' + L.en + "</span></div>" +
       '<div class="meter' + (E.items > last + 4 ? " full" : "") + '" aria-hidden="true">' + cells + "</div>" +
       '<div class="eb-bot"><span><span>' + itemsLbl(E.items) + "</span>" + (E.coinItems ? ' · <span class="coin">' + E.coinItems + " in coins</span>" : "") + (nxt ? " · <span>" + nxt + "</span>" : "") + "</span></div>" +
@@ -1860,6 +1942,7 @@ main.wide { max-width: 1120px; }
     return st || desc ? '<span class="it-d">' + (st ? '<span class="st">' + esc(st) + "</span>" : "") + (st && desc ? " " : "") + (desc ? "<span>" + esc(desc) + "</span>" : "") + "</span>" : "";
   }
   function priceOf(it) {
+    if (freeGear()) return "";
     if (it.free || it.sp === null) return "Free";
     if (unsold(it)) return "Not sold here";
     return money(cpOf(it) * stepOf(it)) + (stepOf(it) > 1 ? " / " + stepOf(it) : "");
@@ -1868,19 +1951,19 @@ main.wide { max-width: 1120px; }
      (eaten, spent, lost or sold), one at a time and without a refund */
   function qtyCtl(it, canAdd, where) {
     var q = owned(it.id), n = esc(itemName(it));
-    var add = '<button type="button" data-add="' + it.id + '" aria-label="Buy ' + n + '"' + (canAdd ? "" : " disabled") + ">+</button>";
+    var add = '<button type="button" data-add="' + it.id + '" aria-label="' + (freeGear() ? "Add " : "Buy ") + n + '"' + (canAdd ? "" : " disabled") + ">+</button>";
     if (MODE === "play") {
       if (where === "pack") return '<span class="stp drop"><button type="button" data-drop="' + it.id + '" aria-label="Remove one ' + n + '">−</button><i>' + q + "</i></span>";
       return '<span class="stp buy">' + (q ? '<i title="Owned">×' + q + "</i>" : "") + add + "</span>";
     }
-    if (it.free) return '<span class="tag">Free</span>';
+    if (it.free) return freeGear() ? "" : '<span class="tag">Free</span>';
     if (!q) return '<span class="stp buy">' + add + "</span>";
     return '<span class="stp"><button type="button" data-sub="' + it.id + '" aria-label="Remove ' + n + '">−</button><i>' + q + "</i>" + add + "</span>";
   }
   /* arrows and bolts bring a quiver along when there is none (a quiver and its 20 shafts are one item) */
-  function needsQuiver(it) { return (it.id === "arrows" || it.id === "bolts") && !owned("quiver"); }
+  function needsQuiver(it) { return !freeGear() && (it.id === "arrows" || it.id === "bolts") && !owned("quiver"); }
   function addCp(it) { return cpOf(it) * stepOf(it) + (needsQuiver(it) ? cpOf(ITEMS.quiver) : 0); }
-  function canBuy(it, left) { return !unsold(it) && (left === null || addCp(it) <= left); }
+  function canBuy(it, left) { return freeGear() || !unsold(it) && (left === null || addCp(it) <= left); }
   function shopRow(it, left) {
     var q = owned(it.id), ok = canBuy(it, left);
     return '<div class="it' + (it.enc === "o" ? " ov" : "") + (q ? " own" : "") + (!ok && !q ? " dim" : "") + '"><div class="it-l"><div class="it-h"><span class="it-n">' + esc(itemName(it)) + tagsOf(it) + '</span><span class="it-p">' + priceOf(it) + "</span></div>" +
@@ -1889,12 +1972,12 @@ main.wide { max-width: 1120px; }
   function gunRow(base, left) {
     var o = gunOpt(base), v = variant(base, o.lock, o.rifled), ok = canBuy(v, left), b = ITEMS[base];
     var locks = gunLocks(base).slice().sort(function (x, y) { return x.mult - y.mult; }).map(function (l) {
-      return '<button type="button" data-lock="' + base + ":" + l.id + '" aria-pressed="' + (l.id === o.lock) + '"><span>' + l.en + "</span><i>" + money(cpOf(variant(base, l.id, o.rifled))) + "</i></button>";
+      return '<button type="button" data-lock="' + base + ":" + l.id + '" aria-pressed="' + (l.id === o.lock) + '"><span>' + l.en + "</span>" + (freeGear() ? "" : "<i>" + money(cpOf(variant(base, l.id, o.rifled))) + "</i>") + "</button>";
     }).join("");
     var extra = cpOf(variant(base, o.lock, true)) - cpOf(variant(base, o.lock, false));
     return '<div class="it gun' + (b.enc === "o" ? " ov" : "") + (owned(v.id) ? " own" : "") + (!ok && !owned(v.id) ? " dim" : "") + '"><div class="it-l"><div class="it-h"><span class="it-n">' + esc(b.en) + tagsOf(b) + '</span><span class="it-p">' + priceOf(v) + "</span></div>" +
       lineTwo(b, b.desc) + "</div>" + qtyCtl(v, ok) +
-      '<div class="gopts"><span class="gl">' + locks + '</span><button type="button" data-rifle="' + base + '" aria-pressed="' + o.rifled + '"><span>' + FO.rifled.en + "</span><i>+" + money(extra) + "</i></button></div>" +
+      '<div class="gopts"><span class="gl">' + locks + '</span><button type="button" data-rifle="' + base + '" aria-pressed="' + o.rifled + '"><span>' + FO.rifled.en + "</span>" + (freeGear() ? "" : "<i>+" + money(extra) + "</i>") + "</button></div>" +
       '<p class="it-d gdesc"><span>' + lockOf(o.lock).desc + "</span>" + (o.rifled ? " · <span>" + FO.rifled.desc + "</span>" : "") + "</p></div>";
   }
   /* one sub-tab's items, with a heading wherever the data starts a new group */
@@ -1987,7 +2070,7 @@ main.wide { max-width: 1120px; }
       away.map(function (id) { return packRow(id, E); }).join("") +
       (kept ? '<div class="it pk coins"><div class="it-l"><span class="it-n">Coins <b>×' + num(kept) + "</b></span></div>" + coinMove(false, kept) + "</div>" : "") + "</section>";
     var bought = ids.some(function (id) { return !ITEMS[id].free; });
-    return (bought || MODE === "play" ? "" : '<p class="sub none">Nothing bought yet.</p>') + h;
+    return (bought || MODE === "play" ? "" : '<p class="sub none">' + (freeGear() ? "Nothing added yet." : "Nothing bought yet.") + "</p>") + h;
   }
 
   /* ---------- starting packs: class presets, shown only at character creation ----------
@@ -2090,7 +2173,7 @@ main.wide { max-width: 1120px; }
   function packCount() { return Object.keys(state.gear).filter(function (id) { return state.gear[id].q > 0 && !ITEMS[id].free; }).length; }
   function gearBody() { return el(MODE === "play" ? "body7" : "body6"); }
   function gearView() { return MODE === "play" ? state.invView : state.gearView; }
-  function onKit() { return MODE === "create" && !state.kitDone; }
+  function onKit() { return MODE === "create" && !state.kitDone && !state.paper; }
   function refreshGear() {
     var E = encInfo(), f = document.activeElement, key = null, v = gearView();
     if (f && f.dataset) ["add", "sub", "drop", "found", "stow", "carry", "lock", "rifle", "kplus", "kminus"].some(function (k) { if (f.dataset[k]) { key = "[data-" + k + '="' + f.dataset[k] + '"]'; return true; } });
@@ -2127,15 +2210,18 @@ main.wide { max-width: 1120px; }
       return;
     }
     var v = state.gearView = state.gearView === "shop" ? "shop" : "pack";
-    var segs = [["pack", ""], ["shop", "Shop"]];
+    var free = freeGear(), segs = [["pack", ""], ["shop", free ? "Add" : "Shop"]];
+    if (free && typeof state.purse !== "number") state.purse = 0;
     el("body6").innerHTML = '<div class="gearhead" id="encbar"></div>' +
+      (free ? purseHTML() : "") +
       '<div class="seg" role="tablist" style="--n:' + segs.length + '">' + segs.map(function (x) {
         return '<button type="button" role="tab"' + (x[0] === "pack" ? ' id="seg-pack"' : "") + ' data-view="' + x[0] + '" aria-selected="' + (v === x[0]) + '">' + x[1] + "</button>";
       }).join("") + "</div>" +
-      (v === "shop" ? shopHTML() : '<div class="ilist" id="gpack"></div>');
+      (v === "shop" ? shopHTML() + (free ? newItemHTML() : "") : '<div class="ilist" id="gpack"></div>');
     refreshGear();
     bindSearch();
-    footer(true, function () { state.gearDone = true; autoEquip(); syncChar(); state.view = "s8"; layout(true); });
+    if (free) { bindPurse(); bindNewItem(function () { state.gearView = "pack"; renderGear(); }); }
+    footer(true, function () { state.gearDone = true; autoEquip(); syncChar(); state.view = state.paper ? "sr" : "s8"; layout(true); });
   }
 
   /* ---------- inventory in play: the sheet's own page, never back into character creation ---------- */
@@ -2171,6 +2257,27 @@ main.wide { max-width: 1120px; }
       '<div class="actions"><button class="btn" type="submit">Add to inventory</button></div></form>';
   }
   function purseVal() { return typeof state.purse === "number" ? String(state.purse / 10) : ""; }
+  function purseHTML() { return '<label class="purse">Money <input id="purse-in" type="text" inputmode="decimal" maxlength="9" aria-label="Money in silver pieces" value="' + purseVal() + '"> sp</label>'; }
+  function bindPurse() {
+    var p = el("purse-in");
+    if (p) p.addEventListener("input", function () {
+      var n = parseFloat(p.value.replace(",", ".").replace(/[^\d.\-]/g, ""));
+      if (!isNaN(n)) { state.purse = Math.round(n * 10); refreshGear(); }
+    });
+  }
+  function bindNewItem(after) {
+    var form = el("newit");
+    if (form) form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var name = el("ni-name").value.trim(), q = parseInt(el("ni-q").value, 10);
+      if (!name) { el("ni-name").focus(); return; }
+      var id = "x-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+      state.homebrew[id] = { en: name, enc: NEW_ENC, desc: el("ni-desc").value.trim() };
+      homebrewItem(id, state.homebrew[id]);
+      state.gear[id] = { q: isNaN(q) || q < 1 ? 1 : q };
+      after();
+    });
+  }
   function renderInventory() {
     ensureDetails();
     var v = state.invView = state.invView || "pack";
@@ -2181,26 +2288,14 @@ main.wide { max-width: 1120px; }
       }).join("") + "</div>";
     if (v === "shop") h += marketHTML() + shopHTML();
     else if (v === "add") h += '<div class="gshop"><input class="gsearch" id="asearch" type="search" placeholder="Search items to add" aria-label="Search items to add" value="' + esc(state.addQ) + '"><div class="ilist" id="glist"></div>' + newItemHTML() + "</div>";
-    else h += '<label class="purse">Money <input id="purse-in" type="text" inputmode="decimal" maxlength="9" aria-label="Money in silver pieces" value="' + purseVal() + '"> sp</label><div class="ilist" id="gpack"></div>';
+    else h += purseHTML() + '<div class="ilist" id="gpack"></div>';
     el("body7").innerHTML = h + '<div class="actions"><button class="btn" id="inv-done" type="button">Done</button></div>';
     refreshGear();
     bindSearch();
-    var a = el("asearch"), p = el("purse-in"), form = el("newit");
+    var a = el("asearch");
     if (a) a.addEventListener("input", function () { state.addQ = a.value; refreshGear(); });
-    if (p) p.addEventListener("input", function () {
-      var n = parseFloat(p.value.replace(",", ".").replace(/[^\d.\-]/g, ""));
-      if (!isNaN(n)) { state.purse = Math.round(n * 10); refreshGear(); }
-    });
-    if (form) form.addEventListener("submit", function (ev) {
-      ev.preventDefault();
-      var name = el("ni-name").value.trim(), q = parseInt(el("ni-q").value, 10);
-      if (!name) { el("ni-name").focus(); return; }
-      var id = "x-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-      state.homebrew[id] = { en: name, enc: NEW_ENC, desc: el("ni-desc").value.trim() };
-      homebrewItem(id, state.homebrew[id]);
-      state.gear[id] = { q: isNaN(q) || q < 1 ? 1 : q };
-      state.invView = "pack"; renderInventory();
-    });
+    bindPurse();
+    bindNewItem(function () { state.invView = "pack"; renderInventory(); });
     el("inv-done").addEventListener("click", closeInventory);
   }
   function closeInventory() { syncChar(); state.view = "s5"; layout(true); }
@@ -2495,7 +2590,7 @@ main.wide { max-width: 1120px; }
     });
     applySpellSearch();
   }
-  function openBook() { state.prepSel = null; state.spellQ = ""; state.view = "book"; layout(true); }
+  function openBook() { if (state.paper) state.sheet.book = bookList().slice(); state.prepSel = null; state.spellQ = ""; state.view = "book"; layout(true); }
 
   /* on narrow screens the description opens under the chosen spell's row instead of beside the list */
   var NARROW = window.matchMedia("(max-width: 899px)");
@@ -2550,13 +2645,13 @@ main.wide { max-width: 1120px; }
   }
   /* preparing starts a new day, so every prepared spell comes back uncast */
   function savePrep() { state.sheet.prep = state.prepDraft.slice().sort(spOrder).map(function (p) { return { id: p.id, rev: !!p.rev, cast: false }; }); closePrep(); }
-  function closePrep() { state.prepDraft = null; state.prepSel = null; state.view = "s5"; layout(true); }
+  function closePrep() { state.prepDraft = null; state.prepSel = null; state.view = state.paper ? "s4" : "s5"; layout(true); }
   el("prep-back").addEventListener("click", closePrep);
 
   function gearClick(ev) {
     var b = ev.target.closest("button");
     if (!b || b.disabled) return;
-    var d = b.dataset, g = state.gear, play = MODE === "play", paid = typeof state.purse === "number";
+    var d = b.dataset, g = state.gear, play = MODE === "play", paid = typeof state.purse === "number" && !freeGear();
     if (d.view) { if (play) { state.invView = d.view; renderInventory(); } else { state.gearView = d.view; renderGear(); } return; }
     if (d.market) { state.market = d.market; renderInventory(); return; }
     if (d.newenc) { NEW_ENC = d.newenc; b.parentNode.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b); }); return; }
@@ -2580,7 +2675,7 @@ main.wide { max-width: 1120px; }
     else if (d.sub) {
       var n = Math.min(g[d.sub].q, stepOf(ITEMS[d.sub]));
       if (paid) state.purse += cpOf(ITEMS[d.sub]) * n;
-      g[d.sub].q -= n; if (!g[d.sub].q) delete g[d.sub];
+      g[d.sub].q -= n; if (!g[d.sub].q) { delete g[d.sub]; delete state.homebrew[d.sub]; }
     }
     else if (d.drop) { if (!--g[d.drop].q) { delete g[d.drop]; delete state.homebrew[d.drop]; } }
     else if (d.found) { if (!g[d.found]) g[d.found] = { q: 0, away: !!ITEMS[d.found].away }; g[d.found].q++; }
@@ -2781,7 +2876,7 @@ main.wide { max-width: 1120px; }
       (g.rolls.length ? '<div class="nrolls">' + g.rolls.map(function (r, i) { return '<button type="button" class="nroll" data-nm="' + i + '" data-notr>' + esc(nameText(r)) + "</button>"; }).join("") + "</div>" +
         '<p class="tip">Pick an earlier roll to use it again.</p>' : "") + "</div></details>";
     var inp = el("nm-in");
-    function ready() { footer(!!state.sheet.name.trim(), function () { state.nameDone = true; syncChar(); state.view = "s5"; layout(true); }); }
+    function ready() { footer(!!state.sheet.name.trim(), function () { state.nameDone = true; state.paper = false; syncChar(); state.view = "s5"; layout(true); }); }
     ready();
     inp.addEventListener("input", function () { state.sheet.name = inp.value; g.cur = null; ready(); });
     el("nm-gen").addEventListener("toggle", function () { g.open = el("nm-gen").open; });
@@ -2793,7 +2888,8 @@ main.wide { max-width: 1120px; }
   }
   /* the step headers' Back buttons are static, so they're bound once */
   el("gear-back").addEventListener("click", function () { state.detailsDone = false; state.view = "s4"; layout(true); });
-  el("nm-back").addEventListener("click", function () { state.gearDone = false; state.view = "s6"; layout(true); });
+  el("nm-back").addEventListener("click", function () { if (state.paper) state.view = "sr"; else { state.gearDone = false; state.view = "s6"; } layout(true); });
+  el("ret-back").addEventListener("click", function () { state.gearDone = false; state.view = "s6"; layout(true); });
   el("body8").addEventListener("click", function (ev) {
     var x = ev.target.closest("button");
     if (!x) return;
@@ -3222,14 +3318,22 @@ main.wide { max-width: 1120px; }
   function retainersPanel() {
     var S = state.sheet, R = S.retainers = S.retainers || [], A = S.animals = S.animals || [];
     return '<section class="panel"><div class="group">Retainers</div>' + (R.length ? '<div class="rts">' + R.map(function (r, i) { return retCard(r, i, false); }).join("") + "</div>" : "") +
-      '<button class="link" type="button" id="r-add">+ Hire a retainer</button></section>' +
+      '<button class="link" type="button" id="r-add">' + (state.paper ? "+ Add a retainer" : "+ Hire a retainer") + "</button></section>" +
       '<section class="panel"><div class="group">Animals</div>' + (A.length ? '<div class="rts">' + A.map(function (r, i) { return retCard(r, i, true); }).join("") + "</div>" : "") +
       '<button class="link" type="button" id="a-add">+ Add an animal</button></section>';
   }
+  /* the cards also make up a paper character's retainers step */
+  function retRedraw() { if (state.paper) renderPaperRetainers(); else renderSheet(); }
+  function renderPaperRetainers() {
+    var b = el("body13");
+    b.innerHTML = '<p class="tip">Copy your retainers and animals with their current loyalty, morale and hit points. Nothing is rolled here.</p>' + retainersPanel();
+    bindRetainers(b);
+    footer(true, function () { state.retDone = true; syncChar(); state.view = "s8"; layout(true); });
+  }
   function retOf(k) { var S = state.sheet; return k[0] === "a" ? S.animals[+k.slice(1)] : S.retainers[+k]; }
   function bindRetainers(b) {
-    el("r-add").addEventListener("click", function () { openHire("r"); });
-    el("a-add").addEventListener("click", function () { openHire("a"); });
+    b.querySelector("#r-add").addEventListener("click", function () { openHire("r"); });
+    b.querySelector("#a-add").addEventListener("click", function () { openHire("a"); });
     b.querySelectorAll("[data-rcard]").forEach(function (d) {
       d.addEventListener("toggle", function () {
         retOf(d.dataset.rcard).open = d.open; persist();
@@ -3250,8 +3354,8 @@ main.wide { max-width: 1120px; }
       x.addEventListener("click", function () {
         var k = x.dataset.rhp, r = retOf(k), cur = r.cur === undefined || r.cur === null ? r.hp : r.cur;
         r.cur = Math.min(r.hp, cur + (+x.dataset.d));
-        persist(); renderSheet();
-        var t = el("body5").querySelector('[data-rhp="' + k + '"][data-d="' + x.dataset.d + '"]'); if (t && !t.disabled) t.focus();
+        persist(); retRedraw();
+        var t = b.querySelector('[data-rhp="' + k + '"][data-d="' + x.dataset.d + '"]'); if (t && !t.disabled) t.focus();
       });
     });
     b.querySelectorAll("[data-redit]").forEach(function (x) {
@@ -3262,7 +3366,7 @@ main.wide { max-width: 1120px; }
         if (x.dataset.arm !== "1") { x.dataset.arm = "1"; x.textContent = "Sure?"; setTimeout(function () { x.dataset.arm = ""; x.textContent = "Remove"; }, 3000); return; }
         var k = x.dataset.rdel, S = state.sheet;
         if (k[0] === "a") S.animals.splice(+k.slice(1), 1); else S.retainers.splice(+k, 1);
-        persist(); renderSheet();
+        persist(); retRedraw();
       });
     });
   }
@@ -3271,13 +3375,13 @@ main.wide { max-width: 1120px; }
   function openHire(type, edit) {
     var S = state.sheet, src = edit === undefined ? null : (type === "a" ? S.animals : S.retainers)[edit];
     state.hire = {
-      type: type, edit: edit === undefined ? null : edit, pay: 0, roll: null, anim: false, q: "",
+      type: type, edit: edit === undefined ? null : edit, paper: state.paper, pay: 0, roll: null, anim: false, q: "",
       d: src ? JSON.parse(JSON.stringify(src)) : type === "a" ? { kind: "mule", name: "", gear: {}, notes: "" } :
         { name: "", klass: "Fighter", lv: 0, prof: "", base: "", wage: "", per: "month", share: "", gear: {}, notes: "" }
     };
     state.view = "hire"; layout(true);
   }
-  function closeHire() { state.hire = null; state.view = "s5"; layout(true); }
+  function closeHire() { state.hire = null; state.view = state.paper ? "sr" : "s5"; layout(true); }
   el("hire-back").addEventListener("click", closeHire);
   /* the offer: the profession's standard wage (or one typed for a custom profession), scaled by the pay offered;
      the pay steps are the book's, +1 to the roll per 50% more and −1 per 10% less (p. 55) */
@@ -3297,7 +3401,12 @@ main.wide { max-width: 1120px; }
     var cha = effMod("CHA") || 0, pay = state.hire.pay;
     return "<span>CHA</span> <b>" + fmt(cha) + "</b><span>Pay</span> <b>" + fmt(pay) + '</b><span class="hm-t">Total</span> <b>' + fmt(cha + pay) + "</b>";
   }
-  function hireReady() { var H = state.hire; return H.edit !== null || (!!H.roll && H.roll.accepts); }
+  function hireReady() { var H = state.hire; return H.edit !== null || H.paper || (!!H.roll && H.roll.accepts); }
+  /* copied from a paper sheet, there is no roll to supply these two, so they have to be filled in */
+  function hireFilled() {
+    var H = state.hire, score = H.type === "a" ? H.d.morale : H.d.loyalty;
+    return !H.paper || (H.d.hp >= 1 && score >= 2 && score <= 12);
+  }
   function hireResults() {
     var H = state.hire, q = (H.q || "").trim(), box = el("h-res");
     if (!box) return;
@@ -3309,9 +3418,10 @@ main.wide { max-width: 1120px; }
     }).join("") : '<p class="sub none">Nothing found.</p>';
   }
   function renderHire() {
-    var H = state.hire, an = H.type === "a", d = H.d, editing = H.edit !== null, h = "";
-    el("s11t").textContent = editing ? (an ? "Edit animal" : "Edit retainer") : (an ? "Add an animal" : "Hire a retainer");
-    if (!editing) {
+    var H = state.hire, an = H.type === "a", d = H.d, editing = H.edit !== null, direct = editing || H.paper, h = "";
+    el("s11t").textContent = editing ? (an ? "Edit animal" : "Edit retainer") : (an ? "Add an animal" : H.paper ? "Add a retainer" : "Hire a retainer");
+    var curF = direct ? rfld("Current hit points", '<input type="number" data-hf="cur" value="' + (d.cur === undefined || d.cur === null ? "" : d.cur) + '">') : "";
+    if (!direct) {
       var R = H.roll, cha = an ? 0 : effMod("CHA") || 0, locked = R && R.accepts ? " disabled" : "";
       /* first the offer: what the job is and what it pays, then the applicant's roll */
       if (!an) {
@@ -3343,20 +3453,20 @@ main.wide { max-width: 1120px; }
         h += rfld("Animal", '<select data-hf="kind">' + ANIMALS.map(function (id) { return opt(id, itemName(ITEMS[id]), d.kind); }).join("") + opt("custom", "Other…", d.kind) + "</select>") +
           (d.kind === "custom" ? rfld("Kind of animal", '<input type="text" data-hf="custom" value="' + esc(d.custom || "") + '">') : "") +
           rfld("Name", '<input type="text" data-hf="name" value="' + esc(d.name || "") + '">');
-        if (editing) h += rfld("Morale", '<input type="number" min="2" max="12" data-hf="morale" value="' + (d.morale || "") + '">') +
-          rfld("Hit points", '<input type="number" min="1" data-hf="hp" value="' + (d.hp || "") + '">');
+        if (direct) h += rfld("Morale", '<input type="number" min="2" max="12" data-hf="morale" value="' + (d.morale || "") + '">') +
+          rfld("Hit points", '<input type="number" min="1" data-hf="hp" value="' + (d.hp || "") + '">') + curF;
       } else {
         var pr = PROFS[d.prof];
         h += rfld("Name", '<input type="text" data-hf="name" value="' + esc(d.name || "") + '">') +
           '<div class="rf pair">' + rfld("Class", '<select data-hf="klass">' + KLASSES.map(function (c) { return opt(c, c, d.klass || "Fighter"); }).join("") + "</select>") +
           rfld("Level", '<input type="number" min="0" max="20" inputmode="numeric" data-hf="lv" value="' + (d.lv || 0) + '">') + "</div>";
-        if (editing) h += rfld("Profession", '<select data-hf="prof">' + opt("", "—", d.prof) + PROFS.map(function (x, j) { return opt(j, x.en, d.prof); }).join("") + opt("custom", "Other…", d.prof) + "</select>") +
+        if (direct) h += rfld("Profession", '<select data-hf="prof">' + opt("", "—", d.prof) + PROFS.map(function (x, j) { return opt(j, x.en, d.prof); }).join("") + opt("custom", "Other…", d.prof) + "</select>") +
           (d.prof === "custom" ? rfld("Profession", '<input type="text" data-hf="custom" value="' + esc(d.custom || "") + '">') : "") +
           '<div class="rf pair">' + rfld("Wage", '<input type="text" data-hf="wage" value="' + esc(d.wage || "") + '">') +
           rfld("Per", '<select data-hf="per">' + opt("day", "Day", d.per) + opt("month", "Month", d.per) + opt("live-in", "Month, living in", d.per) + "</select>") + "</div>" +
           rfld("Share", '<input type="text" data-hf="share" placeholder="—" value="' + esc(d.share || "") + '">') +
           rfld("Loyalty", '<input type="number" min="2" max="12" data-hf="loyalty" value="' + (d.loyalty || "") + '">') +
-          rfld("Hit points", '<input type="number" min="1" data-hf="hp" value="' + (d.hp || "") + '">');
+          rfld("Hit points", '<input type="number" min="1" data-hf="hp" value="' + (d.hp || "") + '">') + curF;
       }
       h += "</div></section>" +
         '<section class="panel"><div class="group plain">' + (an ? "Carrying" : "Belongings") + "</div>" +
@@ -3369,7 +3479,7 @@ main.wide { max-width: 1120px; }
         '<input class="gsearch" id="h-q" type="search" placeholder="Search items to add" aria-label="Search items to add" value="' + esc(H.q) + '"><div class="ilist" id="h-res"></div></section>' +
         '<section class="panel"><div class="group plain">Notes</div><textarea class="notes rnotes" rows="2" data-hf="notes" aria-label="Notes">' + esc(d.notes || "") + "</textarea></section>";
     }
-    h += '<div class="actions">' + (hireReady() ? '<button class="btn" id="h-ok" type="button">' + (editing ? "Save" : an ? "Add animal" : "Hire") + "</button>" : "") +
+    h += '<div class="actions">' + (hireReady() ? '<button class="btn" id="h-ok" type="button"' + (hireFilled() ? "" : " disabled") + ">" + (editing ? "Save" : an ? "Add animal" : H.paper ? "Add retainer" : "Hire") + "</button>" : "") +
       '<button class="btn ghost" id="h-cancel" type="button">Cancel</button></div>';
     var b = el("body11");
     b.innerHTML = h;
@@ -3381,8 +3491,9 @@ main.wide { max-width: 1120px; }
       x.addEventListener(sel ? "change" : "input", function () {
         var v = x.value;
         if (f === "pay") { H.pay = +v; el("h-offer").innerHTML = offerLine(); el("h-mods").innerHTML = hireMods(); return; }
-        if (f === "lv" || f === "loyalty" || f === "morale" || f === "hp") v = v === "" ? "" : parseInt(v, 10);
+        if (f === "lv" || f === "loyalty" || f === "morale" || f === "hp" || f === "cur") v = v === "" ? "" : parseInt(v, 10);
         d[f] = v;
+        if (el("h-ok")) el("h-ok").disabled = !hireFilled();
         /* a profession brings its standard pay and share; a custom one starts blank */
         if (f === "prof") {
           var pr = PROFS[+v], st = pr && v !== "" ? stdPay(pr) : ["", "month"];
@@ -3402,16 +3513,17 @@ main.wide { max-width: 1120px; }
     /* a roll made at the table is taken when the field is left or Enter is pressed */
     if (el("h-sum")) el("h-sum").addEventListener("change", function () { var v = parseInt(el("h-sum").value, 10); if (v >= 3 && v <= 18) settle(v, null); });
     el("h-cancel").addEventListener("click", closeHire);
-    el("h-ok").addEventListener("click", function () {
+    if (el("h-ok")) el("h-ok").addEventListener("click", function () {
       var S = state.sheet, list = an ? (S.animals = S.animals || []) : (S.retainers = S.retainers || []);
-      if (!editing) {
+      if (!direct) {
         if (an) { d.morale = H.roll.score; d.hp = dN(8); }
         else { d.loyalty = H.roll.score; d.wage = offered(d.base, H.pay); d.klass = d.klass || "Fighter"; d.hp = retHP(d.klass, d.lv || 0); }
       }
       d.open = true;
+      if (d.cur === "") d.cur = null;
       if (d.cur !== undefined && d.cur !== null && d.hp && d.cur > d.hp) d.cur = d.hp;
       if (editing) list[H.edit] = d; else list.push(d);
-      state.hire = null; persist(); state.view = "s5"; layout(true);
+      state.hire = null; persist(); state.view = state.paper ? "sr" : "s5"; layout(true);
     });
   }
   el("body11").addEventListener("click", function (ev) {
@@ -4143,7 +4255,17 @@ main.wide { max-width: 1120px; }
     "It grows to": "Оно вырастает до", "Hit Dice, with new powers, and goes on a killing rampage.": "Костей Здоровья, с новыми силами, и начинает убивать направо и налево.",
     "Abstract": "Абстрактное", "Domination not rolled": "Доминирование не брошено", "No summoned creatures yet.": "Призванных существ пока нет.",
     "Hit Dice": "Кости Здоровья", "Armor Class": "Класс брони", "Attacks": "Атаки", "Move": "Движение",
-    "This browser is blocking saving, so these rolls are lost when you close the page.": "Этот браузер не даёт сохранять, поэтому броски пропадут, когда вы закроете страницу."
+    "This browser is blocking saving, so these rolls are lost when you close the page.": "Этот браузер не даёт сохранять, поэтому броски пропадут, когда вы закроете страницу.",
+    "Add from a paper sheet": "Перенести с бумажного листа", "Add your adventurer": "Добавьте своего искателя приключений",
+    "Enter ability scores": "Введите значения характеристик",
+    "Copy the six scores from your paper sheet. Everything that follows from them is worked out for you.": "Перепишите шесть значений с бумажного листа. Всё, что из них следует, будет рассчитано за вас.",
+    "Maximum": "Максимум", "Current": "Текущие", "Current XP": "Текущий опыт", "Experience": "Опыт",
+    "Leave Current empty if the character is unhurt.": "Оставьте «Текущие» пустым, если персонаж не ранен.",
+    "Set each skill to the rating on your sheet. Sneak Attack is the damage multiplier.": "Выставьте каждый навык как на вашем листе. Атака исподтишка — это множитель урона.",
+    "Mark every spell written in your spellbook.": "Отметьте все заклинания из вашей книги.", "Choose spells": "Выбрать заклинания", "Edit spells": "Изменить заклинания",
+    "Nothing added yet.": "Пока ничего не добавлено.", "\u2190 Back": "\u2190 Назад",
+    "Copy your retainers and animals with their current loyalty, morale and hit points. Nothing is rolled here.": "Перепишите наёмников и животных с их текущими верностью, боевым духом и пунктами здоровья. Здесь ничего не бросается.",
+    "+ Add a retainer": "+ Добавить наёмника", "Add a retainer": "Добавить наёмника", "Add retainer": "Добавить наёмника", "Current hit points": "Текущие пункты здоровья"
   };
   function ruN(n, f) { var a = n % 10, b = n % 100; return f[a === 1 && b !== 11 ? 0 : a >= 2 && a <= 4 && (b < 12 || b > 14) ? 1 : 2]; }
   var RU_ITEM = ["предмет", "предмета", "предметов"];
@@ -4176,6 +4298,7 @@ main.wide { max-width: 1120px; }
     [/^(1st|2nd|3rd|[4-9]th) level slot (\d+)$/, function (m, o, n) { return "Ячейка " + RU_ORD[o].replace("-й", "-го") + " уровня, " + n; }],
     [/^(\d+) of 6$/, "$1 из 6"],
     [/^of (\d+) skill points left$/, "из $1 очков навыков осталось"],
+    [/^Level (\d+) starts at ([\d,]+) XP(?:, level (\d+) at ([\d,]+) XP)?\.$/, function (m, a, x, b, y) { return "Уровень " + a + " начинается с " + x + " опыта" + (b ? ", уровень " + b + " — с " + y + " опыта" : "") + "."; }],
     [/^Total modifier (.+)$/, "Сумма модификаторов $1"],
     [/^Swap (\w+) with (\w+)\? You can only do this once\.$/, function (m, a, b) { return "Поменять " + RU_ACC[a] + " и " + RU_ACC[b] + "? Это можно сделать только один раз."; }],
     [/^Minimum (\d+) hit points at level 1\.$/, "Минимум $1 ПЗ на 1 уровне."],
@@ -4342,6 +4465,7 @@ main.wide { max-width: 1120px; }
     if (storageOk !== was && state.view === "s5") sheetTip();
   }
   function persist() {
+    if (state.paper) return;
     if (!state.id) state.id = "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     var list = fresh().slice(), json = JSON.stringify(state);
     var i = list.findIndex(function (x) { return x.id === state.id; });
@@ -4396,7 +4520,7 @@ main.wide { max-width: 1120px; }
       return '<li class="char' + (hp.dead ? " dead" : "") + '"><button class="char-open" type="button" data-open="' + esc(c.id) + '"><span class="ch-l">' + (t.sheet && t.sheet.name ? "<b data-notr>" + esc(t.sheet.name) + "</b>" : '<b class="unnamed">Unnamed</b>') + "<span>Level " + t.level + " " + esc(t.klass) + "</span></span>" + hpHTML + '</button>' +
         '<span class="char-acts"><button class="btn ghost sm" type="button" data-exp="' + esc(c.id) + '">Export</button><button class="btn ghost sm" type="button" data-del="' + esc(c.id) + '">Delete</button></span></li>';
     }).join("");
-    b.innerHTML = '<div class="actions"><button class="btn" id="h-new" type="button">New character</button></div>' +
+    b.innerHTML = '<div class="actions"><button class="btn" id="h-new" type="button">New character</button><button class="btn ghost" id="h-paper" type="button">Add from a paper sheet</button></div>' +
       (list.length ? '<ul class="chars">' + items + "</ul>" : '<p class="sub">No saved characters yet. Create your first one.</p>') +
       '<div class="actions"><button class="btn ghost sm" id="h-bak" type="button">Backup</button><button class="btn ghost sm" id="h-imp" type="button">Import</button>' +
       (damaged ? '<button class="btn ghost sm" id="h-dmg" type="button">Damaged save</button>' : "") + "</div>" +
@@ -4407,6 +4531,7 @@ main.wide { max-width: 1120px; }
       storageOk ? "Characters are saved automatically in this browser on this device. Use Backup to keep a copy elsewhere." : "This browser is blocking saving, so characters will be lost when you close the page. Use Backup to keep a copy.";
     if (damaged) el("h-dmg").addEventListener("click", function () { ioPanel("Copy this text and keep it somewhere safe.", damaged, false); });
     el("h-new").addEventListener("click", function () { state = freshState(); render(); window.scrollTo({ top: 0, behavior: "smooth" }); });
+    el("h-paper").addEventListener("click", function () { state = freshState(); state.paper = true; state.method = "manual"; state.gearView = "shop"; render(); window.scrollTo({ top: 0, behavior: "smooth" }); });
     el("h-bak").addEventListener("click", function () { ioPanel("Copy this text and keep it somewhere safe.", JSON.stringify(loadAll()), false); });
     el("h-imp").addEventListener("click", function () { ioPanel("Paste backup text here, or choose a file.", "", true); });
     b.querySelectorAll("[data-open]").forEach(function (x) { x.addEventListener("click", function () { var c = loadAll().find(function (q) { return q.id === x.dataset.open; }); if (c) openChar(c); }); });
@@ -4442,14 +4567,18 @@ main.wide { max-width: 1120px; }
   function layout(scroll) {
     var v = state.view, spellish = v === "prep" || v === "book", sheetish = v === "s5" || v === "inv" || v === "lvl" || v === "hire" || spellish;
     document.querySelector("main").classList.toggle("wide", spellish);
-    var creating = ["s1", "recap", "s2", "s3", "s4", "s6", "s8"].indexOf(v) > -1;
+    var creating = ["s1", "recap", "s2", "s3", "s4", "s6", "sr", "s8"].indexOf(v) > -1;
     el("cfoot").hidden = !creating; document.body.classList.toggle("has-foot", creating);
     MODE = v === "inv" ? "play" : "create";
     if (v === "inv") el("body6").innerHTML = ""; else el("body7").innerHTML = "";
+    if (v !== "sr") el("body13").innerHTML = "";
     el("home").hidden = v !== "home"; el("hometip").hidden = v !== "home"; el("sheettip").hidden = v !== "s5";
     el("rail").hidden = v === "home" || sheetish || v === "ref";
     el("title").hidden = sheetish || v === "ref"; el("kicker").hidden = sheetish || v === "ref";
-    el("title").textContent = v === "home" ? "Your adventurers" : "Create your adventurer";
+    el("title").textContent = v === "home" ? "Your adventurers" : state.paper ? "Add your adventurer" : "Create your adventurer";
+    el("s1-roll").hidden = el("s1-pick").hidden = !!state.paper; el("s1-paper").hidden = !state.paper;
+    /* these screens open from the steps while a paper character is being added, and go back there */
+    el("prep-back").textContent = el("hire-back").textContent = state.paper ? "\u2190 Back" : "\u2190 Sheet";
     el("restart").hidden = v === "home" || sheetish || v === "ref";
     el("step1").hidden = !(v === "s1" || v === "recap");
     el("step2").hidden = v !== "s2";
@@ -4459,6 +4588,7 @@ main.wide { max-width: 1120px; }
     el("step6").hidden = v !== "s6";
     el("step7").hidden = v !== "inv";
     el("step8").hidden = v !== "s8";
+    el("step13").hidden = v !== "sr";
     el("step9").hidden = !spellish;
     el("step10").hidden = v !== "lvl";
     el("step11").hidden = v !== "hire";
@@ -4471,6 +4601,7 @@ main.wide { max-width: 1120px; }
     if (v === "s4") { renderBanner(); renderDetails(); }
     if (v === "s6") renderGear();
     if (v === "inv") renderInventory();
+    if (v === "sr") renderPaperRetainers();
     if (v === "s8") renderName();
     if (v === "s5") renderSheet();
     if (spellish) renderSpellScreen();
