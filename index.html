@@ -516,6 +516,8 @@ details.notesbox[open] summary { margin-bottom: 0; }
 .row.arow.hasc .mod { font-size: 14px; font-weight: 500; }
 .row.arow.hasc { grid-template-columns: minmax(0, 1fr) 2.2em 3.2ch; }
 .row.arow { grid-template-columns: minmax(0, 1fr) 3ch 3.6ch; padding: 8px 2px; gap: 4px 12px; align-items: center; }
+.ab-edit { background: none; border: 0; padding: 2px 0; font: 11px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); cursor: pointer; opacity: .7; }
+.ab-edit:hover, .ab-edit:focus-visible { opacity: 1; text-decoration: underline; }
 .row.arow.hasc.editing { grid-template-columns: minmax(0, 1fr) 3.6em 3.2ch; }
 .row.arow.editing .sc-in { font-size: 18px; padding: 2px; }
 .row.arow.srow { grid-template-columns: minmax(0, 1fr) 3.6ch; }
@@ -3054,34 +3056,24 @@ main.wide { max-width: 1120px; }
   var ABIL_SHORT = { CHA: "Retainers, loyalty", CON: "Hit points", DEX: "AC, ranged, initiative", INT: "Languages, magic saves", STR: "Melee, Open Doors", WIS: "Non-magic saves" };
 
   /* ---------- changing ability scores on the sheet (p. 39) ---------- */
-  /* while the scores are unlocked: the CON modifier last applied to hit points, whether hit points follow it, and how
-     far the floor of 1 maximum hit point has held them up, so that raising CON again comes back to the same number */
+  /* while the scores are unlocked this holds what has been typed; nothing changes on the character until Done */
   var ABIL_EDIT = null;
-  function openAbilEdit() { ABIL_EDIT = { con: conForHP(), follow: !!scores(), floor: 0 }; }
-  function setScore(i, v) {
+  function openAbilEdit() { ABIL_EDIT = (scores() || state.manual || [null, null, null, null, null, null]).slice(); }
+  function applyAbilEdit() {
+    var was = scores(), before = conForHP(), typed = ABIL_EDIT, S = state.sheet;
+    ABIL_EDIT = null;
+    /* an emptied box keeps its score */
+    var next = typed.map(function (v, i) { return typeof v === "number" ? v : was ? was[i] : state.manual ? state.manual[i] : null; });
+    if (JSON.stringify(next) === JSON.stringify(was || state.manual)) return;
     /* from here on the scores are the typed ones, whether they were rolled here or not */
-    if (state.method !== "manual" || !state.manual) { state.manual = scores() || [null, null, null, null, null, null]; state.method = "manual"; }
-    state.manual[i] = v;
-    state.detSig = sig();
-  }
-  /* a change in CON modifier goes on current and maximum hit points at once; the modifier counts once per level whose hit points it was added to */
-  function followCon() {
-    var E = ABIL_EDIT, c = conForHP(), S = state.sheet, L = state.level, h = HPT[state.klass], was = maxHP();
-    if (!E.follow || c === E.con || isNaN(was)) { E.con = c; return; }
-    var raw = was - E.floor + (Math.min(L, 9) + (h.conAlways ? Math.max(0, L - 9) : 0)) * (c - E.con), to = Math.max(1, raw);
-    E.floor = to - raw; E.con = c;
+    state.manual = next; state.method = "manual"; state.detSig = sig();
+    /* a change in CON modifier goes on current and maximum hit points at once; it counts once per level whose hit
+       points it was added to. Scores that weren't known before say nothing about how the hit points were rolled */
+    var h = HPT[state.klass], L = state.level, max = maxHP(), d = conForHP() - before;
+    if (!was || !d || isNaN(max)) return;
+    var to = Math.max(1, max + (Math.min(L, 9) + (h.conAlways ? Math.max(0, L - 9) : 0)) * d);
     setMaxHP(to);
-    if (curHPset()) S.curhp = String(parseInt(S.curhp, 10) + to - was);
-  }
-  /* everything on the page that depends on the scores, redrawn around the inputs being typed in */
-  function refreshAbilities() {
-    var b = el("body5"), t = document.createElement("div"), cur = el("curhp"), mx = b.querySelector('[data-f="maxhp"]'), mb = b.querySelector(".hpval .of b");
-    t.innerHTML = sheetHTML();
-    ["[data-abm]", "#sv-panel", "#sk-panel", ".g-card > b", ".g-hit"].forEach(function (sel) {
-      var to = t.querySelectorAll(sel);
-      b.querySelectorAll(sel).forEach(function (x, i) { x.className = to[i].className; x.innerHTML = to[i].innerHTML; });
-    });
-    if (!isNaN(maxHP())) { cur.value = curHPset() ? state.sheet.curhp : maxHP(); if (mx) mx.value = maxHP(); if (mb) mb.textContent = maxHP(); setHpStatus(cur.value); }
+    if (curHPset()) S.curhp = String(parseInt(S.curhp, 10) + to - max);
   }
 
   function hpStatus(v) {
@@ -3143,14 +3135,13 @@ main.wide { max-width: 1120px; }
       "<span>Exploration <b>" + Lv.explore + "</b></span><span>Combat <b>" + Lv.combat + "</b></span><span>Travel <b>" + Lv.miles + " mi/day</b></span></dd></div></dl>";
 
     /* abilities + saves */
-    var typed = sc || state.manual || [];
-    h += '<div class="twocol"><section class="panel"><div class="group-row"><div class="group">Ability scores</div><button class="btn ghost sm" id="ab-edit" type="button">' + (ABIL_EDIT ? "Done" : "Edit") + '</button></div><div class="sheet flat">' + ABILITIES.map(function (a, i) {
+    h += '<div class="twocol"><section class="panel"><div class="group-row"><div class="group">Ability scores</div>' + (ABIL_EDIT ? '<button class="btn ghost sm" id="ab-edit" type="button">Done</button>' : '<button class="ab-edit" id="ab-edit" type="button">Edit</button>') + '</div><div class="sheet flat">' + ABILITIES.map(function (a, i) {
       var m = effMod(a.key), bn = racialBonus(a.key);
       return '<div class="row arow' + (auto || ABIL_EDIT ? " hasc" : "") + (ABIL_EDIT ? " editing" : "") + '"><span class="name"><span class="nm">' + a.name + '</span><small class="desc">' + ABIL_SHORT[a.key] + (bn ? " · " + k + " +1" : "") + '</small></span><span class="score">' +
-        (ABIL_EDIT ? '<input class="sc-in" data-ab="' + i + '" type="number" inputmode="numeric" aria-label="' + a.name + ' score" value="' + (typeof typed[i] === "number" ? typed[i] : "") + '">' : auto ? sc[i] : "") +
-        '</span><span class="mod ' + (m === null ? "zero" : cls(m)) + '" data-abm>' + (m === null ? "—" : fmt(m)) + "</span></div>";
+        (ABIL_EDIT ? '<input class="sc-in" data-ab="' + i + '" type="number" inputmode="numeric" aria-label="' + a.name + ' score" value="' + (typeof ABIL_EDIT[i] === "number" ? ABIL_EDIT[i] : "") + '">' : auto ? sc[i] : "") +
+        '</span><span class="mod ' + (m === null ? "zero" : cls(m)) + '">' + (m === null ? "—" : fmt(m)) + "</span></div>";
     }).join("") + "</div></section>" +
-      '<section class="panel" id="sv-panel"><div class="group">Saving throws</div><div class="sheet flat">' + SAVE_NAMES.map(function (n, i) {
+      '<section class="panel"><div class="group">Saving throws</div><div class="sheet flat">' + SAVE_NAMES.map(function (n, i) {
         var key = i === 4 ? "INT" : "WIS", m = effMod(key);
         return '<div class="row arow srow"><span class="name"><span class="nm">' + n + '</span><small class="desc">' + SAVE_HINT[i] + (m === null ? " · + " + key + " mod" : "") + '</small></span><span class="mod">' + (m === null ? sv[i] : sv[i] - m) + "</span></div>";
       }).join("") + "</div></section></div>";
@@ -3166,7 +3157,7 @@ main.wide { max-width: 1120px; }
       return t;
     });
     if (k === "Specialist") state.custom.forEach(function (c) { if (c.name || c.pts) tiles.push(skillTile("c", 1 + c.pts, 5, "", "", esc(c.name || "Custom skill"))); });
-    h += '<section class="panel" id="sk-panel"><div class="group">Skills</div><div class="skills-grid">' + tiles.join("") + "</div></section>";
+    h += '<section class="panel"><div class="group">Skills</div><div class="skills-grid">' + tiles.join("") + "</div></section>";
     var langs = S.langs || [];
     h += '<section class="panel"><div class="group">Languages</div>' + (langs.length ? '<div class="langs">' + langs.map(function (l, i) {
       return '<div class="lrow"><input class="lname" data-li="' + i + '" type="text" maxlength="30" placeholder="Language name" aria-label="Language name" value="' + esc(l.n) + '">' +
@@ -3683,16 +3674,12 @@ main.wide { max-width: 1120px; }
     });
     if (el("prep-open")) el("prep-open").addEventListener("click", openPrep);
     el("ab-edit").addEventListener("click", function () {
-      if (ABIL_EDIT) ABIL_EDIT = null; else openAbilEdit();
+      if (ABIL_EDIT) applyAbilEdit(); else openAbilEdit();
       renderSheet();
       (ABIL_EDIT ? el("body5").querySelector("[data-ab]") : el("ab-edit")).focus();
     });
     b.querySelectorAll("[data-ab]").forEach(function (x) {
-      x.addEventListener("input", function () {
-        var v = parseInt(x.value, 10);
-        if (isNaN(v)) return;
-        setScore(+x.dataset.ab, v); followCon(); refreshAbilities(); persist();
-      });
+      x.addEventListener("input", function () { var v = parseInt(x.value, 10); ABIL_EDIT[+x.dataset.ab] = isNaN(v) ? null : v; });
     });
     bindRetainers(b);
     el("lvl-up").addEventListener("click", openLevelUp);
