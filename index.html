@@ -1434,7 +1434,7 @@ main.wide { max-width: 1120px; }
     var diceRow = "";
     if (r && r.dice) { diceRow = '<div class="hp-dice">' + r.dice.map(function (d, i) { return anyDie(r.sides[i], d, state.hpAnim); }).join("") + "</div>"; state.hpAnim = false; }
     var notes = [];
-    if (L === 1) notes.push("Minimum " + h.min + " hit points at level 1.");
+    notes.push("Minimum " + h.min + " hit points at level 1.");
     if (needCon && state.klass === "Dwarf") notes.push("The Dwarf +1 to CON modifier is added for you.");
     if (r && r.l1min) notes.push("Raised to the level 1 minimum of " + h.min + ".");
     return '<section class="panel"><div class="group">Hit points</div><div class="hp-row"><div class="formula">' + hpParts() + "</div>" + right + "</div>" + diceRow +
@@ -1444,8 +1444,8 @@ main.wide { max-width: 1120px; }
     var h = HPT[state.klass], L = state.level, c = effMod("CON");
     if (c === null) c = racialBonus("CON");
     var dice = [dN(h.d1)], sides = [h.d1], total = dice[0] + c, l1min = false;
+    if (total < h.min) { total = h.min; l1min = true; }
     for (var lv = 2; lv <= Math.min(L, 9); lv++) { var d = dN(h.d); dice.push(d); sides.push(h.d); total += d + c; }
-    if (L === 1 && total < h.min) { total = h.min; l1min = true; }
     for (lv = 10; lv <= L; lv++) total += h.fixed + (h.conAlways ? c : 0);
     state.hp = { total: total, dice: dice, sides: sides, l1min: l1min };
     state.hpAnim = true;
@@ -3164,10 +3164,10 @@ main.wide { max-width: 1120px; }
   function retHP(klass, lv) {
     var h = HPT[klass];
     if (!lv || !h) return dN(6);
-    var t = dN(h.d1);
+    var t = Math.max(dN(h.d1), h.min);
     for (var l = 2; l <= Math.min(lv, 9); l++) t += dN(h.d);
     for (l = 10; l <= lv; l++) t += h.fixed;
-    return lv === 1 ? Math.max(t, h.min) : t;
+    return t;
   }
   function hireRow(total) { var t = Math.max(3, Math.min(18, total)); return { accepts: t >= GAME.hireAt, score: GAME.loyalty[t - 3] }; }
   /* what a retainer fights with: the weapon with the biggest damage die and the armor with the best AC they carry */
