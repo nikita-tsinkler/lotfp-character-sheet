@@ -849,6 +849,9 @@ main.wide { max-width: 1120px; }
 .pslot i { font-style: normal; font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
 .pslot.cast { border-color: var(--line); color: var(--muted); text-decoration: line-through; text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
 .slot.empty { display: inline-block; width: 26px; height: 26px; border-style: dashed; border-color: var(--line); cursor: default; }
+/* referee screen: the page leading to the others */
+.refnav .char-open { text-decoration: none; }
+.refnav .ch-l > * { white-space: normal; }
 /* referee screen: every spell */
 .slook { position: sticky; top: 0; z-index: 1; display: flex; flex-direction: column; gap: 10px; padding: 8px 0; background: var(--surface); }
 .slook #pnone { margin: 0; }
@@ -984,6 +987,17 @@ main.wide { max-width: 1120px; }
       <h2 id="s9t">Prepare spells</h2>
     </header>
     <div id="body9"></div>
+  </section>
+
+  <section class="card" id="step14" aria-labelledby="s14t" hidden>
+    <header>
+      <div class="sheethead"><button class="link" id="referee-back" type="button">&larr; Characters</button></div>
+      <h2 id="s14t">Referee</h2>
+    </header>
+    <ul class="chars refnav">
+      <li class="char"><a class="char-open" href="#summon"><span class="ch-l"><b>Summon</b><span>Roll what comes through, and keep the creatures.</span></span></a></li>
+      <li class="char"><a class="char-open" href="#spells"><span class="ch-l"><b>Spells</b><span>Find any spell and read its summary and full text.</span></span></a></li>
+    </ul>
   </section>
 
   <section class="card" id="step12" aria-labelledby="s12t" hidden>
@@ -2712,7 +2726,7 @@ main.wide { max-width: 1120px; }
   function savePrep() { state.sheet.prep = state.prepDraft.slice().sort(spOrder).map(function (p) { return { id: p.id, rev: !!p.rev, cast: false }; }); closePrep(); }
   function closePrep() { state.prepDraft = null; state.prepSel = null; state.view = state.paper ? "s4" : "s5"; layout(true); }
   el("prep-back").addEventListener("click", function () {
-    if (state.view === "spells") { history.replaceState(null, "", location.pathname); goHome(); } else closePrep();
+    if (state.view === "spells") { history.replaceState(null, "", location.pathname + "?referee"); openReferee(); } else closePrep();
   });
 
   function gearClick(ev) {
@@ -3787,9 +3801,11 @@ main.wide { max-width: 1120px; }
   /* Summon (pp. 138-141) is rolled here, so what comes through stays the referee's to describe. Like the characters, the summoned
      creatures have a list of their own and open one at a time; they are saved apart from the characters */
   var SUM = GAME.summon, REF_KEY = "lotfp.summon.v1", ref = null, refLocked = false, refView = { v: "list" };
-  /* which referee screen the address asks for; the hash wins, since it is what changes while the page is open */
+  /* which referee screen the address asks for; the hash wins, since it is what changes while the page is open.
+     ?referee is the page leading to the others, and they come back to it */
+  function openReferee() { state = freshState(); state.view = "referee"; layout(true); }
   function refRoute() {
-    var names = { summon: "ref", spells: "spells" }, h = location.hash.slice(1), q = location.search.slice(1);
+    var names = { summon: "ref", spells: "spells", referee: "referee" }, h = location.hash.slice(1), q = location.search.slice(1);
     if (names.hasOwnProperty(h)) return names[h];
     return Object.keys(names).reduce(function (found, n) { return found || (new RegExp("(^|&)" + n + "(=|&|$)").test(q) ? names[n] : null); }, null);
   }
@@ -4035,7 +4051,7 @@ main.wide { max-width: 1120px; }
     var R = refLoad(), b = el("body12"), c = refView.v === "c" && refCreature(), h;
     if (refView.v === "c" && !c) refView = { v: "list" };
     el("s12t").textContent = refView.v === "new" ? "New summoning" : refView.v === "c" ? "Summoned creature" : "Summoned";
-    el("ref-back").innerHTML = refView.v === "list" ? "&larr; Characters" : "&larr; Summoned";
+    el("ref-back").innerHTML = refView.v === "list" ? "&larr; Referee" : "&larr; Summoned";
     h = refView.v === "new" ? newHTML(R.draft) : c ? creatureHTML(c) : listHTML(R);
     if (refLocked) h += '<p class="tip warn">This browser is blocking saving, so these rolls are lost when you close the page.</p>';
     b.innerHTML = h;
@@ -4347,6 +4363,7 @@ main.wide { max-width: 1120px; }
    
    
    
+    "← Referee": "← Рефери", "Roll what comes through, and keep the creatures.": "Бросьте, кто явится, и сохраните существ.", "Find any spell and read its summary and full text.": "Найдите любое заклинание и прочитайте его краткое и полное описание.",
     "Cast at level": "Уровень заклинателя", "Lower caster level": "Понизить уровень заклинателя", "Raise caster level": "Повысить уровень заклинателя", "Spell list": "Список заклинаний", "All": "Все",
     "Referee": "Рефери", "Summoned": "Призванные", "New summoning": "Новый призыв", "Summoned creature": "Призванное существо", "← Summoned": "← Призванные",
     "Caster level": "Уровень мага", "Circle, +1 per 500 sp": "Круг, +1 за 500 см", "Sacrificed HD, other races": "Жертвы, КЗ других рас", "Sacrificed HD, caster's race": "Жертвы, КЗ расы мага",
@@ -4678,8 +4695,9 @@ main.wide { max-width: 1120px; }
     if (v !== "sr") el("body13").innerHTML = "";
     if (v !== "s5") ABIL_EDIT = null;
     el("home").hidden = v !== "home"; el("hometip").hidden = v !== "home"; el("sheettip").hidden = v !== "s5";
-    el("rail").hidden = v === "home" || sheetish || v === "ref";
-    el("title").hidden = sheetish || v === "ref"; el("kicker").hidden = sheetish || v === "ref";
+    var refish = v === "ref" || v === "referee";
+    el("rail").hidden = v === "home" || sheetish || refish;
+    el("title").hidden = sheetish || refish; el("kicker").hidden = sheetish || refish;
     el("title").textContent = v === "home" ? "Your adventurers" : state.started && !state.paper ? "Create your adventurer" : "Add your adventurer";
     /* the question stays open through the first step and closes once its scores are confirmed, so answering again can't lose later steps */
     el("s1-kind-h").hidden = el("s1-kind").hidden = v !== "s1" || state.confirmed;
@@ -4687,9 +4705,9 @@ main.wide { max-width: 1120px; }
     if (v === "s1" && !state.started) el("rail").hidden = true;
     /* these screens open from the steps while a paper character is being added, and go back there */
     el("prep-back").textContent = el("hire-back").textContent = state.paper ? "\u2190 Back" : "\u2190 Sheet";
-    if (v === "spells") el("prep-back").textContent = "\u2190 Characters";
+    if (v === "spells") el("prep-back").textContent = "\u2190 Referee";
     el("spells-tag").hidden = v !== "spells";
-    el("restart").hidden = v === "home" || sheetish || v === "ref";
+    el("restart").hidden = v === "home" || sheetish || refish;
     el("step1").hidden = !(v === "s1" || v === "recap");
     el("step2").hidden = v !== "s2";
     el("step3").hidden = v !== "s3";
@@ -4703,6 +4721,7 @@ main.wide { max-width: 1120px; }
     el("step10").hidden = v !== "lvl";
     el("step11").hidden = v !== "hire";
     el("step12").hidden = v !== "ref";
+    el("step14").hidden = v !== "referee";
     if (spellish) el("s9t").textContent = v === "spells" ? "Spells" : v === "book" ? "Spellbook" : "Prepare spells";
     el("banner").hidden = !(v === "s2" || v === "s3" || v === "s4");
     if (v === "recap") renderRecap();
@@ -4758,13 +4777,15 @@ main.wide { max-width: 1120px; }
   el("pick-manual").addEventListener("click", function () { state.method = "manual"; state.confirmed = false; state.view = "s1"; render(); });
   el("pick-auto").addEventListener("click", function () { state.method = "auto"; state.confirmed = false; state.view = "s1"; render(); });
   el("ref-back").addEventListener("click", function () {
-    if (refView.v !== "list") refGo("list"); else { history.replaceState(null, "", location.pathname); goHome(); }
+    if (refView.v !== "list") refGo("list"); else { history.replaceState(null, "", location.pathname + "?referee"); openReferee(); }
   });
+  el("referee-back").addEventListener("click", function () { history.replaceState(null, "", location.pathname); goHome(); });
   window.addEventListener("hashchange", function () {
     var r = refRoute();
     if (r === "spells" && state.view !== "spells") openSpells();
     else if (r === "ref" && state.view !== "ref") { refView = { v: "list" }; state.view = "ref"; layout(true); }
-    else if (!r && (state.view === "ref" || state.view === "spells")) goHome();
+    else if (r === "referee" && state.view !== "referee") openReferee();
+    else if (!r && (state.view === "ref" || state.view === "spells" || state.view === "referee")) goHome();
   });
   state.view = refRoute() || "home";
   render();
