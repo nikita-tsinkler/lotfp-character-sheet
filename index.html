@@ -852,6 +852,56 @@ main.wide { max-width: 1120px; }
 /* referee screen: the page leading to the others */
 .refnav .char-open { text-decoration: none; }
 .refnav .ch-l > * { white-space: normal; }
+/* referee screen: initiative. Each kind of participant has its own color, and says so in words too */
+#body15 { display: flex; flex-direction: column; gap: 18px; }
+.itabs { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 16px; border-bottom: 1px solid var(--line); }
+.itabs button { background: none; color: var(--muted); border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 6px 2px; font-family: var(--font-display); font-size: 18px; cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.itabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.itabs button.inew { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.ilist { display: flex; flex-direction: column; gap: 6px; }
+.iu { display: flex; flex-direction: column; gap: 6px; }
+.iu.sim { gap: 0; border: 2px solid var(--fg); padding: 6px; }
+.irow { --k: var(--muted); display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; border: 1px solid var(--line); border-left: 5px solid var(--k); padding: 6px 10px; background: color-mix(in srgb, var(--k) 7%, transparent); }
+.irow.k-pc { --k: var(--good); }
+.irow.k-ret { --k: var(--coin); }
+.irow.k-npc { --k: var(--accent); }
+.irow.out { grid-template-columns: minmax(0, 1fr) auto; background: none; }
+.irow.out .i-n { color: var(--muted); }
+.icount { width: 100%; box-sizing: border-box; padding: 6px 2px; text-align: center; font-family: var(--font-mono); font-size: 20px; font-weight: 500; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 0; -moz-appearance: textfield; appearance: textfield; }
+.icount::-webkit-outer-spin-button, .icount::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.icount:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.i-m { display: flex; flex-direction: column; min-width: 0; }
+.i-n { font-size: 19px; line-height: 1.2; overflow-wrap: anywhere; }
+.i-s { display: flex; flex-wrap: wrap; gap: 0 10px; align-items: baseline; font-size: 15px; color: var(--muted); }
+.i-k { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--k); }
+.i-d { font-family: var(--font-mono); font-size: 11px; white-space: nowrap; }
+.i-t { font-size: 15px; font-style: italic; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; }
+.iacts { display: flex; gap: 6px; }
+.iacts .btn.sm { padding: 6px 8px; font-size: 10px; letter-spacing: .04em; }
+.ilink { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; padding: 2px 0 2px 64px; }
+.iu.sim .ilink { padding-left: 64px; }
+.ilink .link { font-size: 11px; padding: 2px 0; }
+.iedit { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 76px; gap: 8px; padding-top: 6px; }
+.iedit label { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.iedit .wide { grid-column: 1 / -1; }
+.iedit .notes { resize: vertical; overflow: auto; background: var(--bg); }
+.iadd { display: flex; flex-direction: column; gap: 8px; }
+.iaddf { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 76px auto; gap: 8px; }
+.iaddf input { min-width: 0; box-sizing: border-box; }
+.iedit input { box-sizing: border-box; }
+.iedit input[type="number"], .iaddf input[type="number"] { font-family: var(--font-mono); font-size: 15px; }
+.iname { font-size: 24px; }
+@media (max-width: 560px) {
+  .irow { grid-template-columns: 48px minmax(0, 1fr); }
+  .iacts { grid-column: 2; }
+  .irow.out { grid-template-columns: minmax(0, 1fr); }
+  .irow.out .iacts { grid-column: 1; }
+  .ilink, .iu.sim .ilink { padding-left: 0; }
+  .iedit, .iaddf { grid-template-columns: minmax(0, 1fr) 76px; }
+  .iedit label:not(.wide):first-child { grid-column: 1 / -1; }
+  .iaddf input:first-child { grid-column: 1 / -1; }
+  .iaddf .btn { grid-column: 1 / -1; }
+}
 /* referee screen: every spell */
 .slook { position: sticky; top: 0; z-index: 1; display: flex; flex-direction: column; gap: 10px; padding: 8px 0; background: var(--surface); }
 .slook #pnone { margin: 0; }
@@ -997,7 +1047,16 @@ main.wide { max-width: 1120px; }
     <ul class="chars refnav">
       <li class="char"><a class="char-open" href="#summon"><span class="ch-l"><b>Summon</b><span>Roll what comes through, and keep the creatures.</span></span></a></li>
       <li class="char"><a class="char-open" href="#spells"><span class="ch-l"><b>Spells</b><span>Find any spell and read its summary and full text.</span></span></a></li>
+      <li class="char"><a class="char-open" href="#initiative"><span class="ch-l"><b>Initiative</b><span>Track who acts when, with each table's characters saved.</span></span></a></li>
     </ul>
+  </section>
+
+  <section class="card" id="step15" aria-labelledby="s15t" hidden>
+    <header>
+      <div class="sheethead"><button class="link" id="init-back" type="button">&larr; Referee</button><span class="ref-tag">Referee</span></div>
+      <h2 id="s15t">Initiative</h2>
+    </header>
+    <div id="body15"></div>
   </section>
 
   <section class="card" id="step12" aria-labelledby="s12t" hidden>
@@ -3805,7 +3864,7 @@ main.wide { max-width: 1120px; }
      ?referee is the page leading to the others, and they come back to it */
   function openReferee() { state = freshState(); state.view = "referee"; layout(true); }
   function refRoute() {
-    var names = { summon: "ref", spells: "spells", referee: "referee" }, h = location.hash.slice(1), q = location.search.slice(1);
+    var names = { summon: "ref", spells: "spells", initiative: "init", referee: "referee" }, h = location.hash.slice(1), q = location.search.slice(1);
     if (names.hasOwnProperty(h)) return names[h];
     return Object.keys(names).reduce(function (found, n) { return found || (new RegExp("(^|&)" + n + "(=|&|$)").test(q) ? names[n] : null); }, null);
   }
@@ -4129,6 +4188,237 @@ main.wide { max-width: 1120px; }
     });
   }
 
+  /* ---------- the referee's initiative tracker: opened from the referee page, or by #initiative or ?initiative ---------- */
+  /* Everyone rolls 1d6, the Referee once per type of enemy; the count runs from 6 down. Ties go by Dexterity modifier, and whoever
+     is still tied acts simultaneously (p. 60). Each table keeps its own participants, saved apart from the characters.
+     A participant is {id, kind: pc|ret|npc, name, owner, dex, init, out, note, rank}. Rank is only set once the referee has rearranged
+     a tie by hand: then it says the order, and the same rank means acting together. Without it, Dex decides both */
+  var INI_KEY = "lotfp.initiative.v1", ini = null, iniLocked = false;
+  var iniUI = { open: null, kind: "pc", name: "", owner: "", dex: "", dirty: false, down: false, outShut: false };
+  var INI_KINDS = [["pc", "PC"], ["ret", "Retainer"], ["npc", "NPC"]];
+  function iniId() { return "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function iniTableNew() { return { id: iniId(), name: "", people: [] }; }
+  function iniLoad() {
+    if (ini) return ini;
+    var r = null, d = null;
+    try { r = localStorage.getItem(INI_KEY); } catch (e) { iniLocked = true; }
+    if (r) {
+      try { d = JSON.parse(r); } catch (e) {}
+      /* saved text that won't parse is copied aside, as with the characters */
+      if (!d || typeof d !== "object") { d = null; try { localStorage.setItem(INI_KEY + ".broken", r); } catch (e) { iniLocked = true; } }
+    }
+    ini = d || {}; ini.tables = ini.tables || [];
+    if (!ini.tables.length) ini.tables.push(iniTableNew());
+    if (!ini.tables.some(function (t) { return t.id === ini.cur; })) ini.cur = ini.tables[0].id;
+    return ini;
+  }
+  function iniSave() { if (!iniLocked) try { localStorage.setItem(INI_KEY, JSON.stringify(ini)); } catch (e) {} }
+  window.addEventListener("storage", function (e) { if (e.key === INI_KEY && !iniLocked) { ini = null; if (state.view === "init") iniDraw(); } });
+  function iniTable() { var I = iniLoad(); return I.tables.filter(function (t) { return t.id === I.cur; })[0]; }
+  function iniTableName(t, i) { return t.name.trim() || "Table " + (i + 1); }
+  function iniFind(t, id) { return t.people.filter(function (p) { return p.id === id; })[0]; }
+  /* whoever is in the fight, by count from the highest: each count holds its turns, and each turn one or more participants */
+  function iniGroups(t) {
+    var by = {};
+    t.people.forEach(function (p) { if (!p.out && p.init !== null) (by[p.init] = by[p.init] || []).push(p); });
+    return Object.keys(by).map(Number).sort(function (a, b) { return b - a; }).map(function (n) {
+      var ranked = by[n].every(function (p) { return p.rank !== null; });
+      function key(p) { return ranked ? p.rank : -p.dex; }
+      var list = by[n].slice().sort(function (a, b) { return b.dex - a.dex; }).sort(function (a, b) { return key(a) - key(b); }), turns = [];
+      list.forEach(function (p, i) { if (i && key(list[i - 1]) === key(p)) turns[turns.length - 1].push(p); else turns.push([p]); });
+      return { init: n, ranked: ranked, turns: turns };
+    });
+  }
+  /* anyone joining or leaving a count puts its tie back to going by Dex */
+  function iniUnrank(t, n) { t.people.forEach(function (p) { if (p.init === n) p.rank = null; }); }
+  function iniSetInit(t, p, v) {
+    if (p.init === v) return;
+    iniUnrank(t, p.init); p.init = v; p.rank = null; iniUnrank(t, v);
+  }
+  function iniRearrange(t, n, change) {
+    var g = iniGroups(t).filter(function (x) { return x.init === n; })[0];
+    if (!g) return;
+    change(g.turns);
+    g.turns.forEach(function (turn, i) { turn.forEach(function (p) { p.rank = i; }); });
+  }
+  /* the Referee rolls once per type of enemy: NPCs named alike, whatever number follows the name, share a roll */
+  function iniRollNpcs(t) {
+    var rolled = {};
+    t.people.forEach(function (p) {
+      if (p.kind !== "npc" || p.out) return;
+      var type = p.name.trim().toLowerCase().replace(/[\s#]*\d+$/, "") || p.id;
+      if (!(type in rolled)) rolled[type] = dN(6);
+      iniSetInit(t, p, rolled[type]);
+    });
+  }
+  function iniDexText(n) { return "Dex " + (n > 0 ? "+" + n : n < 0 ? "−" + -n : "0"); }
+  function iniDexVal(v) { var n = parseInt(String(v).replace("−", "-"), 10); return isNaN(n) ? 0 : n; }
+  function iniKindName(k) { return INI_KINDS.filter(function (x) { return x[0] === k; })[0][1]; }
+  function iniEdit(p) {
+    var f = function (k, v) { return 'data-ifield="' + k + '" data-ifoc="' + k + p.id + '" value="' + esc(v) + '"'; };
+    return '<div class="iedit">' +
+      '<label><span class="fl">Name</span><input class="gsearch" type="text" maxlength="60" ' + f("name", p.name) + "></label>" +
+      (p.kind === "npc" ? "<span></span>" : '<label><span class="fl">' + (p.kind === "pc" ? "Player" : "Owner") + '</span><input class="gsearch" type="text" maxlength="60" ' + f("owner", p.owner) + "></label>") +
+      '<label><span class="fl">Dex</span><input class="gsearch" type="number" ' + f("dex", p.dex) + "></label>" +
+      '<label class="wide"><span class="fl">Note</span><textarea class="notes" rows="2" maxlength="500" data-ifield="note" data-ifoc="note' + p.id + '">' + esc(p.note) + "</textarea></label>" +
+      '<div class="actions wide"><button class="btn ghost sm" type="button" data-ia="close">Done</button><button class="btn ghost sm" type="button" data-ia="remove" data-iv="' + p.id + '">Remove</button></div></div>';
+  }
+  function iniRow(p) {
+    var nm = esc(p.name), opened = iniUI.open === p.id;
+    return '<div class="irow k-' + p.kind + (p.out ? " out" : "") + '">' +
+      (p.out ? "" : '<input class="icount" type="number" data-iinit="' + p.id + '" data-ifoc="c' + p.id + '" value="' + (p.init === null ? "" : p.init) + '" aria-label="Initiative of ' + nm + '">') +
+      '<div class="i-m"><span class="i-n" data-notr>' + nm + "</span>" +
+      '<span class="i-s"><span class="i-k">' + iniKindName(p.kind) + "</span>" + (p.owner && p.kind !== "npc" ? "<span data-notr>" + esc(p.owner) + "</span>" : "") + (p.dex ? '<span class="i-d">' + iniDexText(p.dex) + "</span>" : "") + "</span>" +
+      (p.note ? '<span class="i-t" data-notr>' + esc(p.note) + "</span>" : "") + "</div>" +
+      '<div class="iacts"><button class="btn ghost sm" type="button" data-ia="' + (p.out ? "in" : "out") + '" data-iv="' + p.id + '" aria-label="' + (p.out ? "Back in: " : "Leave out: ") + nm + '">' + (p.out ? "Back in" : "Leave out") + "</button>" +
+      '<button class="btn ghost sm" type="button" data-ia="edit" data-iv="' + p.id + '" aria-expanded="' + opened + '" aria-label="Edit or add a note: ' + nm + '">Edit</button></div>' +
+      (opened ? iniEdit(p) : "") + "</div>";
+  }
+  /* between the turns of a tie: what orders them, and the means to swap or join them */
+  function iniBetween(g, i) {
+    var v = ' data-iv="' + g.init + ":" + i + '"';
+    return '<div class="ilink"><span class="fl">' + (g.ranked ? "Tied: in your order" : "Tied: higher Dex first") + "</span>" +
+      '<button class="link" type="button" data-ia="swap"' + v + ">Swap</button>" +
+      '<button class="link" type="button" data-ia="join"' + v + ">Act together</button></div>";
+  }
+  function iniTurn(g, turn, i) {
+    if (turn.length === 1) return iniRow(turn[0]);
+    return '<div class="iu sim">' + turn.map(function (p, j) {
+      return (j ? '<div class="ilink"><span class="fl">' + (g.ranked ? "Together" : "Together: same Dex") + '</span><button class="link" type="button" data-ia="split" data-iv="' + g.init + ":" + i + ":" + j + '">Separate</button></div>' : "") + iniRow(p);
+    }).join("") + "</div>";
+  }
+  function iniHTML() {
+    var I = iniLoad(), t = iniTable(), groups = iniGroups(t);
+    var waiting = t.people.filter(function (p) { return !p.out && p.init === null; }), out = t.people.filter(function (p) { return p.out; });
+    var npcs = t.people.filter(function (p) { return p.kind === "npc"; }), f = iniUI.kind;
+    var h = '<div class="itabs" role="tablist">' + I.tables.map(function (x, i) {
+      return '<button type="button" role="tab" data-ia="table" data-iv="' + x.id + '" aria-selected="' + (x.id === t.id) + '"' + (x.name.trim() ? " data-notr" : "") + ">" + esc(iniTableName(x, i)) + "</button>";
+    }).join("") + '<button class="inew" type="button" data-ia="newtable">+ Table</button></div>' +
+      '<input class="namein iname" type="text" maxlength="40" data-itname data-ifoc="tname" placeholder="Table name" aria-label="Table name" value="' + esc(t.name) + '">';
+    h += '<div class="actions"><button class="btn sm" type="button" data-ia="roll"' + (npcs.some(function (p) { return !p.out; }) ? "" : " disabled") + ">Roll for NPCs</button>" +
+      '<button class="btn ghost sm" type="button" data-ia="clearnpc"' + (npcs.length ? "" : " disabled") + ">Clear NPCs</button>" +
+      '<button class="btn ghost sm" type="button" data-ia="clearinit"' + (t.people.some(function (p) { return p.init !== null; }) ? "" : " disabled") + ">Clear initiative</button></div>";
+    if (!t.people.length) h += '<p class="sub none">No participants yet.</p>';
+    if (groups.length) h += '<div class="ilist">' + groups.map(function (g) {
+      return g.turns.map(function (turn, i) { return (i ? iniBetween(g, i - 1) : "") + iniTurn(g, turn, i); }).join("");
+    }).join("") + "</div>";
+    if (waiting.length) h += '<div class="group plain">No initiative yet</div><div class="ilist">' + waiting.map(iniRow).join("") + "</div>";
+    if (out.length) h += '<details class="plv" data-iout' + (iniUI.outShut ? "" : " open") + '><summary class="group">Left out<span class="plv-x">' + out.length + '</span></summary><div class="ilist">' + out.map(iniRow).join("") + "</div></details>";
+    h += '<form class="iadd" data-iadd><div class="group plain">Add a participant</div>' +
+      '<div class="seg" style="--n:3" role="group" aria-label="Kind of participant">' + INI_KINDS.map(function (k) { return '<button type="button" data-ia="kind" data-iv="' + k[0] + '" aria-pressed="' + (f === k[0]) + '">' + k[1] + "</button>"; }).join("") + "</div>" +
+      '<div class="iaddf"><input class="gsearch" type="text" maxlength="60" data-idraft="name" data-ifoc="dname" placeholder="' + (f === "npc" ? "NPC name" : "Character name") + '" aria-label="' + (f === "npc" ? "NPC name" : "Character name") + '" value="' + esc(iniUI.name) + '">' +
+      (f === "npc" ? "<span></span>" : '<input class="gsearch" type="text" maxlength="60" data-idraft="owner" data-ifoc="downer" placeholder="' + (f === "pc" ? "Player name" : "Owner name") + '" aria-label="' + (f === "pc" ? "Player name" : "Owner name") + '" value="' + esc(iniUI.owner) + '">') +
+      '<input class="gsearch" type="number" data-idraft="dex" data-ifoc="ddex" placeholder="Dex" aria-label="Dex modifier" value="' + esc(iniUI.dex) + '">' +
+      '<button class="btn sm" type="submit">Add</button></div></form>' +
+      '<div class="actions"><button class="btn ghost sm" type="button" data-ia="deltable">Delete table</button></div>';
+    if (iniLocked) h += '<p class="tip warn">This browser is blocking saving, so these tables are lost when you close the page.</p>';
+    return h;
+  }
+  /* drawing again keeps the cursor in whichever field had it */
+  function iniDraw(focus) {
+    var a = document.activeElement, was = a && a.dataset && a.dataset.ifoc, b = el("body15");
+    iniUI.dirty = false;
+    b.innerHTML = iniHTML();
+    var sel = focus || (was && '[data-ifoc="' + was + '"]'), t = sel && b.querySelector(sel);
+    if (t && !t.disabled) t.focus({ preventScroll: true });
+  }
+  function renderInit() { iniDraw(); }
+  function openInit() { state = freshState(); state.view = "init"; layout(true); }
+  /* a typed count takes effect at once but the list only re-sorts when the cursor leaves the rows, so they don't jump from under
+     someone going down the table entering what the players rolled. A press on a button waits for its click, which draws anyway */
+  function iniFlush() {
+    var a = document.activeElement;
+    if (!iniUI.dirty || iniUI.down || (a && a.closest && a.closest(".irow"))) return;
+    iniDraw();
+  }
+  function iniCommit(x) {
+    var t = iniTable(), p = iniFind(t, x.dataset.iinit), v = parseInt(x.value, 10);
+    if (!p) return;
+    iniSetInit(t, p, isNaN(v) ? null : v); iniSave(); iniUI.dirty = true;
+  }
+  (function () {
+    var b = el("body15");
+    b.addEventListener("pointerdown", function () { iniUI.down = true; }, true);
+    window.addEventListener("pointerup", function () { if (iniUI.down) { iniUI.down = false; setTimeout(iniFlush, 30); } });
+    window.addEventListener("pointercancel", function () { iniUI.down = false; });
+    b.addEventListener("focusout", function () { if (iniUI.dirty) setTimeout(iniFlush, 0); });
+    b.addEventListener("change", function (ev) { if (ev.target.dataset.iinit !== undefined) iniCommit(ev.target); });
+    b.addEventListener("keydown", function (ev) {
+      var x = ev.target;
+      if (ev.key !== "Enter" || x.dataset.iinit === undefined) return;
+      /* Enter goes on to the next row's count, and the last one sorts the list */
+      ev.preventDefault(); iniCommit(x);
+      var all = [].slice.call(b.querySelectorAll("[data-iinit]")), next = all[all.indexOf(x) + 1];
+      if (next) next.focus(); else iniDraw('[data-iinit="' + x.dataset.iinit + '"]');
+    });
+    b.addEventListener("focusin", function (ev) { if (ev.target.dataset.iinit !== undefined) ev.target.select(); });
+    b.addEventListener("input", function (ev) {
+      var x = ev.target, d = x.dataset, t = iniTable();
+      if (d.idraft) iniUI[d.idraft] = x.value;
+      else if (d.itname !== undefined) {
+        t.name = x.value; iniSave();
+        var i = iniLoad().tables.indexOf(t), tab = b.querySelector('[data-ia="table"][data-iv="' + t.id + '"]');
+        if (t.name.trim()) tab.setAttribute("data-notr", ""); else tab.removeAttribute("data-notr");
+        tab.textContent = iniTableName(t, i);
+      }
+      else if (d.ifield) {
+        var p = iniFind(t, iniUI.open);
+        if (!p) return;
+        if (d.ifield === "dex") { var n = iniDexVal(x.value); if (n !== p.dex) { iniUnrank(t, p.init); p.dex = n; } }
+        else p[d.ifield] = x.value;
+        iniSave();
+      }
+    });
+    b.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var name = iniUI.name.trim();
+      if (!name) { b.querySelector('[data-idraft="name"]').focus(); return; }
+      var t = iniTable();
+      t.people.push({ id: iniId(), kind: iniUI.kind, name: name, owner: iniUI.kind === "npc" ? "" : iniUI.owner.trim(), dex: iniDexVal(iniUI.dex), init: null, out: false, note: "", rank: null });
+      iniUI.name = iniUI.owner = iniUI.dex = "";
+      iniSave(); iniDraw('[data-idraft="name"]');
+    });
+    b.addEventListener("toggle", function (ev) { if (ev.target.dataset && ev.target.dataset.iout !== undefined) iniUI.outShut = !ev.target.open; }, true);
+    /* what can't be taken back asks once, like deleting a character */
+    function sure(x) {
+      if (x.dataset.arm === "1") return true;
+      var was = x.textContent;
+      x.dataset.arm = "1"; x.textContent = "Sure?";
+      setTimeout(function () { if (x.isConnected) { x.dataset.arm = ""; x.textContent = was; } }, 3000);
+      return false;
+    }
+    b.addEventListener("click", function (ev) {
+      var x = ev.target.closest("[data-ia]");
+      if (!x || x.disabled) return;
+      var a = x.dataset.ia, v = x.dataset.iv, I = iniLoad(), t = iniTable(), p = iniFind(t, v), parts = String(v).split(":").map(Number), focus = null;
+      /* these name turns by position, and a count just typed may have moved them: sort first, so what is pressed is what is seen */
+      if (iniUI.dirty && (a === "swap" || a === "join" || a === "split")) { iniDraw(); return; }
+      if (a === "table") { I.cur = v; iniUI.open = null; focus = '[data-ia="table"][data-iv="' + v + '"]'; }
+      else if (a === "newtable") { var nt = iniTableNew(); I.tables.push(nt); I.cur = nt.id; iniUI.open = null; focus = "[data-itname]"; }
+      else if (a === "deltable") {
+        if (!sure(x)) return;
+        I.tables = I.tables.filter(function (q) { return q !== t; });
+        if (!I.tables.length) I.tables.push(iniTableNew());
+        I.cur = I.tables[0].id; iniUI.open = null;
+      }
+      else if (a === "kind") { iniUI.kind = v; focus = '[data-ia="kind"][data-iv="' + v + '"]'; }
+      else if (a === "roll") { iniRollNpcs(t); focus = '[data-ia="roll"]'; }
+      else if (a === "clearnpc") { if (!sure(x)) return; t.people = t.people.filter(function (q) { return q.kind !== "npc"; }); iniUI.open = null; }
+      else if (a === "clearinit") { if (!sure(x)) return; t.people.forEach(function (q) { q.init = null; q.rank = null; }); }
+      else if (a === "out") { p.out = true; if (iniUI.open === p.id) iniUI.open = null; }
+      else if (a === "in") { p.out = false; iniUnrank(t, p.init); if (iniUI.open === p.id) iniUI.open = null; }
+      else if (a === "edit") { iniUI.open = iniUI.open === v ? null : v; focus = iniUI.open ? '[data-ifoc="name' + v + '"]' : '[data-ia="edit"][data-iv="' + v + '"]'; }
+      else if (a === "close") { focus = '[data-ia="edit"][data-iv="' + iniUI.open + '"]'; iniUI.open = null; }
+      else if (a === "remove") { if (!sure(x)) return; t.people = t.people.filter(function (q) { return q !== p; }); iniUI.open = null; }
+      else if (a === "swap") { iniRearrange(t, parts[0], function (turns) { var s = turns[parts[1]]; turns[parts[1]] = turns[parts[1] + 1]; turns[parts[1] + 1] = s; }); }
+      else if (a === "join") { iniRearrange(t, parts[0], function (turns) { turns.splice(parts[1], 2, turns[parts[1]].concat(turns[parts[1] + 1])); }); }
+      else if (a === "split") { iniRearrange(t, parts[0], function (turns) { var u = turns[parts[1]]; turns.splice(parts[1], 1, u.slice(0, parts[2]), u.slice(parts[2])); }); }
+      else return;
+      iniSave(); iniDraw(focus);
+    });
+  })();
+  el("init-back").addEventListener("click", function () { history.replaceState(null, "", location.pathname + "?referee"); openReferee(); });
+
   /* ---------- language (English source strings, Russian translated on render) ---------- */
   var RU = {
     "Your adventurers": "Ваши персонажи", "Create your adventurer": "Создание персонажа", "Saved characters": "Сохранённые персонажи",
@@ -4363,6 +4653,12 @@ main.wide { max-width: 1120px; }
    
    
    
+    "Initiative": "Инициатива", "Track who acts when, with each table's characters saved.": "Кто когда действует; персонажи каждого стола сохраняются.",
+    "+ Table": "+ Стол", "Table name": "Название стола", "Delete table": "Удалить стол", "Roll for NPCs": "Бросить за НПС", "Clear NPCs": "Убрать НПС", "Clear initiative": "Сбросить инициативу",
+    "No participants yet.": "Участников пока нет.", "No initiative yet": "Без инициативы", "Left out": "Вне боя", "Leave out": "Вне боя", "Back in": "В бой", "Add a participant": "Добавить участника",
+    "Kind of participant": "Вид участника", "PC": "ПК", "Retainer": "Наёмник", "NPC": "НПС", "Player": "Игрок", "Owner": "Хозяин", "Note": "Заметка", "Dex": "Лов", "Dex modifier": "Модификатор Ловкости",
+    "NPC name": "Имя НПС", "Character name": "Имя персонажа", "Player name": "Имя игрока", "Owner name": "Имя хозяина",
+    "Swap": "Поменять", "Act together": "Вместе", "Separate": "Разделить", "Together": "Вместе", "Together: same Dex": "Вместе: одинаковая Ловкость", "Tied: higher Dex first": "Ничья: сначала выше Ловкость", "Tied: in your order": "Ничья: ваш порядок",
     "← Referee": "← Рефери", "Roll what comes through, and keep the creatures.": "Бросьте, кто явится, и сохраните существ.", "Find any spell and read its summary and full text.": "Найдите любое заклинание и прочитайте его краткое и полное описание.",
     "Cast at level": "Уровень заклинателя", "Lower caster level": "Понизить уровень заклинателя", "Raise caster level": "Повысить уровень заклинателя", "Spell list": "Список заклинаний", "All": "Все",
     "Referee": "Рефери", "Summoned": "Призванные", "New summoning": "Новый призыв", "Summoned creature": "Призванное существо", "← Summoned": "← Призванные",
@@ -4467,6 +4763,7 @@ main.wide { max-width: 1120px; }
     [/^Level (\d+) → (\d+) (Cleric|Fighter|Magic-User|Specialist|Dwarf|Elf|Halfling)$/, function (m, a, b, k) { return RU[k] + ": уровень " + a + " → " + b; }],
     [/^(\d+) in (a )?higher-level slots?$/, function (m, n) { return n + (n === "1" ? " в ячейке" : " в ячейках") + " выше уровнем"; }],
     [/^(\d+) in spellbook$/, "в книге: $1"],
+    [/^Table (\d+)$/, "Стол $1"], [/^Dex ([+−]?\d+)$/, "Лов $1"], [/^Initiative of (.+)$/, "Инициатива: $1"], [/^Leave out: (.+)$/, "Вне боя: $1"], [/^Back in: (.+)$/, "В бой: $1"], [/^Edit or add a note: (.+)$/, "Изменить или добавить заметку: $1"],
     [/^(Add to|Remove from) spellbook: (.+)$/, function (m, a, n) { return (a === "Add to" ? "Добавить в книгу: " : "Убрать из книги: ") + (trOne(n) || n); }],
     [/^(Charisma|Constitution|Dexterity|Intelligence|Strength|Wisdom) score$/, function (m, a) { return RU[a] + ": значение"; }],
     [/^Prepare (.+)$/, function (m, n) { return "Подготовить: " + (trOne(n) || n); }],
@@ -4695,7 +4992,7 @@ main.wide { max-width: 1120px; }
     if (v !== "sr") el("body13").innerHTML = "";
     if (v !== "s5") ABIL_EDIT = null;
     el("home").hidden = v !== "home"; el("hometip").hidden = v !== "home"; el("sheettip").hidden = v !== "s5";
-    var refish = v === "ref" || v === "referee";
+    var refish = v === "ref" || v === "referee" || v === "init";
     el("rail").hidden = v === "home" || sheetish || refish;
     el("title").hidden = sheetish || refish; el("kicker").hidden = sheetish || refish;
     el("title").textContent = v === "home" ? "Your adventurers" : state.started && !state.paper ? "Create your adventurer" : "Add your adventurer";
@@ -4722,6 +5019,7 @@ main.wide { max-width: 1120px; }
     el("step11").hidden = v !== "hire";
     el("step12").hidden = v !== "ref";
     el("step14").hidden = v !== "referee";
+    el("step15").hidden = v !== "init";
     if (spellish) el("s9t").textContent = v === "spells" ? "Spells" : v === "book" ? "Spellbook" : "Prepare spells";
     el("banner").hidden = !(v === "s2" || v === "s3" || v === "s4");
     if (v === "recap") renderRecap();
@@ -4738,6 +5036,7 @@ main.wide { max-width: 1120px; }
     if (v === "hire") renderHire();
     if (v === "home") renderHome();
     if (v === "ref") renderRef();
+    if (v === "init") renderInit();
     renderRail();
     if (scroll) window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -4784,8 +5083,9 @@ main.wide { max-width: 1120px; }
     var r = refRoute();
     if (r === "spells" && state.view !== "spells") openSpells();
     else if (r === "ref" && state.view !== "ref") { refView = { v: "list" }; state.view = "ref"; layout(true); }
+    else if (r === "init" && state.view !== "init") openInit();
     else if (r === "referee" && state.view !== "referee") openReferee();
-    else if (!r && (state.view === "ref" || state.view === "spells" || state.view === "referee")) goHome();
+    else if (!r && (state.view === "ref" || state.view === "spells" || state.view === "init" || state.view === "referee")) goHome();
   });
   state.view = refRoute() || "home";
   render();
