@@ -602,7 +602,7 @@ html[lang="ru"] h1 { font-weight: 500; }
 .g-sur .g-sub { display: block !important; font-size: 12px; }
 @media (max-width: 760px) { .glance { grid-template-columns: repeat(4, 1fr); } }
 @media (max-width: 560px) { .glance { grid-template-columns: repeat(2, 1fr); } .tip.outside { margin-top: -16px; } }
-#h-io:empty, #s-io:empty { display: none; }
+#h-io:empty, #s-io:empty, #r-io:empty, #i-io:empty { display: none; }
 
 /* character sheet pages */
 .stabs { position: sticky; top: 0; z-index: 3; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); background: var(--surface); border-bottom: 1px solid var(--fg); margin: -12px -22px 0; padding: 0 22px; }
@@ -4102,8 +4102,47 @@ main.wide { max-width: 1120px; }
         return '<li class="char"><button class="char-open" type="button" data-copen="' + esc(c.id) + '"><span class="ch-l"><b data-notr>' + esc(c.name || formName(c)) + "</b>" +
           "<span>" + sub + (abs ? "" : " · " + (c.dom && c.dom.tier ? domHead(c.dom) : "Domination not rolled")) + "</span></span>" +
           (abs ? "" : '<span class="ch-hp"><b>' + esc(c.hp || "?") + "</b><span>/ " + finalHp(c) + "</span><small>HP</small></span>") + "</button>" +
-          '<span class="char-acts"><button class="btn ghost sm" type="button" data-cdel="' + esc(c.id) + '">Delete</button></span></li>';
-      }).join("") + "</ul>" : '<p class="sub">No summoned creatures yet.</p>');
+          '<span class="char-acts"><button class="btn ghost sm" type="button" data-cexp="' + esc(c.id) + '">Export</button><button class="btn ghost sm" type="button" data-cdel="' + esc(c.id) + '">Delete</button></span></li>';
+      }).join("") + "</ul>" : '<p class="sub">No summoned creatures yet.</p>') +
+      '<div class="actions">' + (R.list.length ? '<button class="btn ghost sm" type="button" data-rio="all">Export all</button>' : "") + '<button class="btn ghost sm" type="button" data-rio="imp">Import</button></div><div id="r-io"></div>';
+  }
+  /* what an import adds is never written over what is here: the same thing again is skipped, and a changed copy comes in beside it */
+  function ioAdded(n, same, bad) {
+    return [n ? "Added " + n + "." : "", same ? "Skipped " + same + ": already here." : "", bad ? "Skipped " + bad + ": could not be read." : ""].filter(Boolean).join(" ");
+  }
+  /* a creature is drawn from its numbers and short codes, so only its name and hit points may hold free text, which is escaped when
+     shown; anything else in an imported text is refused, and so is whatever can't be drawn */
+  function refPlain(v, top) {
+    if (typeof v === "string") return /^[\w .:+-]*$/.test(v);
+    if (v === null || typeof v === "boolean") return true;
+    if (typeof v === "number") return isFinite(v);
+    if (typeof v !== "object") return false;
+    return Object.keys(v).every(function (k) {
+      if (!/^[\w.:-]+$/.test(k)) return false;
+      if (top && (k === "name" || k === "hp")) return typeof v[k] === "string";
+      return refPlain(v[k]);
+    });
+  }
+  function refDrawable(c) {
+    if (!c || typeof c !== "object" || Array.isArray(c) || typeof c.id !== "string" || !c.id || !c.form || !refPlain(c, true)) return false;
+    try { listHTML({ list: [c] }); creatureHTML(c); return true; } catch (e) { return false; }
+  }
+  function refImport(txt) {
+    var d = JSON.parse(txt), R = refLoad(), added = [], same = 0, bad = 0;
+    if (!d || d.lotfp !== "summon" || !Array.isArray(d.creatures)) throw new Error("not creatures");
+    d.creatures.forEach(function (c) {
+      var was = c && R.list.concat(added).filter(function (q) { return q.id === c.id; })[0];
+      if (was && JSON.stringify(was) === JSON.stringify(c)) { same++; return; }
+      if (!refDrawable(c)) { bad++; return; }
+      if (was) c.id = "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      added.push(c);
+    });
+    if (!added.length && !same) throw new Error("no creatures");
+    if (added.length) { R.list = added.concat(R.list); refSave(); }
+    return ioAdded(added.length, same, bad);
+  }
+  function refExport(list) {
+    return JSON.stringify({ lotfp: "summon", creatures: list });
   }
   function refCreature() { var R = refLoad(); return R.list.filter(function (c) { return c.id === refView.id; })[0]; }
   function renderRef() {
@@ -4169,6 +4208,21 @@ main.wide { max-width: 1120px; }
       x.addEventListener("click", function () {
         if (x.dataset.arm !== "1") { x.dataset.arm = "1"; x.textContent = "Sure?"; setTimeout(function () { if (x.isConnected) { x.dataset.arm = ""; x.textContent = "Delete"; } }, 3000); return; }
         R.list = R.list.filter(function (q) { return q.id !== x.dataset.cdel; }); redo();
+      });
+    });
+    b.querySelectorAll("[data-cexp]").forEach(function (x) {
+      x.addEventListener("click", function () {
+        var one = R.list.filter(function (q) { return q.id === x.dataset.cexp; });
+        ioPanel("Copy this text or save it as a file to keep or move this creature. Use Import to add it back.", refExport(one), false, "r-io", { file: "lotfp-summoned.json" });
+      });
+    });
+    b.querySelectorAll("[data-rio]").forEach(function (x) {
+      x.addEventListener("click", function () {
+        if (x.dataset.rio === "all") return ioPanel("Copy this text or save it as a file to keep or move these creatures. Use Import to add them back.", refExport(R.list), false, "r-io", { file: "lotfp-summoned.json" });
+        ioPanel("Paste exported creatures here, or choose a file.", "", true, "r-io", {
+          add: "Add creatures", run: refImport, bad: "That doesn't look like exported creatures.",
+          done: function (msg) { renderRef(); el("r-io").innerHTML = '<p class="sub">' + msg + "</p>"; }
+        });
       });
     });
     if (!c) return;
@@ -4254,6 +4308,42 @@ main.wide { max-width: 1120px; }
   function iniDexText(n) { return "Dex " + (n > 0 ? "+" + n : n < 0 ? "−" + -n : "0"); }
   function iniDexVal(v) { var n = parseInt(String(v).replace("−", "-"), 10); return isNaN(n) ? 0 : n; }
   function iniKindName(k) { return INI_KINDS.filter(function (x) { return x[0] === k; })[0][1]; }
+  function iniExport(tables) { return JSON.stringify({ lotfp: "initiative", tables: tables }); }
+  /* an imported table is rebuilt field by field, since the rows draw its ids, kinds and numbers as they are */
+  function iniCleanTable(x) {
+    if (!x || typeof x !== "object" || !Array.isArray(x.people)) return null;
+    function txt(v, max) { return typeof v === "string" ? v.slice(0, max) : ""; }
+    function num(v) { return typeof v === "number" && isFinite(v) ? Math.round(v) : null; }
+    function id(v) { return typeof v === "string" && /^[\w-]+$/.test(v) ? v : iniId(); }
+    var seen = {}, people = [];
+    x.people.forEach(function (p) {
+      if (!p || typeof p !== "object" || !INI_KINDS.some(function (k) { return k[0] === p.kind; }) || !txt(p.name, 60).trim()) return;
+      var i = id(p.id);
+      if (seen[i] === true) i = iniId();
+      seen[i] = true;
+      people.push({ id: i, kind: p.kind, name: txt(p.name, 60), owner: p.kind === "npc" ? "" : txt(p.owner, 60), dex: num(p.dex) || 0, init: num(p.init), out: p.out === true, note: txt(p.note, 500), rank: num(p.rank) });
+    });
+    return { id: id(x.id), name: txt(x.name, 40), people: people };
+  }
+  function iniImport(txt) {
+    var d = JSON.parse(txt), I = iniLoad(), added = [], same = 0, bad = 0;
+    if (!d || d.lotfp !== "initiative" || !Array.isArray(d.tables)) throw new Error("not tables");
+    d.tables.forEach(function (x) {
+      var t = iniCleanTable(x);
+      if (!t) { bad++; return; }
+      var was = I.tables.concat(added).filter(function (q) { return q.id === t.id; })[0];
+      if (was && JSON.stringify(was) === JSON.stringify(t)) { same++; return; }
+      if (was) t.id = iniId();
+      added.push(t);
+    });
+    if (!added.length && !same) throw new Error("no tables");
+    if (added.length) {
+      /* the blank table a new browser starts with makes way for what is coming in */
+      if (I.tables.length === 1 && !I.tables[0].people.length && !I.tables[0].name.trim()) I.tables = [];
+      I.tables = I.tables.concat(added); I.cur = added[0].id; iniUI.open = null; iniSave();
+    }
+    return ioAdded(added.length, same, bad);
+  }
   function iniEdit(p) {
     var f = function (k, v) { return 'data-ifield="' + k + '" data-ifoc="' + k + p.id + '" value="' + esc(v) + '"'; };
     return '<div class="iedit">' +
@@ -4310,7 +4400,9 @@ main.wide { max-width: 1120px; }
       (f === "npc" ? "<span></span>" : '<input class="gsearch" type="text" maxlength="60" data-idraft="owner" data-ifoc="downer" placeholder="' + (f === "pc" ? "Player name" : "Owner name") + '" aria-label="' + (f === "pc" ? "Player name" : "Owner name") + '" value="' + esc(iniUI.owner) + '">') +
       '<input class="gsearch" type="number" data-idraft="dex" data-ifoc="ddex" placeholder="Dex" aria-label="Dex modifier" value="' + esc(iniUI.dex) + '">' +
       '<button class="btn sm" type="submit">Add</button></div></form>' +
-      '<div class="actions"><button class="btn ghost sm" type="button" data-ia="deltable">Delete table</button></div>';
+      '<div class="actions"><button class="btn ghost sm" type="button" data-ia="exptable">Export table</button>' +
+      (I.tables.length > 1 ? '<button class="btn ghost sm" type="button" data-ia="expall">Export all</button>' : "") +
+      '<button class="btn ghost sm" type="button" data-ia="imptable">Import</button><button class="btn ghost sm" type="button" data-ia="deltable">Delete table</button></div><div id="i-io"></div>';
     if (iniLocked) h += '<p class="tip warn">This browser is blocking saving, so these tables are lost when you close the page.</p>';
     return h;
   }
@@ -4393,6 +4485,16 @@ main.wide { max-width: 1120px; }
       var a = x.dataset.ia, v = x.dataset.iv, I = iniLoad(), t = iniTable(), p = iniFind(t, v), parts = String(v).split(":").map(Number), focus = null;
       /* these name turns by position, and a count just typed may have moved them: sort first, so what is pressed is what is seen */
       if (iniUI.dirty && (a === "swap" || a === "join" || a === "split")) { iniDraw(); return; }
+      if (a === "exptable" || a === "expall" || a === "imptable") {
+        /* a count just typed would redraw the list, and the panel with it, as the press ends: draw first */
+        if (iniUI.dirty) iniDraw();
+        if (a === "imptable") ioPanel("Paste exported tables here, or choose a file.", "", true, "i-io", {
+          add: "Add tables", run: iniImport, bad: "That doesn't look like exported tables.",
+          done: function (msg) { iniDraw(); el("i-io").innerHTML = '<p class="sub">' + msg + "</p>"; }
+        });
+        else ioPanel("Copy this text or save it as a file to keep or move " + (a === "expall" ? "these tables" : "this table") + ". Use Import to add " + (a === "expall" ? "them" : "it") + " back.", iniExport(a === "expall" ? I.tables : [t]), false, "i-io", { file: "lotfp-initiative.json" });
+        return;
+      }
       if (a === "table") { I.cur = v; iniUI.open = null; focus = '[data-ia="table"][data-iv="' + v + '"]'; }
       else if (a === "newtable") { var nt = iniTableNew(); I.tables.push(nt); I.cur = nt.id; iniUI.open = null; focus = "[data-itname]"; }
       else if (a === "deltable") {
@@ -4506,6 +4608,13 @@ main.wide { max-width: 1120px; }
     "Copy this text and keep it somewhere safe.": "Скопируйте этот текст и сохраните его в надёжном месте.",
     "Copy this text to keep or move this character. Use Import to add it back.": "Скопируйте этот текст, чтобы сохранить или перенести персонажа. Вернуть его можно через Импорт.",
     "Paste backup text here, or choose a file.": "Вставьте сюда текст резервной копии или выберите файл.",
+    "Export all": "Экспортировать всё", "Export table": "Экспорт стола", "Save file": "Сохранить файл", "Add creatures": "Добавить существ", "Add tables": "Добавить столы",
+    "Copy this text or save it as a file to keep or move this creature. Use Import to add it back.": "Скопируйте этот текст или сохраните его файлом, чтобы сохранить или перенести существо. Вернуть его можно через Импорт.",
+    "Copy this text or save it as a file to keep or move these creatures. Use Import to add them back.": "Скопируйте этот текст или сохраните его файлом, чтобы сохранить или перенести существ. Вернуть их можно через Импорт.",
+    "Copy this text or save it as a file to keep or move this table. Use Import to add it back.": "Скопируйте этот текст или сохраните его файлом, чтобы сохранить или перенести стол. Вернуть его можно через Импорт.",
+    "Copy this text or save it as a file to keep or move these tables. Use Import to add them back.": "Скопируйте этот текст или сохраните его файлом, чтобы сохранить или перенести столы. Вернуть их можно через Импорт.",
+    "Paste exported creatures here, or choose a file.": "Вставьте сюда текст экспорта существ или выберите файл.", "Paste exported tables here, or choose a file.": "Вставьте сюда текст экспорта столов или выберите файл.",
+    "That doesn't look like exported creatures.": "Это не похоже на экспорт существ.", "That doesn't look like exported tables.": "Это не похоже на экспорт столов.",
     "Add characters": "Добавить персонажей", "Choose file": "Выбрать файл", "Close": "Закрыть", "Copy": "Копировать", "Copied.": "Скопировано.",
     "Press Ctrl/Cmd+C to copy.": "Нажмите Ctrl/Cmd+C, чтобы скопировать.", "That doesn't look like a character backup.": "Это не похоже на резервную копию персонажа.",
     "Backup text": "Текст резервной копии",
@@ -4734,6 +4843,11 @@ main.wide { max-width: 1120px; }
     [/^Custom skill (\d) name$/, "Название своего навыка $1"],
     [/^Added (\d+)\.$/, "Добавлено: $1."],
     [/^Skipped (\d+): the copy here is newer\.$/, "Пропущено: $1 — здесь копия новее."],
+    [/^Added (\d+)\. Skipped (\d+): already here\.$/, "Добавлено: $1. Пропущено: $2 — уже есть."],
+    [/^Added (\d+)\. Skipped (\d+): could not be read\.$/, "Добавлено: $1. Пропущено: $2 — не удалось прочитать."],
+    [/^Skipped (\d+): already here\.$/, "Пропущено: $1 — уже есть."],
+    [/^Skipped (\d+): already here\. Skipped (\d+): could not be read\.$/, "Пропущено: $1 — уже есть, $2 — не удалось прочитать."],
+    [/^Added (\d+)\. Skipped (\d+): already here\. Skipped (\d+): could not be read\.$/, "Добавлено: $1. Пропущено: $2 — уже есть, $3 — не удалось прочитать."],
     [/^Hit points: rolled at the table$/, "Пункты здоровья: брошены за столом"],
     [/^(Hit points|Spellbook|Starting money): ?$/, function (m, k) { return RU[k] + ": "; }],
     [/^(\d+) items?$/, function (m, n) { return n + " " + ruN(+n, RU_ITEM); }],
@@ -4961,17 +5075,25 @@ main.wide { max-width: 1120px; }
       });
     });
   }
-  function ioPanel(msg, text, imp, host) {
+  /* the referee's tools pass o: {add, run, bad, done} to import their own kind of text, or {file} to offer the text as a file too */
+  function ioPanel(msg, text, imp, host, o) {
+    o = o || {};
     var h = el(host || "h-io");
     h.innerHTML = '<div class="io"><p class="sub">' + msg + '</p><textarea id="io-t" rows="5" spellcheck="false" aria-label="Backup text">' + esc(text) + "</textarea>" +
-      '<div class="actions">' + (imp ? '<button class="btn" id="io-go" type="button">Add characters</button><label class="btn ghost file">Choose file<input id="io-f" type="file" accept=".json,.txt,application/json,text/plain" hidden></label>' : '<button class="btn" id="io-copy" type="button">Copy</button>') +
+      '<div class="actions">' + (imp ? '<button class="btn" id="io-go" type="button">' + (o.add || "Add characters") + '</button><label class="btn ghost file">Choose file<input id="io-f" type="file" accept=".json,.txt,application/json,text/plain" hidden></label>' : '<button class="btn" id="io-copy" type="button">Copy</button>' + (o.file ? '<button class="btn ghost" id="io-save" type="button">Save file</button>' : "")) +
       '<button class="btn ghost" id="io-x" type="button">Close</button><span class="sub" id="io-m"></span></div></div>';
     var t = el("io-t"), m = el("io-m");
     el("io-x").addEventListener("click", function () { h.innerHTML = ""; });
+    if (o.file) el("io-save").addEventListener("click", function () {
+      var a = document.createElement("a"), u = URL.createObjectURL(new Blob([t.value], { type: "application/json" }));
+      a.href = u; a.download = o.file; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(u); }, 1000);
+    });
     if (imp) {
       var go = function () {
-        var msg; try { msg = importText(t.value); } catch (e) { m.textContent = "That doesn't look like a character backup."; return; }
-        if (!host) { renderHome(); el("h-io").innerHTML = '<p class="sub">' + msg + "</p>"; } else m.textContent = msg;
+        var msg; try { msg = (o.run || importText)(t.value); } catch (e) { m.textContent = o.bad || "That doesn't look like a character backup."; return; }
+        if (o.done) o.done(msg);
+        else if (!host) { renderHome(); el("h-io").innerHTML = '<p class="sub">' + msg + "</p>"; } else m.textContent = msg;
       };
       el("io-go").addEventListener("click", go);
       el("io-f").addEventListener("change", function (ev) { var f = ev.target.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () { t.value = r.result; go(); }; r.readAsText(f); });
